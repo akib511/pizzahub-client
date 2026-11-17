@@ -1,4 +1,5 @@
 import AboutUs from '@/components/home/AboutUs';
+import CTA from '@/components/home/CTA';
 import FeaturedMenu from '@/components/home/FeaturedMenu';
 import Hero from '@/components/home/Hero';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
@@ -14,6 +15,7 @@ const page = () => {
       <FeaturedMenu />
       <WhyChooseUs />
       <AboutUs />
+      <CTA />
       <Footer />
     </div>
   );
