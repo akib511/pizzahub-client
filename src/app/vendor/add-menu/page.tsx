@@ -9,19 +9,31 @@ import {
   X,
   Pizza,
   Clock,
-  DollarSign,
   CheckCircle2,
   Loader2,
+  MapPin,
+  Crown,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function AddMenuPage() {
+  // Demo subscription data
+  const subscriptionPlan = "free";
+  const activeMenuItems = 2;
+
+  const isPremium = subscriptionPlan === "premium";
+  const activeItemLimit = 3;
+  const limitReached = !isPremium && activeMenuItems >= activeItemLimit;
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
+  const [location, setLocation] = useState("");
   const [preparationTime, setPreparationTime] = useState("");
   const [available, setAvailable] = useState(true);
+
   const [image, setImage] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -29,6 +41,7 @@ export default function AddMenuPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Image selection
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
@@ -49,24 +62,45 @@ export default function AddMenuPage() {
     setError("");
   };
 
+  // Remove image
   const removeImage = () => {
     setImage("");
     setImageFile(null);
   };
 
+  // Form submission
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
     setSuccess(false);
 
-    if (!name.trim() || !description.trim() || !category || !price || !preparationTime) {
+    if (limitReached && available) {
+      setError(
+        "Free plan allows maximum 3 active menu items. Upgrade to Premium for unlimited items."
+      );
+      return;
+    }
+
+    if (
+      !name.trim() ||
+      !description.trim() ||
+      !category ||
+      !price ||
+      !location.trim() ||
+      !preparationTime
+    ) {
       setError("Please fill in all required fields.");
       return;
     }
 
-    if (Number(price) <= 0 || Number(preparationTime) <= 0) {
-      setError("Price and preparation time must be greater than 0.");
+    if (Number(price) <= 0) {
+      setError("Price must be greater than 0.");
+      return;
+    }
+
+    if (Number(preparationTime) <= 0) {
+      setError("Preparation time must be greater than 0.");
       return;
     }
 
@@ -77,7 +111,7 @@ export default function AddMenuPage() {
 
     setLoading(true);
 
-    // Demo submission only. No backend connection yet.
+    // Demo submission - backend integration will be added later
     setTimeout(() => {
       setLoading(false);
       setSuccess(true);
@@ -86,6 +120,7 @@ export default function AddMenuPage() {
       setDescription("");
       setCategory("");
       setPrice("");
+      setLocation("");
       setPreparationTime("");
       setAvailable(true);
       setImage("");
@@ -114,40 +149,103 @@ export default function AddMenuPage() {
         </p>
       </div>
 
+      {/* Subscription Status */}
+      <div className="rounded-2xl border border-[#F97316]/20 bg-[#F97316]/5 p-4 sm:p-5">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-3">
+            <div className="rounded-xl bg-[#F97316]/10 p-3 text-[#F97316]">
+              <Crown size={22} />
+            </div>
+
+            <div>
+              <h3 className="font-semibold">
+                {isPremium ? "Premium Plan" : "Free Plan"}
+              </h3>
+
+              <p className="mt-1 text-sm text-[#A8A29E]">
+                {isPremium
+                  ? "You can add unlimited menu items."
+                  : `${activeMenuItems} of ${activeItemLimit} active menu items used.`}
+              </p>
+
+              {!isPremium && (
+                <div className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-[#302824]">
+                  <div
+                    className="h-full rounded-full bg-[#F97316]"
+                    style={{
+                      width: `${(activeMenuItems / activeItemLimit) * 100}%`,
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {!isPremium && (
+            <Link
+              href="/vendor/subscription"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F97316] px-4 py-2.5 text-sm font-semibold transition hover:bg-[#EA580C]"
+            >
+              <Crown size={16} />
+              Upgrade to Premium
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Limit Warning */}
+      {limitReached && (
+        <div className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+          <AlertCircle size={20} className="shrink-0" />
+
+          <div>
+            <p className="font-semibold">Active Item Limit Reached</p>
+
+            <p className="mt-1">
+              Your Free plan allows only 3 active menu items. Deactivate an
+              existing item or upgrade to Premium.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Success Message */}
       {success && (
         <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400">
           <CheckCircle2 size={20} />
-          Demo: Menu item added successfully!
+          Demo: Menu item submitted successfully! Status: Pending Approval.
         </div>
       )}
 
       {/* Error Message */}
       {error && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+        <div className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+          <AlertCircle size={18} className="shrink-0" />
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
         <div className="grid gap-6 lg:grid-cols-3">
-
-          {/* Form */}
+          {/* Form Section */}
           <div className="space-y-6 lg:col-span-2">
-
             {/* Basic Information */}
             <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-6">
               <div className="mb-6">
-                <h2 className="text-lg font-semibold">Basic Information</h2>
+                <h2 className="text-lg font-semibold">
+                  Basic Information
+                </h2>
+
                 <p className="mt-1 text-sm text-[#A8A29E]">
                   Enter your food item details.
                 </p>
               </div>
 
               <div className="space-y-5">
+                {/* Item Name */}
                 <div>
                   <label className="mb-2 block text-sm font-medium">
-                    Food Name *
+                    Item Name *
                   </label>
 
                   <input
@@ -159,6 +257,7 @@ export default function AddMenuPage() {
                   />
                 </div>
 
+                {/* Description */}
                 <div>
                   <label className="mb-2 block text-sm font-medium">
                     Description *
@@ -173,6 +272,7 @@ export default function AddMenuPage() {
                   />
                 </div>
 
+                {/* Category */}
                 <div>
                   <label className="mb-2 block text-sm font-medium">
                     Category *
@@ -181,49 +281,72 @@ export default function AddMenuPage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm text-white outline-none focus:border-[#F97316]"
+                    className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-[#F97316]"
                   >
                     <option value="">Select category</option>
-                    <option value="Pizza">Pizza</option>
-                    <option value="Burger">Burger</option>
-                    <option value="Pasta">Pasta</option>
-                    <option value="Sides">Sides</option>
-                    <option value="Desserts">Desserts</option>
-                    <option value="Drinks">Drinks</option>
+                    <option value="Classic Pizzas">Classic Pizzas</option>
+                    <option value="Vegetarian Pizzas">Vegetarian Pizzas</option>
+                    <option value="Meat Lovers">Meat Lovers</option>
+                    <option value="Specialty / Gourmet Pizzas">
+                      Specialty / Gourmet Pizzas
+                    </option>
+                    <option value="Sides & Appetizers">
+                      Sides & Appetizers
+                    </option>
+                    <option value="Beverages & Desserts">
+                      Beverages & Desserts
+                    </option>
                   </select>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    Restaurant Location *
+                  </label>
+
+                  <div className="relative">
+                    <MapPin
+                      size={17}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8A29E]"
+                    />
+
+                    <input
+                      type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="Area / City (e.g. Dhanmondi, Dhaka)"
+                      className="w-full rounded-xl border border-[#302824] bg-[#100D0B] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#F97316]"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Pricing & Preparation */}
+            {/* Price & Preparation */}
             <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-6">
               <h2 className="mb-6 text-lg font-semibold">
                 Pricing & Preparation
               </h2>
 
               <div className="grid gap-5 sm:grid-cols-2">
+                {/* Price */}
                 <div>
                   <label className="mb-2 block text-sm font-medium">
                     Price (৳) *
                   </label>
 
-                  <div className="relative">
-                    <DollarSign
-                      size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8A29E]"
-                    />
-
-                    <input
-                      type="number"
-                      min="1"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      placeholder="299"
-                      className="w-full rounded-xl border border-[#302824] bg-[#100D0B] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#F97316]"
-                    />
-                  </div>
+                  <input
+                    type="number"
+                    min="1"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="299"
+                    className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-[#F97316]"
+                  />
                 </div>
 
+                {/* Preparation Time */}
                 <div>
                   <label className="mb-2 block text-sm font-medium">
                     Preparation Time (Minutes) *
@@ -250,11 +373,16 @@ export default function AddMenuPage() {
 
             {/* Availability */}
             <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-6">
-              <h2 className="mb-4 text-lg font-semibold">Availability</h2>
+              <h2 className="mb-4 text-lg font-semibold">
+                Availability
+              </h2>
 
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium">Available for orders</p>
+                  <p className="text-sm font-medium">
+                    Available for orders
+                  </p>
+
                   <p className="mt-1 text-xs text-[#A8A29E]">
                     Customers can order this item when it is active.
                   </p>
@@ -275,16 +403,23 @@ export default function AddMenuPage() {
                 </button>
               </div>
 
-              <p className={`mt-3 text-xs ${available ? "text-green-400" : "text-[#A8A29E]"}`}>
+              <p
+                className={`mt-3 text-xs ${
+                  available ? "text-green-400" : "text-[#A8A29E]"
+                }`}
+              >
                 {available ? "Currently Active" : "Currently Inactive"}
               </p>
             </div>
           </div>
 
-          {/* Image Upload & Preview */}
+          {/* Image & Preview */}
           <div className="space-y-6">
+            {/* Image Upload */}
             <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-6">
-              <h2 className="mb-2 text-lg font-semibold">Food Image</h2>
+              <h2 className="mb-2 text-lg font-semibold">
+                Food Image
+              </h2>
 
               <p className="mb-5 text-sm text-[#A8A29E]">
                 Upload a high-quality image of your food.
@@ -301,7 +436,7 @@ export default function AddMenuPage() {
                   <button
                     type="button"
                     onClick={removeImage}
-                    className="absolute right-3 top-3 rounded-lg bg-black/70 p-2 text-white hover:bg-red-500"
+                    className="absolute right-3 top-3 rounded-lg bg-black/70 p-2 text-white transition hover:bg-red-500"
                   >
                     <X size={17} />
                   </button>
@@ -312,10 +447,16 @@ export default function AddMenuPage() {
                     <ImagePlus size={28} />
                   </div>
 
-                  <p className="text-sm font-medium">Upload Food Image</p>
+                  <p className="text-sm font-medium">
+                    Upload Food Image
+                  </p>
 
                   <p className="mt-2 text-xs text-[#A8A29E]">
-                    PNG, JPG or WEBP (Max 5MB)
+                    JPG, PNG or WEBP
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#A8A29E]">
+                    Maximum 5MB
                   </p>
 
                   <input
@@ -329,13 +470,15 @@ export default function AddMenuPage() {
 
               <div className="mt-4 flex items-center gap-2 text-xs text-[#A8A29E]">
                 <Upload size={14} />
-                Recommended image ratio: 4:3
+                Recommended ratio: 4:3
               </div>
             </div>
 
-            {/* Preview Card */}
+            {/* Preview */}
             <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5">
-              <h2 className="mb-4 font-semibold">Item Preview</h2>
+              <h2 className="mb-4 font-semibold">
+                Item Preview
+              </h2>
 
               <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#100D0B]">
                 {image ? (
@@ -365,36 +508,50 @@ export default function AddMenuPage() {
                     {description || "Food description will appear here."}
                   </p>
 
-                  <div className="flex items-center justify-between pt-2 text-xs text-[#A8A29E]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-[#A8A29E]">
                     <span>{category || "Category"}</span>
 
-                    <span>
-                      {preparationTime || "0"} min
+                    <span>{preparationTime || "0"} min</span>
+                  </div>
+
+                  {location && (
+                    <div className="flex items-center gap-1 text-xs text-[#A8A29E]">
+                      <MapPin size={13} />
+                      {location}
+                    </div>
+                  )}
+
+                  <div className="border-t border-white/[0.06] pt-3">
+                    <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-400">
+                      Pending Approval
                     </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={loading || (limitReached && available)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>
                   <Loader2 size={18} className="animate-spin" />
-                  Adding Item...
+                  Submitting...
                 </>
               ) : (
                 <>
                   <CheckCircle2 size={18} />
-                  Add Menu Item
+                  Submit Menu Item
                 </>
               )}
             </button>
 
+            <p className="text-center text-xs text-[#A8A29E]">
+              Your item will be submitted for admin approval.
+            </p>
           </div>
         </div>
       </form>
