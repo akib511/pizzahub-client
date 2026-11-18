@@ -17,43 +17,42 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    setError("");
-    setLoading(true);
+  setError("");
+  setLoading(true);
 
-    try {
-      const { data, error } = await authClient.signIn.email({
-        email,
-        password,
-      });
+  try {
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password,
+    });
 
-      if (error) {
-        setError(error.message || "Invalid email or password");
-        return;
-      }
-
-      if (data) {
-        const role = data.user.role;
-
-        if (role === "admin") {
-          router.push("/admin/dashboard");
-        } else if (role === "vendor") {
-          router.push("/vendor/dashboard");
-        } else {
-          router.push("/customer/dashboard");
-        }
-
-        router.refresh();
-      }
-      
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+    if (error) {
+      setError(error.message || "Invalid email or password");
+      return;
     }
-  };
+
+    if (data?.user) {
+      const role = data.user.role;
+
+      if (role === "admin") {
+        router.push("/admin/dashboard");
+      } else if (role === "vendor") {
+        router.push("/");
+      } else {
+        router.push("/customer/dashboard");
+      }
+
+      router.refresh();
+    }
+  } catch (err) {
+    setError("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#100D0B] px-4 py-8 text-white">
