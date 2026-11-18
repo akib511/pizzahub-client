@@ -3,11 +3,58 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Pizza } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Pizza, ShoppingBag, Store } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignUpPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<"buyer" | "vendor">("buyer");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+      });
+
+      if (error) {
+        setError(error.message || "Failed to create account");
+        return;
+      }
+
+      if (data) {
+        router.push("/sign-in");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#100D0B] px-4 py-8 text-white">
@@ -32,7 +79,7 @@ export default function SignUpPage() {
             <h2 className="text-2xl font-bold">Create Account</h2>
 
             <p className="mt-2 text-sm text-[#A8A29E]">
-              Join PizzaHUB and discover your favorite flavors.
+              Join PizzaHub and discover your favorite flavors.
             </p>
           </div>
 
@@ -56,7 +103,7 @@ export default function SignUpPage() {
               />
               <path
                 fill="#1976D2"
-                d="M43.611 20.083H42V20H24v8h11.303a12.01 12.01 0 0 1-4.084 6.57l6.19 5.238C41.018 35.83 45 30.277 45 24c0-1.341-.138-2.65-.389-3.917z"
+                d="M43.611 20.083H42V20H24v8h11.303a12.01 12.01 0 0-4.084 6.57l6.19 5.238C41.018 35.83 45 30.277 45 24c0-1.341-.138-2.65-.389-3.917z"
               />
             </svg>
 
@@ -72,8 +119,70 @@ export default function SignUpPage() {
             <div className="h-px flex-1 bg-[#302824]" />
           </div>
 
+          {/* Role Selection */}
+          <div>
+            <label className="mb-3 block text-sm font-medium">
+              Create account as
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+
+              {/* Buyer */}
+              <button
+                type="button"
+                onClick={() => setRole("buyer")}
+                className={`rounded-xl border p-4 text-center transition ${
+                  role === "buyer"
+                    ? "border-orange-500 bg-orange-500/10"
+                    : "border-[#302824] bg-[#100D0B] hover:border-[#57443A]"
+                }`}
+              >
+                <ShoppingBag
+                  size={24}
+                  className={`mx-auto mb-2 ${
+                    role === "buyer"
+                      ? "text-orange-500"
+                      : "text-[#A8A29E]"
+                  }`}
+                />
+
+                <p className="text-sm font-semibold">Buyer</p>
+
+                <p className="mt-1 text-xs text-[#A8A29E]">
+                  Order delicious pizza
+                </p>
+              </button>
+
+              {/* Vendor */}
+              <button
+                type="button"
+                onClick={() => setRole("vendor")}
+                className={`rounded-xl border p-4 text-center transition ${
+                  role === "vendor"
+                    ? "border-orange-500 bg-orange-500/10"
+                    : "border-[#302824] bg-[#100D0B] hover:border-[#57443A]"
+                }`}
+              >
+                <Store
+                  size={24}
+                  className={`mx-auto mb-2 ${
+                    role === "vendor"
+                      ? "text-orange-500"
+                      : "text-[#A8A29E]"
+                  }`}
+                />
+
+                <p className="text-sm font-semibold">Vendor</p>
+
+                <p className="mt-1 text-xs text-[#A8A29E]">
+                  Sell your pizzas
+                </p>
+              </button>
+            </div>
+          </div>
+
           {/* Form */}
-          <form className="space-y-4">
+          <form onSubmit={handleSignUp} className="mt-5 space-y-4">
 
             {/* Name */}
             <div>
@@ -84,6 +193,8 @@ export default function SignUpPage() {
               <input
                 type="text"
                 placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
                 className="w-full rounded-lg border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none transition placeholder:text-[#78716C] focus:border-orange-500"
               />
@@ -98,6 +209,8 @@ export default function SignUpPage() {
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full rounded-lg border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none transition placeholder:text-[#78716C] focus:border-orange-500"
               />
@@ -113,6 +226,8 @@ export default function SignUpPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   className="w-full py-3 text-sm outline-none placeholder:text-[#78716C]"
                 />
@@ -141,6 +256,8 @@ export default function SignUpPage() {
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   className="w-full py-3 text-sm outline-none placeholder:text-[#78716C]"
                 />
@@ -161,12 +278,28 @@ export default function SignUpPage() {
               </div>
             </div>
 
+            {/* Selected Role Info */}
+            <p className="text-xs text-[#A8A29E]">
+              Registering as:{" "}
+              <span className="font-medium text-orange-500">
+                {role === "buyer" ? "Buyer" : "Vendor"}
+              </span>
+            </p>
+
+            {/* Error */}
+            {error && (
+              <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+                {error}
+              </p>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
-              className="w-full rounded-lg bg-orange-500 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
+              disabled={loading}
+              className="w-full rounded-lg bg-orange-500 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
@@ -193,3 +326,4 @@ export default function SignUpPage() {
     </main>
   );
 }
+
