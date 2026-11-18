@@ -32,7 +32,7 @@ export default function SignUpPage() {
             <h2 className="text-2xl font-bold">Create Account</h2>
 
             <p className="mt-2 text-sm text-[#A8A29E]">
-              Join PizzaHub and discover your favorite flavors.
+              Join PizzaHUB and discover your favorite flavors.
             </p>
           </div>
 
