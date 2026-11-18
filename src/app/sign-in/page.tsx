@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -36,9 +35,19 @@ export default function SignInPage() {
       }
 
       if (data) {
-        router.push("/");
+        const role = data.user.role;
+
+        if (role === "admin") {
+          router.push("/admin/dashboard");
+        } else if (role === "vendor") {
+          router.push("/vendor/dashboard");
+        } else {
+          router.push("/customer/dashboard");
+        }
+
         router.refresh();
       }
+      
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -49,7 +58,6 @@ export default function SignInPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#100D0B] px-4 py-8 text-white">
       <div className="w-full max-w-md">
-
         {/* Logo */}
         <Link href="/" className="mb-8 flex justify-center">
           <div className="flex items-center gap-2">
@@ -63,7 +71,6 @@ export default function SignInPage() {
 
         {/* Login Card */}
         <div className="rounded-2xl border border-[#302824] bg-[#1C1715] p-6 sm:p-8">
-
           {/* Heading */}
           <div className="text-center">
             <h2 className="text-2xl font-bold">Welcome Back</h2>
@@ -96,7 +103,6 @@ export default function SignInPage() {
                 d="M43.611 20.083H42V20H24v8h11.303a12.01 12.01 0 0 1-4.084 6.57l6.19 5.238C41.018 35.83 45 30.277 45 24c0-1.341-.138-2.65-.389-3.917z"
               />
             </svg>
-
             Continue with Google
           </button>
 
@@ -111,7 +117,6 @@ export default function SignInPage() {
 
           {/* Form */}
           <form onSubmit={handleSignIn} className="space-y-5">
-
             {/* Email */}
             <div>
               <label className="mb-2 block text-sm font-medium">
@@ -131,9 +136,7 @@ export default function SignInPage() {
             {/* Password */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <label className="text-sm font-medium">
-                  Password
-                </label>
+                <label className="text-sm font-medium">Password</label>
 
                 <Link
                   href="/forgot-password"
@@ -158,21 +161,14 @@ export default function SignInPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="text-[#78716C] hover:text-white"
                 >
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
             {/* Remember Me */}
             <label className="flex cursor-pointer items-center gap-2 text-sm text-[#A8A29E]">
-              <input
-                type="checkbox"
-                className="accent-orange-500"
-              />
+              <input type="checkbox" className="accent-orange-500" />
               Remember me
             </label>
 

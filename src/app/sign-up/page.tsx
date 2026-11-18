@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -17,7 +16,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<"buyer" | "vendor">("buyer");
+  const [role, setRole] = useState<"customer" | "vendor">("customer");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,6 +38,7 @@ export default function SignUpPage() {
         name,
         email,
         password,
+        role
       });
 
       if (error) {
@@ -59,7 +59,6 @@ export default function SignUpPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#100D0B] px-4 py-8 text-white">
       <div className="w-full max-w-md">
-
         {/* Logo */}
         <Link href="/" className="mb-8 flex justify-center">
           <div className="flex items-center gap-2">
@@ -73,7 +72,6 @@ export default function SignUpPage() {
 
         {/* Sign Up Card */}
         <div className="rounded-2xl border border-[#302824] bg-[#1C1715] p-6 sm:p-8">
-
           {/* Heading */}
           <div className="text-center">
             <h2 className="text-2xl font-bold">Create Account</h2>
@@ -106,7 +104,6 @@ export default function SignUpPage() {
                 d="M43.611 20.083H42V20H24v8h11.303a12.01 12.01 0 0-4.084 6.57l6.19 5.238C41.018 35.83 45 30.277 45 24c0-1.341-.138-2.65-.389-3.917z"
               />
             </svg>
-
             Continue with Google
           </button>
 
@@ -126,13 +123,12 @@ export default function SignUpPage() {
             </label>
 
             <div className="grid grid-cols-2 gap-3">
-
-              {/* Buyer */}
+              {/* customer */}
               <button
                 type="button"
-                onClick={() => setRole("buyer")}
+                onClick={() => setRole("customer")}
                 className={`rounded-xl border p-4 text-center transition ${
-                  role === "buyer"
+                  role === "customer"
                     ? "border-orange-500 bg-orange-500/10"
                     : "border-[#302824] bg-[#100D0B] hover:border-[#57443A]"
                 }`}
@@ -140,13 +136,11 @@ export default function SignUpPage() {
                 <ShoppingBag
                   size={24}
                   className={`mx-auto mb-2 ${
-                    role === "buyer"
-                      ? "text-orange-500"
-                      : "text-[#A8A29E]"
+                    role === "customer" ? "text-orange-500" : "text-[#A8A29E]"
                   }`}
                 />
 
-                <p className="text-sm font-semibold">Buyer</p>
+                <p className="text-sm font-semibold">Customer</p>
 
                 <p className="mt-1 text-xs text-[#A8A29E]">
                   Order delicious pizza
@@ -166,24 +160,19 @@ export default function SignUpPage() {
                 <Store
                   size={24}
                   className={`mx-auto mb-2 ${
-                    role === "vendor"
-                      ? "text-orange-500"
-                      : "text-[#A8A29E]"
+                    role === "vendor" ? "text-orange-500" : "text-[#A8A29E]"
                   }`}
                 />
 
                 <p className="text-sm font-semibold">Vendor</p>
 
-                <p className="mt-1 text-xs text-[#A8A29E]">
-                  Sell your pizzas
-                </p>
+                <p className="mt-1 text-xs text-[#A8A29E]">Sell your pizzas</p>
               </button>
             </div>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSignUp} className="mt-5 space-y-4">
-
             {/* Name */}
             <div>
               <label className="mb-2 block text-sm font-medium">
@@ -218,9 +207,7 @@ export default function SignUpPage() {
 
             {/* Password */}
             <div>
-              <label className="mb-2 block text-sm font-medium">
-                Password
-              </label>
+              <label className="mb-2 block text-sm font-medium">Password</label>
 
               <div className="flex items-center rounded-lg border border-[#302824] bg-[#100D0B] px-4 focus-within:border-orange-500">
                 <input
@@ -237,11 +224,7 @@ export default function SignUpPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="text-[#78716C] transition hover:text-white"
                 >
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -264,9 +247,7 @@ export default function SignUpPage() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="text-[#78716C] transition hover:text-white"
                 >
                   {showConfirmPassword ? (
@@ -282,7 +263,7 @@ export default function SignUpPage() {
             <p className="text-xs text-[#A8A29E]">
               Registering as:{" "}
               <span className="font-medium text-orange-500">
-                {role === "buyer" ? "Buyer" : "Vendor"}
+                {role === "customer" ? "Customer" : "Vendor"}
               </span>
             </p>
 
@@ -326,4 +307,3 @@ export default function SignUpPage() {
     </main>
   );
 }
-
