@@ -2,7 +2,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,54 +21,35 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const initialOrders = [
-  {
-    id: "PH-2026-001",
-    name: "Pepperoni Pizza",
-    description: "Classic pepperoni with mozzarella cheese",
-    image:
-      "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400",
-    date: "Nov 16, 2026",
-    quantity: 2,
-    price: 24.99,
-    status: "Delivered",
-    address: "Dhaka, Bangladesh",
-  },
-  {
-    id: "PH-2026-002",
-    name: "Margherita Pizza",
-    description: "Fresh mozzarella, tomato and basil",
-    image:
-      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400",
-    date: "Nov 14, 2026",
-    quantity: 1,
-    price: 12.99,
-    status: "Processing",
-    address: "Dhaka, Bangladesh",
-  },
-  {
-    id: "PH-2026-003",
-    name: "BBQ Chicken Pizza",
-    description: "Smoky BBQ chicken with fresh toppings",
-    image:
-      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400",
-    date: "Nov 12, 2026",
-    quantity: 1,
-    price: 16.99,
-    status: "Pending",
-    address: "Dhaka, Bangladesh",
-  },
+interface Order {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  date: string;
+  quantity: number;
+  price: number;
+  status: string;
+  address: string;
+}
+
+const filters = [
+  "All Orders",
+  "Pending",
+  "Processing",
+  "Rejected",
+  "Delivered",
+  "Cancelled",
 ];
 
-const filters = ["All Orders", "Pending", "Processing", "Delivered", "Cancelled"];
-
 function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    Delivered: "bg-green-500/10 text-green-400 border-green-500/20",
-    Processing: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    Pending: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-    Cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
-  };
+const styles: Record<string, string> = {
+  Delivered: "bg-green-500/10 text-green-400 border-green-500/20",
+  Processing: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  Pending: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  Rejected: "bg-red-500/10 text-red-400 border-red-500/20",
+  Cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
+};
 
   return (
     <span
@@ -82,10 +64,80 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function CustomerOrdersPage() {
-  const [orders, setOrders] = useState(initialOrders);
+ const { data: session, isPending } = authClient.useSession();
+
+const [orders, setOrders] = useState<Order[]>([]);
+const [loading, setLoading] = useState(true);
+
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+
+
+
+  useEffect(() => {
+  const fetchOrders = async () => {
+    if (!session?.user?.email) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/orders/customer/${session.user.email}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch orders");
+      }
+
+      const data = await response.json();
+
+      const formattedOrders: Order[] = data.map((order: {
+        _id: string;
+        itemName: string;
+        itemImage: string;
+        createdAt: string;
+        quantity: number;
+        totalPrice: number;
+        status: string;
+        deliveryAddress: string;
+        message?: string;
+      }) => ({
+        id: order._id,
+        name: order.itemName,
+        description: order.message || "Pizza order",
+        image: order.itemImage,
+        date: new Date(order.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
+        quantity: order.quantity,
+        price: order.totalPrice,
+        status:
+          order.status === "accepted"
+            ? "Processing"
+            : order.status === "rejected"
+              ? "Rejected"
+              : order.status === "cancelled"
+                ? "Cancelled"
+                : "Pending",
+        address: order.deliveryAddress,
+      }));
+
+      setOrders(formattedOrders);
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchOrders();
+}, [session?.user?.email]);
+
+
 
   const filteredOrders = orders.filter((order) => {
     const matchesFilter =
@@ -117,6 +169,17 @@ export default function CustomerOrdersPage() {
 
     return orders.filter((order) => order.status === status).length;
   };
+
+  if (loading || isPending) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#100D0B] text-white">
+      <div className="text-center">
+        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-orange-500/20 border-t-orange-500" />
+        <p className="text-sm text-[#A8A29E]">Loading your orders...</p>
+      </div>
+    </main>
+  );
+}
 
   return (
     <main className="min-h-screen bg-[#100D0B] text-white">
