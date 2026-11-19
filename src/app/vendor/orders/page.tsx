@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 import {
   Search,
   Package,
@@ -14,8 +15,8 @@ import {
   ShoppingBag,
   MessageSquare,
   ArrowRight,
-  Filter,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Order {
   id: string;
@@ -32,100 +33,102 @@ interface Order {
   status: "pending" | "accepted" | "rejected";
 }
 
-const initialOrders: Order[] = [
-  {
-    id: "ORD-1001",
-    customerName: "Rahim Ahmed",
-    customerEmail: "rahim@example.com",
-    customerPhone: "+880 1712-345678",
-    itemName: "Pepperoni Pizza",
-    quantity: 2,
-    price: 24,
-    orderDate: "Nov 19, 2026",
-    deliveryDate: "Nov 20, 2026",
-    deliveryAddress: "House 12, Road 5, Dhanmondi, Dhaka",
-    message: "Please make the pizza extra spicy.",
-    status: "pending",
-  },
-  {
-    id: "ORD-1002",
-    customerName: "Sadia Islam",
-    customerEmail: "sadia@example.com",
-    customerPhone: "+880 1812-456789",
-    itemName: "Margherita Pizza",
-    quantity: 1,
-    price: 15,
-    orderDate: "Nov 18, 2026",
-    deliveryDate: "Nov 19, 2026",
-    deliveryAddress: "Mirpur 10, Dhaka",
-    message: "Please deliver before 7 PM.",
-    status: "accepted",
-  },
-  {
-    id: "ORD-1003",
-    customerName: "Tanvir Hasan",
-    customerEmail: "tanvir@example.com",
-    customerPhone: "+880 1912-567890",
-    itemName: "BBQ Chicken Pizza",
-    quantity: 3,
-    price: 36,
-    orderDate: "Nov 18, 2026",
-    deliveryDate: "Nov 21, 2026",
-    deliveryAddress: "Uttara Sector 7, Dhaka",
-    message: "No onions please.",
-    status: "pending",
-  },
-  {
-    id: "ORD-1004",
-    customerName: "Nusrat Jahan",
-    customerEmail: "nusrat@example.com",
-    customerPhone: "+880 1612-678901",
-    itemName: "Cheese Burst Pizza",
-    quantity: 1,
-    price: 18,
-    orderDate: "Nov 17, 2026",
-    deliveryDate: "Nov 18, 2026",
-    deliveryAddress: "Banani, Dhaka",
-    message: "Extra cheese would be great!",
-    status: "rejected",
-  },
-  {
-    id: "ORD-1005",
-    customerName: "Mehedi Hasan",
-    customerEmail: "mehedi@example.com",
-    customerPhone: "+880 1512-789012",
-    itemName: "Chicken Supreme Pizza",
-    quantity: 2,
-    price: 30,
-    orderDate: "Nov 17, 2026",
-    deliveryDate: "Nov 20, 2026",
-    deliveryAddress: "Mohammadpur, Dhaka",
-    message: "Call me when the order is ready.",
-    status: "accepted",
-  },
-  {
-    id: "ORD-1006",
-    customerName: "Ayesha Rahman",
-    customerEmail: "ayesha@example.com",
-    customerPhone: "+880 1312-890123",
-    itemName: "Veggie Delight Pizza",
-    quantity: 1,
-    price: 16,
-    orderDate: "Nov 16, 2026",
-    deliveryDate: "Nov 19, 2026",
-    deliveryAddress: "Gulshan 2, Dhaka",
-    message: "Less spicy please.",
-    status: "pending",
-  },
-];
-
 export default function VendorOrdersPage() {
-  const [orders, setOrders] = useState(initialOrders);
+  const { data: session, isPending } = authClient.useSession();
+
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
+  // Fetch Vendor Orders
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (isPending) return;
+
+      if (!session?.user?.email) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        const response = await fetch(
+          `http://localhost:5000/orders/vendor/${encodeURIComponent(
+            session.user.email
+          )}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch vendor orders");
+        }
+
+        const data = await response.json();
+
+        const formattedOrders: Order[] = data.map(
+          (order: {
+            _id: string;
+            customerName: string;
+            customerEmail: string;
+            itemName: string;
+            quantity: number;
+            totalPrice: number;
+            createdAt: string;
+            deliveryDate: string;
+            deliveryAddress: string;
+            message?: string;
+            status: "pending" | "accepted" | "rejected";
+          }) => ({
+            id: order._id,
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            customerPhone: "N/A",
+            itemName: order.itemName,
+            quantity: order.quantity,
+            price: order.totalPrice,
+
+            orderDate: new Date(order.createdAt).toLocaleDateString(
+              "en-US",
+              {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              }
+            ),
+
+            deliveryDate: new Date(order.deliveryDate).toLocaleDateString(
+              "en-US",
+              {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              }
+            ),
+
+            deliveryAddress: order.deliveryAddress,
+            message: order.message || "",
+            status: order.status,
+          })
+        );
+
+        setOrders(formattedOrders);
+      } catch (error) {
+        console.error("Failed to fetch vendor orders:", error);
+        toast.error("Failed to load customer orders");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [session?.user?.email, isPending]);
+
+  // Search and Filter
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
       order.customerName.toLowerCase().includes(search.toLowerCase()) ||
@@ -138,6 +141,7 @@ export default function VendorOrdersPage() {
     return matchesSearch && matchesFilter;
   });
 
+  // Statistics
   const pendingCount = orders.filter(
     (order) => order.status === "pending"
   ).length;
@@ -150,21 +154,55 @@ export default function VendorOrdersPage() {
     (order) => order.status === "rejected"
   ).length;
 
-  const handleStatusChange = (
+  // Update Order Status
+  const handleStatusChange = async (
     orderId: string,
     status: "accepted" | "rejected"
   ) => {
-    setOrders((previousOrders) =>
-      previousOrders.map((order) =>
-        order.id === orderId && order.status === "pending"
-          ? { ...order, status }
-          : order
-      )
-    );
+    if (!session?.user?.email || updating) return;
 
-    setSelectedOrder(null);
+    try {
+      setUpdating(true);
+
+      const response = await fetch(
+        `http://localhost:5000/orders/${orderId}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            vendorEmail: session.user.email,
+            status,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update order");
+      }
+
+      setOrders((previousOrders) =>
+        previousOrders.map((order) =>
+          order.id === orderId ? { ...order, status } : order
+        )
+      );
+
+      setSelectedOrder(null);
+
+      toast.success(`Order ${status} successfully!`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong"
+      );
+    } finally {
+      setUpdating(false);
+    }
   };
 
+  // Status Style
   const statusStyle = (status: Order["status"]) => {
     if (status === "accepted") {
       return "bg-green-500/10 text-green-400 border-green-500/20";
@@ -177,11 +215,28 @@ export default function VendorOrdersPage() {
     return "bg-orange-500/10 text-orange-400 border-orange-500/20";
   };
 
+  // Status Icon
   const statusIcon = (status: Order["status"]) => {
     if (status === "accepted") return <CheckCircle2 size={14} />;
     if (status === "rejected") return <XCircle size={14} />;
+
     return <Clock size={14} />;
   };
+
+  // Loading
+  if (loading || isPending) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-orange-500/20 border-t-orange-500" />
+
+          <p className="text-sm text-[#A8A29E]">
+            Loading customer orders...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10">
@@ -211,7 +266,6 @@ export default function VendorOrdersPage() {
         <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#A8A29E]">Total Orders</p>
-
             <ShoppingBag size={18} className="text-orange-400" />
           </div>
 
@@ -223,7 +277,6 @@ export default function VendorOrdersPage() {
         <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#A8A29E]">Pending</p>
-
             <Clock size={18} className="text-orange-400" />
           </div>
 
@@ -235,7 +288,6 @@ export default function VendorOrdersPage() {
         <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#A8A29E]">Accepted</p>
-
             <CheckCircle2 size={18} className="text-green-400" />
           </div>
 
@@ -247,7 +299,6 @@ export default function VendorOrdersPage() {
         <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#A8A29E]">Rejected</p>
-
             <XCircle size={18} className="text-red-400" />
           </div>
 
@@ -260,7 +311,6 @@ export default function VendorOrdersPage() {
       {/* Search and Filters */}
       <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          {/* Search */}
           <div className="relative w-full lg:max-w-sm">
             <Search
               size={18}
@@ -276,7 +326,6 @@ export default function VendorOrdersPage() {
             />
           </div>
 
-          {/* Filters */}
           <div className="flex gap-2 overflow-x-auto">
             {[
               { label: "All Orders", value: "all" },
@@ -312,10 +361,7 @@ export default function VendorOrdersPage() {
               <div className="flex flex-col gap-3 border-b border-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10">
-                    <ShoppingBag
-                      size={20}
-                      className="text-orange-400"
-                    />
+                    <ShoppingBag size={20} className="text-orange-400" />
                   </div>
 
                   <div>
@@ -388,7 +434,7 @@ export default function VendorOrdersPage() {
 
                     <div className="text-right">
                       <p className="text-lg font-bold text-orange-400">
-                        ${order.price}
+                        ৳{order.price}
                       </p>
 
                       <p className="text-xs text-[#78716C]">
@@ -462,7 +508,8 @@ export default function VendorOrdersPage() {
                       onClick={() =>
                         handleStatusChange(order.id, "rejected")
                       }
-                      className="flex items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400 transition hover:bg-red-500/20"
+                      disabled={updating}
+                      className="flex items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
                     >
                       <XCircle size={16} />
                       Reject
@@ -472,7 +519,8 @@ export default function VendorOrdersPage() {
                       onClick={() =>
                         handleStatusChange(order.id, "accepted")
                       }
-                      className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600"
+                      disabled={updating}
+                      className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
                     >
                       <CheckCircle2 size={16} />
                       Accept Order
@@ -487,7 +535,6 @@ export default function VendorOrdersPage() {
             </div>
           ))
         ) : (
-          /* Empty State */
           <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] px-5 py-16 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.04]">
               <Package size={28} className="text-[#78716C]" />
@@ -531,7 +578,7 @@ export default function VendorOrdersPage() {
               <div className="rounded-xl bg-[#100D0B] p-4">
                 <p className="text-xs text-[#78716C]">Order ID</p>
 
-                <p className="mt-1 font-semibold text-white">
+                <p className="mt-1 break-all font-semibold text-white">
                   {selectedOrder.id}
                 </p>
               </div>
@@ -541,6 +588,10 @@ export default function VendorOrdersPage() {
 
                 <p className="mt-1 font-medium text-white">
                   {selectedOrder.customerName}
+                </p>
+
+                <p className="mt-1 break-all text-sm text-[#A8A29E]">
+                  {selectedOrder.customerEmail}
                 </p>
               </div>
 
@@ -556,7 +607,7 @@ export default function VendorOrdersPage() {
                 <p className="text-sm text-[#78716C]">Total</p>
 
                 <p className="mt-1 text-xl font-bold text-orange-400">
-                  ${selectedOrder.price}
+                  ৳{selectedOrder.price}
                 </p>
               </div>
 
@@ -579,6 +630,19 @@ export default function VendorOrdersPage() {
                   {selectedOrder.message || "No message"}
                 </p>
               </div>
+
+              <div>
+                <p className="text-sm text-[#78716C]">Status</p>
+
+                <span
+                  className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium capitalize ${statusStyle(
+                    selectedOrder.status
+                  )}`}
+                >
+                  {statusIcon(selectedOrder.status)}
+                  {selectedOrder.status}
+                </span>
+              </div>
             </div>
 
             {selectedOrder.status === "pending" && (
@@ -587,7 +651,8 @@ export default function VendorOrdersPage() {
                   onClick={() =>
                     handleStatusChange(selectedOrder.id, "rejected")
                   }
-                  className="rounded-xl border border-red-500/20 bg-red-500/10 py-3 text-sm font-medium text-red-400 transition hover:bg-red-500/20"
+                  disabled={updating}
+                  className="rounded-xl border border-red-500/20 bg-red-500/10 py-3 text-sm font-medium text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
                 >
                   Reject Order
                 </button>
@@ -596,7 +661,8 @@ export default function VendorOrdersPage() {
                   onClick={() =>
                     handleStatusChange(selectedOrder.id, "accepted")
                   }
-                  className="rounded-xl bg-orange-500 py-3 text-sm font-medium text-white transition hover:bg-orange-600"
+                  disabled={updating}
+                  className="rounded-xl bg-orange-500 py-3 text-sm font-medium text-white transition hover:bg-orange-600 disabled:opacity-50"
                 >
                   Accept Order
                 </button>
