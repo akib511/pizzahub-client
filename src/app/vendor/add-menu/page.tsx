@@ -16,8 +16,21 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+
+
+interface ImgBBResponse {
+  success: boolean;
+  data: {
+    url: string;
+    display_url: string;
+  };
+}
 
 export default function AddMenuPage() {
+
+  const { data: session } = authClient.useSession();
+
   // Demo subscription data
   const subscriptionPlan = "free";
   const activeMenuItems = 2;
@@ -68,8 +81,35 @@ export default function AddMenuPage() {
     setImageFile(null);
   };
 
-  // Form submission
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+
+  const uploadImage = async (file: File): Promise<string> => {
+  const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("ImgBB API key is missing.");
+  }
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await fetch(
+    `https://api.imgbb.com/1/upload?key=${apiKey}`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const data: ImgBBResponse = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error("Image upload failed.");
+  }
+
+  return data.data.url;
+};
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
@@ -111,9 +151,33 @@ export default function AddMenuPage() {
 
     setLoading(true);
 
-    // Demo submission - backend integration will be added later
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const imageUrl = await uploadImage(imageFile);
+      const response = await fetch("http://localhost:5000/menu", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          vendorEmail: session?.user?.email,
+          description,
+          category,
+          price: Number(price),
+          location,
+          preparationTime: Number(preparationTime),
+          available,
+         image: imageUrl,
+          status: "pending",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
       setSuccess(true);
 
       setName("");
@@ -125,7 +189,13 @@ export default function AddMenuPage() {
       setAvailable(true);
       setImage("");
       setImageFile(null);
-    }, 1000);
+    } catch (err) { 
+      setError(
+        err instanceof Error ? err.message : "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -213,7 +283,7 @@ export default function AddMenuPage() {
       {success && (
         <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400">
           <CheckCircle2 size={20} />
-          Demo: Menu item submitted successfully! Status: Pending Approval.
+          Menu item submitted successfully! Status: Pending Approval.
         </div>
       )}
 

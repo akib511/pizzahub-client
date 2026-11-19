@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Plus,
@@ -14,88 +14,90 @@ import {
   Package,
   CheckCircle2,
   XCircle,
-  MoreVertical,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
-const initialItems = [
-  {
-    id: 1,
-    name: "Classic Pepperoni Pizza",
-    category: "Classic Pizza",
-    price: 18,
-    orders: 48,
-    status: "Active",
-    description: "Classic pizza topped with mozzarella and pepperoni.",
-    image:
-      "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=500",
-  },
-  {
-    id: 2,
-    name: "Chicken BBQ Pizza",
-    category: "Special Pizza",
-    price: 22,
-    orders: 36,
-    status: "Active",
-    description: "Delicious BBQ chicken pizza with special sauce.",
-    image:
-      "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=500",
-  },
-  {
-    id: 3,
-    name: "Margherita Pizza",
-    category: "Classic Pizza",
-    price: 15,
-    orders: 29,
-    status: "Active",
-    description: "Fresh mozzarella, tomato sauce and basil.",
-    image:
-      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500",
-  },
-  {
-    id: 4,
-    name: "Cheese Burst Pizza",
-    category: "Special Pizza",
-    price: 25,
-    orders: 21,
-    status: "Inactive",
-    description: "Extra cheesy pizza with a delicious cheese-filled crust.",
-    image:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500",
-  },
-  {
-    id: 5,
-    name: "Veggie Supreme Pizza",
-    category: "Vegetarian",
-    price: 17,
-    orders: 18,
-    status: "Active",
-    description: "Fresh vegetables with mozzarella and special herbs.",
-    image:
-      "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=500",
-  },
-  {
-    id: 6,
-    name: "Chicken Sausage Pizza",
-    category: "Special Pizza",
-    price: 20,
-    orders: 14,
-    status: "Inactive",
-    description: "Tasty chicken sausage with cheese and tomato sauce.",
-    image:
-      "https://images.unsplash.com/photo-1594007654729-407eedc4be65?w=500",
-  },
-];
+
+interface MenuItem {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  location: string;
+  image: string;
+  available: boolean;
+  status: "Active" | "Inactive" | "Pending";
+  orders: number;
+  id: string;
+  vendorEmail: string;
+}
 
 export default function VendorMenuPage() {
-  const [items, setItems] = useState(initialItems);
+  const { data: session, isPending } = authClient.useSession();
+
+  const [items, setItems] = useState<MenuItem[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
-  const [showDeleteId, setShowDeleteId] = useState<number | null>(null);
+  const [showDeleteId, setShowDeleteId] = useState<string | null>(null);
+  const [loadingItems, setLoadingItems] = useState(true);
+  const [error, setError] = useState("");
 
+  // Load vendor menu items
+  useEffect(() => {
+    const vendorEmail = session?.user?.email;
+
+    if (!vendorEmail) {
+      if (!isPending) {
+        setLoadingItems(false);
+      }
+      return;
+    }
+
+    const loadMenuItems = async () => {
+      try {
+        setLoadingItems(true);
+        setError("");
+
+        const response = await fetch("http://localhost:5000/menu");
+
+        if (!response.ok) {
+          throw new Error("Failed to load menu items");
+        }
+
+        const data : MenuItem[]  = await response.json();
+
+        const vendorItems = data
+          .filter((item) => item.vendorEmail === vendorEmail)
+          .map((item) => ({
+            ...item,
+            id: String(item._id),
+            status:
+              item.status === "approved"
+                ? item.available
+                  ? "Active"
+                  : "Inactive"
+                : "Pending",
+            orders: item.orders || 0,
+          }));
+
+        setItems(vendorItems);
+      } catch (error) {
+        console.error("Menu loading error:", error);
+        setError("Failed to load menu items. Please try again.");
+      } finally {
+        setLoadingItems(false);
+      }
+    };
+
+    loadMenuItems();
+  }, [session?.user?.email, isPending]);
+
+  // Search and filter
   const filteredItems = items.filter((item) => {
     const matchesSearch = item.name
-      .toLowerCase()
+      ?.toLowerCase()
       .includes(search.toLowerCase());
 
     const matchesCategory =
@@ -115,7 +117,8 @@ export default function VendorMenuPage() {
     (item) => item.status === "Inactive"
   ).length;
 
-  const toggleStatus = (id: number) => {
+  // Temporary frontend status change
+  const toggleStatus = (id: string) => {
     setItems((previousItems) =>
       previousItems.map((item) =>
         item.id === id
@@ -129,7 +132,8 @@ export default function VendorMenuPage() {
     );
   };
 
-  const deleteItem = (id: number) => {
+  // Temporary frontend delete
+  const deleteItem = (id: string) => {
     setItems((previousItems) =>
       previousItems.filter((item) => item.id !== id)
     );
@@ -137,12 +141,35 @@ export default function VendorMenuPage() {
     setShowDeleteId(null);
   };
 
+  if (isPending || loadingItems) {
+    return (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <p className="text-sm text-[#A8A29E]">
+          Loading menu items...
+        </p>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-10 text-center">
+        <h2 className="text-xl font-bold">Please Login</h2>
+        <p className="mt-2 text-sm text-[#A8A29E]">
+          Login to manage your menu items.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-7">
       {/* Heading */}
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm text-orange-500">Restaurant Management</p>
+          <p className="text-sm text-orange-500">
+            Restaurant Management
+          </p>
 
           <h1 className="mt-1 text-2xl font-bold sm:text-3xl">
             My Menu Items
@@ -170,7 +197,9 @@ export default function VendorMenuPage() {
             <Package className="text-orange-500" size={21} />
           </div>
 
-          <h2 className="mt-3 text-3xl font-bold">{items.length}</h2>
+          <h2 className="mt-3 text-3xl font-bold">
+            {items.length}
+          </h2>
 
           <p className="mt-1 text-xs text-[#78716C]">
             All menu items
@@ -183,7 +212,9 @@ export default function VendorMenuPage() {
             <CheckCircle2 className="text-green-400" size={21} />
           </div>
 
-          <h2 className="mt-3 text-3xl font-bold">{activeItems}</h2>
+          <h2 className="mt-3 text-3xl font-bold">
+            {activeItems}
+          </h2>
 
           <p className="mt-1 text-xs text-[#78716C]">
             Currently available
@@ -196,7 +227,9 @@ export default function VendorMenuPage() {
             <XCircle className="text-red-400" size={21} />
           </div>
 
-          <h2 className="mt-3 text-3xl font-bold">{inactiveItems}</h2>
+          <h2 className="mt-3 text-3xl font-bold">
+            {inactiveItems}
+          </h2>
 
           <p className="mt-1 text-xs text-[#78716C]">
             Currently unavailable
@@ -267,6 +300,7 @@ export default function VendorMenuPage() {
               <option value="All">All Status</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
+              <option value="Pending">Pending Approval</option>
             </select>
           </div>
         </div>
@@ -276,11 +310,19 @@ export default function VendorMenuPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold">All Menu Items</h2>
+
           <p className="mt-1 text-xs text-[#78716C]">
             Showing {filteredItems.length} of {items.length} items
           </p>
         </div>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+          {error}
+        </div>
+      )}
 
       {/* Menu Cards */}
       {filteredItems.length > 0 ? (
@@ -293,7 +335,7 @@ export default function VendorMenuPage() {
               {/* Image */}
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src={item.image}
+                  src={item.image || ""}
                   alt={item.name}
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                 />
@@ -302,18 +344,13 @@ export default function VendorMenuPage() {
                   className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-xs font-semibold ${
                     item.status === "Active"
                       ? "bg-green-500/15 text-green-400"
-                      : "bg-red-500/15 text-red-400"
+                      : item.status === "Pending"
+                        ? "bg-orange-500/15 text-orange-400"
+                        : "bg-red-500/15 text-red-400"
                   }`}
                 >
                   {item.status}
                 </span>
-
-                <button
-                  className="absolute right-3 top-3 rounded-lg bg-black/60 p-2 text-white backdrop-blur transition hover:bg-black/80"
-                  title="More options"
-                >
-                  <MoreVertical size={18} />
-                </button>
               </div>
 
               {/* Content */}
@@ -345,15 +382,16 @@ export default function VendorMenuPage() {
                   </div>
 
                   <span className="text-xs text-[#78716C]">
-                    Menu Item #{item.id}
+                    Menu Item #{item.id.slice(-5)}
                   </span>
                 </div>
 
                 {/* Actions */}
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <button
+                    disabled={item.status === "Pending"}
                     onClick={() => toggleStatus(item.id)}
-                    className={`flex items-center justify-center gap-2 rounded-lg border py-2.5 text-xs font-semibold transition ${
+                    className={`flex items-center justify-center gap-2 rounded-lg border py-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
                       item.status === "Active"
                         ? "border-red-500/20 text-red-400 hover:bg-red-500/10"
                         : "border-green-500/20 text-green-400 hover:bg-green-500/10"
@@ -422,7 +460,9 @@ export default function VendorMenuPage() {
           </h3>
 
           <p className="mt-2 text-sm text-[#A8A29E]">
-            Try changing your search or filters.
+            {error
+              ? "Unable to load menu items."
+              : "Try changing your search or filters."}
           </p>
 
           <button
