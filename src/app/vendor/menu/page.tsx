@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import EditMenuDialog, {
+  type MenuItem,
+} from "./components/EditMenuDialog";
+
 import {
   Plus,
   Search,
   SlidersHorizontal,
-  Pencil,
   Trash2,
   Eye,
   EyeOff,
@@ -14,11 +17,15 @@ import {
   Package,
   CheckCircle2,
   XCircle,
+  AlertCircle,
+  X,
+  Loader2,
+  Pencil,
 } from "lucide-react";
+
 import { authClient } from "@/lib/auth-client";
 
-
-interface MenuItem {
+interface ApiMenuItem {
   _id: string;
   name: string;
   description: string;
@@ -27,10 +34,10 @@ interface MenuItem {
   location: string;
   image: string;
   available: boolean;
-  status: "Active" | "Inactive" | "Pending";
-  orders: number;
-  id: string;
+  status: string;
+  orders?: number;
   vendorEmail: string;
+  preparationTime?: number;
 }
 
 export default function VendorMenuPage() {
@@ -40,9 +47,30 @@ export default function VendorMenuPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
+
   const [showDeleteId, setShowDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+
   const [loadingItems, setLoadingItems] = useState(true);
   const [error, setError] = useState("");
+
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  // Toast auto hide
+  useEffect(() => {
+    if (!toast) return;
+
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   // Load vendor menu items
   useEffect(() => {
@@ -66,20 +94,28 @@ export default function VendorMenuPage() {
           throw new Error("Failed to load menu items");
         }
 
-        const data : MenuItem[]  = await response.json();
+        const data: ApiMenuItem[] = await response.json();
 
-        const vendorItems = data
+        const vendorItems: MenuItem[] = data
           .filter((item) => item.vendorEmail === vendorEmail)
           .map((item) => ({
-            ...item,
             id: String(item._id),
+            name: item.name,
+            description: item.description,
+            category: item.category,
+            price: item.price,
+            location: item.location,
+            image: item.image,
+            available: item.available,
+            vendorEmail: item.vendorEmail,
+            preparationTime: item.preparationTime ?? 0,
             status:
               item.status === "approved"
                 ? item.available
                   ? "Active"
                   : "Inactive"
                 : "Pending",
-            orders: item.orders || 0,
+            orders: item.orders ?? 0,
           }));
 
         setItems(vendorItems);
@@ -103,18 +139,17 @@ export default function VendorMenuPage() {
     const matchesCategory =
       category === "All" || item.category === category;
 
-    const matchesStatus =
-      status === "All" || item.status === status;
+    const matchesStatus = status === "All" || item.status === status;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
   const activeItems = items.filter(
-    (item) => item.status === "Active"
+    (item) => item.status === "Active",
   ).length;
 
   const inactiveItems = items.filter(
-    (item) => item.status === "Inactive"
+    (item) => item.status === "Inactive",
   ).length;
 
   // Temporary frontend status change
@@ -124,21 +159,73 @@ export default function VendorMenuPage() {
         item.id === id
           ? {
               ...item,
-              status:
-                item.status === "Active" ? "Inactive" : "Active",
+              status: item.status === "Active" ? "Inactive" : "Active",
+              available: !item.available,
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
-  // Temporary frontend delete
-  const deleteItem = (id: string) => {
+  // Update item after editing
+  const handleUpdateItem = (updatedItem: MenuItem) => {
     setItems((previousItems) =>
-      previousItems.filter((item) => item.id !== id)
+      previousItems.map((item) =>
+        item.id === updatedItem.id ? updatedItem : item,
+      ),
     );
 
-    setShowDeleteId(null);
+    setEditingItem(null);
+
+    setToast({
+      message: "Menu item updated successfully!",
+      type: "success",
+    });
+  };
+
+  // Delete menu item
+  const deleteItem = async () => {
+    if (!showDeleteId) return;
+
+    try {
+      setDeleting(true);
+
+      const response = await fetch(
+        `http://localhost:5000/menu/${showDeleteId}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete menu item");
+      }
+
+      setItems((previousItems) =>
+        previousItems.filter((item) => item.id !== showDeleteId),
+      );
+
+      setShowDeleteId(null);
+
+      setToast({
+        message: "Menu item deleted successfully!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Delete error:", error);
+
+      setToast({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong!",
+        type: "error",
+      });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (isPending || loadingItems) {
@@ -155,6 +242,7 @@ export default function VendorMenuPage() {
     return (
       <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-10 text-center">
         <h2 className="text-xl font-bold">Please Login</h2>
+
         <p className="mt-2 text-sm text-[#A8A29E]">
           Login to manage your menu items.
         </p>
@@ -163,7 +251,36 @@ export default function VendorMenuPage() {
   }
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-7 text-white">
+
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed right-4 top-5 z-[100] flex max-w-sm items-center gap-3 rounded-xl border p-4 shadow-2xl ${
+            toast.type === "success"
+              ? "border-green-500/30 bg-[#14251B] text-green-400"
+              : "border-red-500/30 bg-[#291616] text-red-400"
+          }`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircle2 size={20} />
+          ) : (
+            <AlertCircle size={20} />
+          )}
+
+          <p className="flex-1 text-sm font-medium">
+            {toast.message}
+          </p>
+
+          <button
+            onClick={() => setToast(null)}
+            className="text-[#A8A29E] hover:text-white"
+          >
+            <X size={17} />
+          </button>
+        </div>
+      )}
+
       {/* Heading */}
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
@@ -191,6 +308,7 @@ export default function VendorMenuPage() {
 
       {/* Statistics */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
         <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#A8A29E]">Total Items</p>
@@ -258,6 +376,7 @@ export default function VendorMenuPage() {
       {/* Search and Filters */}
       <section className="rounded-xl border border-[#302824] bg-[#1C1715] p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row">
+
           <div className="relative flex-1">
             <Search
               size={19}
@@ -274,6 +393,7 @@ export default function VendorMenuPage() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
+
             <div className="relative flex-1 sm:w-48">
               <SlidersHorizontal
                 size={16}
@@ -286,9 +406,18 @@ export default function VendorMenuPage() {
                 className="w-full appearance-none rounded-lg border border-[#302824] bg-[#100D0B] py-3 pl-9 pr-3 text-sm outline-none focus:border-orange-500"
               >
                 <option value="All">All Categories</option>
-                <option value="Classic Pizza">Classic Pizza</option>
-                <option value="Special Pizza">Special Pizza</option>
-                <option value="Vegetarian">Vegetarian</option>
+                <option value="Classic Pizzas">Classic Pizzas</option>
+                <option value="Vegetarian Pizzas">Vegetarian Pizzas</option>
+                <option value="Meat Lovers">Meat Lovers</option>
+                <option value="Specialty / Gourmet Pizzas">
+                  Specialty / Gourmet Pizzas
+                </option>
+                <option value="Sides & Appetizers">
+                  Sides & Appetizers
+                </option>
+                <option value="Beverages & Desserts">
+                  Beverages & Desserts
+                </option>
               </select>
             </div>
 
@@ -367,7 +496,7 @@ export default function VendorMenuPage() {
                   </div>
 
                   <p className="shrink-0 text-lg font-bold text-orange-400">
-                    ${item.price}
+                    ৳{item.price}
                   </p>
                 </div>
 
@@ -387,11 +516,20 @@ export default function VendorMenuPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="mt-5 grid grid-cols-3 gap-2">
+
+                  <button
+                    onClick={() => setEditingItem(item)}
+                    className="flex items-center justify-center gap-1 rounded-lg border border-orange-500/20 py-2.5 text-xs font-semibold text-orange-400 transition hover:bg-orange-500/10"
+                  >
+                    <Pencil size={14} />
+                    Edit
+                  </button>
+
                   <button
                     disabled={item.status === "Pending"}
                     onClick={() => toggleStatus(item.id)}
-                    className={`flex items-center justify-center gap-2 rounded-lg border py-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                    className={`flex items-center justify-center gap-1 rounded-lg border py-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
                       item.status === "Active"
                         ? "border-red-500/20 text-red-400 hover:bg-red-500/10"
                         : "border-green-500/20 text-green-400 hover:bg-green-500/10"
@@ -399,55 +537,27 @@ export default function VendorMenuPage() {
                   >
                     {item.status === "Active" ? (
                       <>
-                        <EyeOff size={15} />
-                        Deactivate
+                        <EyeOff size={14} />
+                        Off
                       </>
                     ) : (
                       <>
-                        <Eye size={15} />
-                        Activate
+                        <Eye size={14} />
+                        On
                       </>
                     )}
                   </button>
 
                   <button
                     onClick={() => setShowDeleteId(item.id)}
-                    className="flex items-center justify-center gap-2 rounded-lg border border-[#302824] py-2.5 text-xs font-semibold text-[#A8A29E] transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+                    className="flex items-center justify-center gap-1 rounded-lg border border-[#302824] py-2.5 text-xs font-semibold text-[#A8A29E] transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
                   >
-                    <Trash2 size={15} />
+                    <Trash2 size={14} />
                     Delete
                   </button>
+
                 </div>
               </div>
-
-              {/* Delete Confirmation */}
-              {showDeleteId === item.id && (
-                <div className="border-t border-red-500/20 bg-red-500/5 p-4">
-                  <p className="text-sm font-medium">
-                    Delete this menu item?
-                  </p>
-
-                  <p className="mt-1 text-xs text-[#A8A29E]">
-                    This action cannot be undone.
-                  </p>
-
-                  <div className="mt-3 flex gap-2">
-                    <button
-                      onClick={() => deleteItem(item.id)}
-                      className="flex-1 rounded-lg bg-red-500 py-2 text-xs font-semibold hover:bg-red-600"
-                    >
-                      Confirm Delete
-                    </button>
-
-                    <button
-                      onClick={() => setShowDeleteId(null)}
-                      className="flex-1 rounded-lg border border-[#302824] py-2 text-xs font-semibold hover:bg-white/5"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </section>
@@ -475,6 +585,75 @@ export default function VendorMenuPage() {
           >
             Clear Filters
           </button>
+        </div>
+      )}
+
+      {/* Edit Dialog Component */}
+      {editingItem && (
+        <EditMenuDialog
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onUpdate={handleUpdateItem}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-[#302824] bg-[#1C1715] p-6 shadow-2xl">
+
+            <div className="flex items-center justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
+                <Trash2 size={23} />
+              </div>
+
+              <button
+                disabled={deleting}
+                onClick={() => setShowDeleteId(null)}
+                className="rounded-lg p-2 text-[#A8A29E] transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <h2 className="mt-5 text-xl font-bold">
+              Delete Menu Item?
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
+              Are you sure you want to delete this menu item? This action cannot
+              be undone and the item will be permanently removed.
+            </p>
+
+            <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row">
+              <button
+                disabled={deleting}
+                onClick={() => setShowDeleteId(null)}
+                className="flex-1 rounded-xl border border-[#302824] px-4 py-3 text-sm font-semibold text-[#A8A29E] transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                disabled={deleting}
+                onClick={deleteItem}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 size={17} className="animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={17} />
+                    Confirm Delete
+                  </>
+                )}
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
     </div>
