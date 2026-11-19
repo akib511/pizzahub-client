@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   UtensilsCrossed,
@@ -16,114 +16,131 @@ import {
   Tag,
   CalendarDays,
   AlertCircle,
+  type LucideIcon,
 } from "lucide-react";
 
-const menuData = [
-  {
-    id: 1,
-    name: "Pepperoni Feast",
-    category: "Classic Pizza",
-    vendor: "Bella Italia",
-    vendorEmail: "james.wilson@gmail.com",
-    price: 18.99,
-    status: "Pending",
-    availability: true,
-    location: "New York, USA",
-    submitted: "Nov 18, 2026",
-    image:
-      "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=800&q=80",
-    description:
-      "Loaded with premium pepperoni, mozzarella cheese and our signature tomato sauce on a crispy golden crust.",
-  },
-  {
-    id: 2,
-    name: "BBQ Chicken Pizza",
-    category: "Chicken Pizza",
-    vendor: "Urban Pizza",
-    vendorEmail: "michael.brown@gmail.com",
-    price: 21.5,
-    status: "Approved",
-    availability: true,
-    location: "Chicago, USA",
-    submitted: "Nov 17, 2026",
-    image:
-      "https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=800&q=80",
-    description:
-      "Smoky BBQ sauce, grilled chicken, red onions and melted mozzarella cheese.",
-  },
-  {
-    id: 3,
-    name: "Margherita Supreme",
-    category: "Vegetarian",
-    vendor: "The Food Corner",
-    vendorEmail: "sophia.johnson@gmail.com",
-    price: 15.99,
-    status: "Pending",
-    availability: true,
-    location: "Los Angeles, USA",
-    submitted: "Nov 17, 2026",
-    image:
-      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=800&q=80",
-    description:
-      "Fresh basil, mozzarella, juicy tomatoes and a drizzle of extra virgin olive oil.",
-  },
-  {
-    id: 4,
-    name: "Spicy Beef Delight",
-    category: "Special Pizza",
-    vendor: "Fire Crust",
-    vendorEmail: "david.miller@gmail.com",
-    price: 24.99,
-    status: "Rejected",
-    availability: false,
-    location: "Miami, USA",
-    submitted: "Nov 16, 2026",
-    image:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
-    description:
-      "Spicy beef, jalapeños, bell peppers and a rich blend of hot sauces.",
-  },
-  {
-    id: 5,
-    name: "Four Cheese Pizza",
-    category: "Classic Pizza",
-    vendor: "Slice House",
-    vendorEmail: "daniel.smith@gmail.com",
-    price: 19.99,
-    status: "Approved",
-    availability: true,
-    location: "Houston, USA",
-    submitted: "Nov 15, 2026",
-    image:
-      "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=800&q=80",
-    description:
-      "A delicious combination of mozzarella, cheddar, parmesan and blue cheese.",
-  },
-  {
-    id: 6,
-    name: "Veggie Garden",
-    category: "Vegetarian",
-    vendor: "Cheesy Bites",
-    vendorEmail: "robert.taylor@gmail.com",
-    price: 16.5,
-    status: "Pending",
-    availability: true,
-    location: "Dallas, USA",
-    submitted: "Nov 14, 2026",
-    image:
-      "https://images.unsplash.com/photo-1548369937-4759db6a6b3c?auto=format&fit=crop&w=800&q=80",
-    description:
-      "Fresh mushrooms, olives, onions, bell peppers and sweet corn with mozzarella.",
-  },
-];
+// Menu Item Type
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  image: string;
+  location: string;
+  vendor: string;
+  vendorEmail: string;
+  status: "Pending" | "Approved" | "Rejected";
+  submitted: string;
+  available: boolean;
+}
+
+// API Response Type
+interface ApiMenuItem {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  image: string;
+  location: string;
+  vendorName?: string;
+  vendorEmail: string;
+  status?: string;
+  available?: boolean;
+  createdAt?: string;
+}
+
+// Stat Card Props
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: LucideIcon;
+  color: "orange" | "green" | "blue" | "red";
+}
+
+// Detail Item Props
+interface DetailItemProps {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}
 
 export default function AdminMenuPage() {
-  const [items, setItems] = useState(menuData);
+  const [items, setItems] = useState<MenuItem[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Toast State
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "warning";
+  } | null>(null);
+
+  // Show Toast
+  const showToast = (
+    message: string,
+    type: "success" | "error" | "warning"
+  ) => {
+    setToast({ message, type });
+
+    setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  };
+
+  // Fetch Menu Items
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/menu");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch menu items");
+        }
+
+        const data: ApiMenuItem[] = await response.json();
+
+        const formattedItems: MenuItem[] = data.map((item) => ({
+          id: item._id,
+          name: item.name,
+          description: item.description,
+          category: item.category,
+          price: item.price,
+          image: item.image,
+          location: item.location,
+          vendor: item.vendorName || item.vendorEmail,
+          vendorEmail: item.vendorEmail,
+
+          status:
+            item.status?.toLowerCase() === "approved"
+              ? "Approved"
+              : item.status?.toLowerCase() === "rejected"
+                ? "Rejected"
+                : "Pending",
+
+          available: item.available ?? false,
+
+          submitted: item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString()
+            : "Recently",
+        }));
+
+        setItems(formattedItems);
+      } catch (error) {
+        console.error("Failed to fetch menu items:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenuItems();
+  }, []);
+
+  // Search and Filter
   const filteredItems = items.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -138,6 +155,7 @@ export default function AdminMenuPage() {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
+  // Statistics
   const pendingCount = items.filter(
     (item) => item.status === "Pending"
   ).length;
@@ -150,18 +168,103 @@ export default function AdminMenuPage() {
     (item) => item.status === "Rejected"
   ).length;
 
-  const updateStatus = (id: number, status: string) => {
-    setItems((previousItems) =>
-      previousItems.map((item) =>
-        item.id === id ? { ...item, status } : item
-      )
-    );
+  // Update Menu Status
+  const updateStatus = async (
+    id: string,
+    status: MenuItem["status"]
+  ) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/admin/menu/${id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: status.toLowerCase(),
+          }),
+        }
+      );
 
-    setSelectedItem(null);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update menu status");
+      }
+
+      const updatedStatus: MenuItem["status"] = status;
+
+      setItems((previousItems) =>
+        previousItems.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                status: updatedStatus,
+                available: data.available ?? false,
+              }
+            : item
+        )
+      );
+
+      setSelectedItem((previousItem) =>
+        previousItem?.id === id
+          ? {
+              ...previousItem,
+              status: updatedStatus,
+              available: data.available ?? false,
+            }
+          : previousItem
+      );
+
+      showToast(
+        data.limitReached
+          ? "Menu approved, but remains inactive. Vendor needs Premium."
+          : data.message,
+        data.limitReached ? "warning" : "success"
+      );
+
+      setSelectedItem(null);
+    } catch (error) {
+      console.error("Failed to update menu status:", error);
+
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong",
+        "error"
+      );
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <p className="text-sm text-[#A8A29E]">
+          Loading menu items...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7">
+
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed right-4 top-4 z-[100] max-w-sm rounded-xl border px-4 py-3 text-sm shadow-xl ${
+            toast.type === "success"
+              ? "border-green-500/20 bg-[#14251B] text-green-400"
+              : toast.type === "warning"
+                ? "border-orange-500/20 bg-[#271C10] text-orange-400"
+                : "border-red-500/20 bg-[#281414] text-red-400"
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
@@ -279,10 +382,18 @@ export default function AdminMenuPage() {
                 className="rounded-xl border border-white/[0.07] bg-[#0D0A09] px-3 py-2.5 text-sm text-white outline-none"
               >
                 <option value="All">All Categories</option>
-                <option value="Classic Pizza">Classic Pizza</option>
-                <option value="Chicken Pizza">Chicken Pizza</option>
-                <option value="Vegetarian">Vegetarian</option>
-                <option value="Special Pizza">Special Pizza</option>
+                <option value="Classic Pizzas">Classic Pizzas</option>
+                <option value="Vegetarian Pizzas">Vegetarian Pizzas</option>
+                <option value="Meat Lovers">Meat Lovers</option>
+                <option value="Specialty / Gourmet Pizzas">
+                  Specialty / Gourmet Pizzas
+                </option>
+                <option value="Sides & Appetizers">
+                  Sides & Appetizers
+                </option>
+                <option value="Beverages & Desserts">
+                  Beverages & Desserts
+                </option>
               </select>
             </div>
           </div>
@@ -300,6 +411,7 @@ export default function AdminMenuPage() {
                 }`}
               >
                 {status}
+
                 {status === "Pending" && pendingCount > 0 && (
                   <span className="ml-2 rounded-full bg-white/15 px-1.5 py-0.5">
                     {pendingCount}
@@ -311,7 +423,7 @@ export default function AdminMenuPage() {
         </div>
 
         {/* Menu Grid */}
-        <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3 sm:p-5">
+        <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">
           {filteredItems.map((item) => (
             <div
               key={item.id}
@@ -331,8 +443,21 @@ export default function AdminMenuPage() {
                   <MenuStatus status={item.status} />
                 </div>
 
+                {/* Availability Status */}
+                {item.status === "Approved" && (
+                  <span
+                    className={`absolute left-3 top-12 rounded-md px-2 py-1 text-[10px] font-medium ${
+                      item.available
+                        ? "bg-green-500/15 text-green-400"
+                        : "bg-white/10 text-white/70"
+                    }`}
+                  >
+                    {item.available ? "Active" : "Inactive"}
+                  </span>
+                )}
+
                 <div className="absolute right-3 top-3 rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-xs font-medium text-white backdrop-blur-md">
-                  ${item.price.toFixed(2)}
+                  ৳{item.price.toFixed(2)}
                 </div>
 
                 <div className="absolute bottom-3 left-3 right-3">
@@ -419,6 +544,7 @@ export default function AdminMenuPage() {
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#181310] shadow-2xl">
+
             {/* Image */}
             <div className="relative h-52">
               <img
@@ -437,7 +563,22 @@ export default function AdminMenuPage() {
               </button>
 
               <div className="absolute bottom-4 left-4 right-4">
-                <MenuStatus status={selectedItem.status} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <MenuStatus status={selectedItem.status} />
+
+                  {/* Availability Status */}
+                  {selectedItem.status === "Approved" && (
+                    <span
+                      className={`inline-flex rounded-lg border px-2.5 py-1 text-[10px] font-medium ${
+                        selectedItem.available
+                          ? "border-green-500/15 bg-green-500/10 text-green-400"
+                          : "border-white/10 bg-white/5 text-white/60"
+                      }`}
+                    >
+                      {selectedItem.available ? "Active" : "Inactive"}
+                    </span>
+                  )}
+                </div>
 
                 <h2 className="mt-2 text-2xl font-bold text-white">
                   {selectedItem.name}
@@ -452,7 +593,9 @@ export default function AdminMenuPage() {
             {/* Details */}
             <div className="space-y-4 p-5">
               <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4">
-                <p className="text-xs text-[#78716C]">Description</p>
+                <p className="text-xs text-[#78716C]">
+                  Description
+                </p>
 
                 <p className="mt-2 text-sm leading-6 text-[#D6D3D1]">
                   {selectedItem.description}
@@ -463,7 +606,7 @@ export default function AdminMenuPage() {
                 <DetailItem
                   icon={DollarSign}
                   label="Price"
-                  value={`$${selectedItem.price.toFixed(2)}`}
+                  value={`৳${selectedItem.price.toFixed(2)}`}
                 />
 
                 <DetailItem
@@ -550,9 +693,14 @@ export default function AdminMenuPage() {
   );
 }
 
-/* Stats Card */
-function StatCard({ title, value, icon: Icon, color }: any) {
-  const styles: any = {
+// Statistics Card
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  color,
+}: StatCardProps) {
+  const styles: Record<StatCardProps["color"], string> = {
     orange: "bg-orange-500/10 text-orange-400",
     green: "bg-green-500/10 text-green-400",
     blue: "bg-blue-500/10 text-blue-400",
@@ -561,11 +709,15 @@ function StatCard({ title, value, icon: Icon, color }: any) {
 
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-[#15110F] p-4 transition hover:border-white/[0.1] sm:p-5">
-      <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${styles[color]}`}>
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-xl ${styles[color]}`}
+      >
         <Icon size={19} />
       </div>
 
-      <p className="mt-4 text-xs text-[#A8A29E]">{title}</p>
+      <p className="mt-4 text-xs text-[#A8A29E]">
+        {title}
+      </p>
 
       <h3 className="mt-1 text-2xl font-bold text-white">
         {value.toLocaleString()}
@@ -574,9 +726,9 @@ function StatCard({ title, value, icon: Icon, color }: any) {
   );
 }
 
-/* Status Badge */
-function MenuStatus({ status }: { status: string }) {
-  const styles: any = {
+// Status Badge
+function MenuStatus({ status }: { status: MenuItem["status"] }) {
+  const styles: Record<MenuItem["status"], string> = {
     Approved: "bg-green-500/10 text-green-400 border-green-500/15",
     Pending: "bg-orange-500/10 text-orange-400 border-orange-500/15",
     Rejected: "bg-red-500/10 text-red-400 border-red-500/15",
@@ -591,14 +743,16 @@ function MenuStatus({ status }: { status: string }) {
   );
 }
 
-/* Detail Item */
-function DetailItem({ icon: Icon, label, value }: any) {
+// Detail Item
+function DetailItem({ icon: Icon, label, value }: DetailItemProps) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
       <Icon size={16} className="shrink-0 text-orange-400" />
 
       <div className="min-w-0">
-        <p className="text-[10px] text-[#78716C]">{label}</p>
+        <p className="text-[10px] text-[#78716C]">
+          {label}
+        </p>
 
         <p className="mt-1 truncate text-xs font-medium text-white">
           {value}
@@ -608,7 +762,7 @@ function DetailItem({ icon: Icon, label, value }: any) {
   );
 }
 
-/* Empty State */
+// Empty State
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-14">

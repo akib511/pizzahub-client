@@ -11,16 +11,31 @@ export const auth = betterAuth({
     enabled: true,
   },
 
-  user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        required: false,
-        defaultValue: "buyer",
-        input: true,
-      },
+
+user: {
+  additionalFields: {
+    role: {
+      type: "string",
+      required: false,
+      defaultValue: "buyer",
+      input: true,
+    },
+
+    subscriptionPlan: {
+      type: "string",
+      required: false,
+      defaultValue: "free",
+      input: false,
+    },
+
+    subscriptionExpiresAt: {
+      type: "date",
+      required: false,
+      input: false,
     },
   },
+},
+
 
   database: mongodbAdapter(db, {
     client,
