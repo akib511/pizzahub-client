@@ -1,6 +1,7 @@
 
 "use client";
 
+import { toast } from "sonner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
@@ -150,8 +151,28 @@ const [loading, setLoading] = useState(true);
     return matchesFilter && matchesSearch;
   });
 
-  const cancelOrder = () => {
-    if (!selectedOrder) return;
+const cancelOrder = async () => {
+  if (!selectedOrder || !session?.user?.email) return;
+
+  try {
+    const response = await fetch(
+      `http://localhost:5000/orders/${selectedOrder}/cancel`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerEmail: session.user.email,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to cancel order");
+    }
 
     setOrders((previousOrders) =>
       previousOrders.map((order) =>
@@ -162,7 +183,15 @@ const [loading, setLoading] = useState(true);
     );
 
     setSelectedOrder(null);
-  };
+    toast.success("Order cancelled successfully!");
+  } catch (error) {
+    console.error("Cancel order error:", error);
+
+    toast.error(
+      error instanceof Error ? error.message : "Something went wrong"
+    );
+  }
+};
 
   const getCount = (status: string) => {
     if (status === "All Orders") return orders.length;
