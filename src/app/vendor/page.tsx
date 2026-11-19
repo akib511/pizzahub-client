@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
+
 import {
   UtensilsCrossed,
   ShoppingBag,
@@ -7,137 +11,334 @@ import {
   CheckCircle2,
   TrendingUp,
   ArrowUpRight,
-  ArrowDownRight,
   Plus,
-  Eye,
   MoreHorizontal,
-  DollarSign,
   Crown,
+  Package,
+  RefreshCw,
 } from "lucide-react";
-import Link from "next/link";
 
-const stats = [
-  {
-    title: "Total Menu Items",
-    value: "24",
-    change: "+4 this month",
-    icon: UtensilsCrossed,
-    color: "text-orange-500",
-    bg: "bg-orange-500/10",
-  },
-  {
-    title: "Active Items",
-    value: "18",
-    change: "75% of total items",
-    icon: ShoppingBag,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-  },
-  {
-    title: "Pending Orders",
-    value: "08",
-    change: "Needs your attention",
-    icon: Clock,
-    color: "text-yellow-400",
-    bg: "bg-yellow-500/10",
-  },
-  {
-    title: "Accepted Orders",
-    value: "32",
-    change: "+12% this month",
-    icon: CheckCircle2,
-    color: "text-green-400",
-    bg: "bg-green-500/10",
-  },
-];
+// Types
+type MenuItem = {
+  _id: string;
+  vendorEmail: string;
+  name: string;
+  image?: string;
+  category?: string;
+  price: number;
+  status: string;
+  available: boolean;
+};
 
-const recentOrders = [
-  {
-    id: "#PH-1024",
-    customer: "John Smith",
-    item: "Pepperoni Pizza",
-    amount: "$24.00",
-    status: "Pending",
-    time: "10 min ago",
-  },
-  {
-    id: "#PH-1023",
-    customer: "Sarah Wilson",
-    item: "Chicken BBQ Pizza",
-    amount: "$32.00",
-    status: "Accepted",
-    time: "25 min ago",
-  },
-  {
-    id: "#PH-1022",
-    customer: "Michael Brown",
-    item: "Margherita Pizza",
-    amount: "$18.00",
-    status: "Accepted",
-    time: "1 hour ago",
-  },
-  {
-    id: "#PH-1021",
-    customer: "Emily Davis",
-    item: "Cheese Burst Pizza",
-    amount: "$28.00",
-    status: "Pending",
-    time: "2 hours ago",
-  },
-];
+type VendorOrder = {
+  _id: string;
+  itemId: string;
+  itemName: string;
+  itemImage?: string;
+  quantity: number;
+  totalPrice: number;
+  status: "pending" | "accepted" | "rejected" | "cancelled";
+  createdAt: string;
+  customerName: string;
+  customerEmail: string;
+};
 
-const popularItems = [
-  {
-    name: "Pepperoni Pizza",
-    category: "Classic Pizza",
-    price: "$18.00",
-    orders: 48,
-    image:
-      "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=200",
-  },
-  {
-    name: "Chicken BBQ Pizza",
-    category: "Special Pizza",
-    price: "$22.00",
-    orders: 36,
-    image:
-      "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=200",
-  },
-  {
-    name: "Margherita Pizza",
-    category: "Classic Pizza",
-    price: "$15.00",
-    orders: 29,
-    image:
-      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=200",
-  },
-];
+type VendorProfile = {
+  subscriptionPlan?: string;
+  subscriptionExpiresAt?: string;
+};
 
-const monthlyOrders = [
-  { month: "Jan", value: 35 },
-  { month: "Feb", value: 55 },
-  { month: "Mar", value: 42 },
-  { month: "Apr", value: 75 },
-  { month: "May", value: 60 },
-  { month: "Jun", value: 90 },
-  { month: "Jul", value: 68 },
-  { month: "Aug", value: 100 },
-  { month: "Sep", value: 78 },
-  { month: "Oct", value: 88 },
-  { month: "Nov", value: 65 },
-  { month: "Dec", value: 95 },
-];
+// Helpers
+const formatTime = (date: string) => {
+  const now = new Date();
+  const orderDate = new Date(date);
+
+  const minutes = Math.floor(
+    (now.getTime() - orderDate.getTime()) / 60000,
+  );
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} min ago`;
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) return `${hours} hours ago`;
+
+  const days = Math.floor(hours / 24);
+
+  return `${days} days ago`;
+};
+
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 export default function VendorOverviewPage() {
+  const { data: session, isPending } = authClient.useSession();
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [orders, setOrders] = useState<VendorOrder[]>([]);
+  const [vendorProfile, setVendorProfile] =
+    useState<VendorProfile | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const vendorEmail = session?.user?.email;
+
+  // Fetch Overview Data
+  useEffect(() => {
+    if (isPending) return;
+
+    if (!vendorEmail) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchOverviewData = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const [
+          menuResponse,
+          orderResponse,
+          profileResponse,
+        ] = await Promise.all([
+          fetch("http://localhost:5000/menu"),
+
+          fetch(
+            `http://localhost:5000/orders/vendor/${encodeURIComponent(vendorEmail)}`,
+          ),
+
+          fetch(
+            `http://localhost:5000/vendor/profile/${encodeURIComponent(vendorEmail)}`,
+          ),
+        ]);
+
+        if (
+          !menuResponse.ok ||
+          !orderResponse.ok ||
+          !profileResponse.ok
+        ) {
+          throw new Error("Failed to load overview data");
+        }
+
+        const menuData = await menuResponse.json();
+        const orderData = await orderResponse.json();
+        const profileData = await profileResponse.json();
+
+        const vendorMenu = menuData.filter(
+          (item: MenuItem) => item.vendorEmail === vendorEmail,
+        );
+
+        setMenuItems(vendorMenu);
+        setOrders(orderData);
+        setVendorProfile(profileData);
+      } catch (error) {
+        console.error("Overview loading error:", error);
+
+        setError(
+          "Unable to load dashboard data. Please try again.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOverviewData();
+  }, [vendorEmail, isPending]);
+
+  // Statistics
+  const totalMenuItems = menuItems.length;
+
+  const activeMenuItems = menuItems.filter(
+    (item) => item.status === "approved" && item.available,
+  ).length;
+
+  const pendingOrders = orders.filter(
+    (order) => order.status === "pending",
+  ).length;
+
+  const acceptedOrders = orders.filter(
+    (order) => order.status === "accepted",
+  ).length;
+
+  const stats = [
+    {
+      title: "Total Menu Items",
+      value: totalMenuItems,
+      change: "Your total menu items",
+      icon: UtensilsCrossed,
+      color: "text-orange-400",
+      bg: "bg-orange-500/10",
+    },
+    {
+      title: "Active Items",
+      value: activeMenuItems,
+      change: "Approved and available",
+      icon: ShoppingBag,
+      color: "text-green-400",
+      bg: "bg-green-500/10",
+    },
+    {
+      title: "Pending Orders",
+      value: pendingOrders,
+      change: "Waiting for your response",
+      icon: Clock,
+      color: "text-yellow-400",
+      bg: "bg-yellow-500/10",
+    },
+    {
+      title: "Accepted Orders",
+      value: acceptedOrders,
+      change: "Orders accepted by you",
+      icon: CheckCircle2,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+    },
+  ];
+
+  // Recent Orders
+  const recentOrders = [...orders]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime(),
+    )
+    .slice(0, 5);
+
+  // Monthly Orders
+  const currentYear = new Date().getFullYear();
+
+  const monthlyOrders = Array.from({ length: 12 }, (_, index) => {
+    const count = orders.filter((order) => {
+      const date = new Date(order.createdAt);
+
+      return (
+        date.getFullYear() === currentYear &&
+        date.getMonth() === index
+      );
+    }).length;
+
+    return {
+      month: new Date(currentYear, index).toLocaleDateString(
+        "en-US",
+        { month: "short" },
+      ),
+      value: count,
+    };
+  });
+
+  const maxOrders = Math.max(
+    ...monthlyOrders.map((item) => item.value),
+    1,
+  );
+
+  const totalOrders = orders.length;
+
+  // Popular Menu Items
+  const popularItems = menuItems
+    .map((item) => {
+      const itemOrders = orders.filter(
+        (order) =>
+          order.itemId === item._id ||
+          order.itemName === item.name,
+      );
+
+      return {
+        ...item,
+        orders: itemOrders.reduce(
+          (total, order) => total + order.quantity,
+          0,
+        ),
+      };
+    })
+    .sort((a, b) => b.orders - a.orders)
+    .slice(0, 3);
+
+  // Subscription Usage
+  const isPremiumActive = Boolean(
+    vendorProfile?.subscriptionPlan?.toLowerCase() === "premium" &&
+      vendorProfile?.subscriptionExpiresAt &&
+      new Date(vendorProfile.subscriptionExpiresAt).getTime() >
+        Date.now(),
+  );
+
+  const subscriptionPlan = isPremiumActive ? "Premium" : "Free";
+
+  const freePlanLimit = 3;
+
+  const planUsage = isPremiumActive
+    ? 100
+    : Math.min((activeMenuItems / freePlanLimit) * 100, 100);
+
+  // Loading State
+  if (isPending || loading) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+        <RefreshCw
+          className="animate-spin text-orange-500"
+          size={35}
+        />
+
+        <p className="text-sm text-[#A8A29E]">
+          Loading your dashboard...
+        </p>
+      </div>
+    );
+  }
+
+  // Authentication State
+  if (!vendorEmail) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
+        <Package size={45} className="text-orange-500" />
+
+        <h2 className="mt-4 text-xl font-bold">
+          Please Login
+        </h2>
+
+        <p className="mt-2 text-sm text-[#A8A29E]">
+          Login to access your vendor dashboard.
+        </p>
+      </div>
+    );
+  }
+
+  // Error State
+  if (error) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
+        <p className="text-red-400">{error}</p>
+
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold hover:bg-orange-600"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-7 text-white">
       {/* Welcome Section */}
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm text-orange-500">Welcome back!</p>
+          <p className="text-sm font-medium text-orange-500">
+            Welcome back!
+          </p>
+
           <h1 className="mt-1 text-2xl font-bold sm:text-3xl">
             Vendor Overview
           </h1>
+
           <p className="mt-2 text-sm text-[#A8A29E]">
             Here&apos;s what&apos;s happening with your restaurant today.
           </p>
@@ -145,7 +346,7 @@ export default function VendorOverviewPage() {
 
         <Link
           href="/vendor/add-menu"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-5 py-3 text-sm font-semibold transition hover:bg-orange-600"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold transition hover:bg-orange-600"
         >
           <Plus size={18} />
           Add New Item
@@ -160,29 +361,47 @@ export default function VendorOverviewPage() {
               <Crown size={26} />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-bold">Free Plan</h2>
+                <h2 className="text-lg font-bold">
+                  {subscriptionPlan} Plan
+                </h2>
+
                 <span className="rounded-full bg-orange-500/15 px-3 py-1 text-xs font-semibold text-orange-400">
                   Current Plan
                 </span>
               </div>
 
               <p className="mt-1 text-sm text-[#A8A29E]">
-                You are currently using 3 of 3 active menu item slots.
+                {isPremiumActive
+                  ? "You have unlimited active menu item slots."
+                  : `You are using ${activeMenuItems} of ${freePlanLimit} active menu item slots.`}
               </p>
 
+              {isPremiumActive &&
+                vendorProfile?.subscriptionExpiresAt && (
+                  <p className="mt-2 text-xs text-[#A8A29E]">
+                    Expires on:{" "}
+                    {formatDate(
+                      vendorProfile.subscriptionExpiresAt,
+                    )}
+                  </p>
+                )}
+
               <div className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-white/10">
-                <div className="h-full w-full rounded-full bg-orange-500" />
+                <div
+                  style={{ width: `${planUsage}%` }}
+                  className="h-full rounded-full bg-orange-500 transition-all"
+                />
               </div>
             </div>
           </div>
 
           <Link
             href="/vendor/subscription"
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-orange-500/40 px-4 py-2.5 text-sm font-semibold text-orange-400 transition hover:bg-orange-500 hover:text-white"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-orange-500/40 px-4 py-2.5 text-sm font-semibold text-orange-400 transition hover:bg-orange-500 hover:text-white"
           >
-            Upgrade Plan
+            {isPremiumActive ? "Manage Plan" : "Upgrade Plan"}
             <ArrowUpRight size={17} />
           </Link>
         </div>
@@ -196,23 +415,28 @@ export default function VendorOverviewPage() {
           return (
             <div
               key={stat.title}
-              className="rounded-xl border border-[#302824] bg-[#1C1715] p-5 transition hover:border-orange-500/30"
+              className="rounded-2xl border border-[#302824] bg-[#1C1715] p-5 transition hover:border-orange-500/30"
             >
               <div className="flex items-center justify-between">
-                <div className={`rounded-lg p-3 ${stat.bg} ${stat.color}`}>
+                <div
+                  className={`rounded-xl p-3 ${stat.bg} ${stat.color}`}
+                >
                   <Icon size={22} />
                 </div>
 
-                <button className="text-[#78716C] hover:text-white">
-                  <MoreHorizontal size={21} />
-                </button>
+                <MoreHorizontal
+                  size={21}
+                  className="text-[#78716C]"
+                />
               </div>
 
               <p className="mt-5 text-sm text-[#A8A29E]">
                 {stat.title}
               </p>
 
-              <h3 className="mt-1 text-3xl font-bold">{stat.value}</h3>
+              <h3 className="mt-1 text-3xl font-bold">
+                {stat.value}
+              </h3>
 
               <p className="mt-2 text-xs text-[#78716C]">
                 {stat.change}
@@ -222,15 +446,18 @@ export default function VendorOverviewPage() {
         })}
       </section>
 
-      {/* Charts and Subscription Info */}
+      {/* Charts and Summary */}
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Monthly Orders Chart */}
-        <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6 xl:col-span-2">
+        <div className="rounded-2xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6 xl:col-span-2">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-lg font-bold">Orders Overview</h2>
+              <h2 className="text-lg font-bold">
+                Orders Overview
+              </h2>
+
               <p className="mt-1 text-xs text-[#78716C]">
-                Monthly order performance
+                Monthly order performance - {currentYear}
               </p>
             </div>
 
@@ -243,17 +470,23 @@ export default function VendorOverviewPage() {
             {monthlyOrders.map((item) => (
               <div
                 key={item.month}
-                className="flex h-full flex-1 flex-col items-center justify-end gap-3"
+                className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-3"
               >
                 <div className="flex h-full w-full items-end">
                   <div
-                    style={{ height: `${item.value}%` }}
+                    style={{
+                      height: `${
+                        item.value === 0
+                          ? 2
+                          : (item.value / maxOrders) * 100
+                      }%`,
+                    }}
                     className="w-full rounded-t-md bg-orange-500/80 transition hover:bg-orange-400"
                     title={`${item.value} orders`}
                   />
                 </div>
 
-                <span className="text-[10px] text-[#78716C] sm:text-xs">
+                <span className="text-[9px] text-[#78716C] sm:text-xs">
                   {item.month}
                 </span>
               </div>
@@ -262,62 +495,115 @@ export default function VendorOverviewPage() {
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#302824] pt-5">
             <div>
-              <p className="text-xs text-[#78716C]">Total Orders</p>
-              <h3 className="mt-1 text-2xl font-bold">842</h3>
+              <p className="text-xs text-[#78716C]">
+                Total Orders
+              </p>
+
+              <h3 className="mt-1 text-2xl font-bold">
+                {totalOrders}
+              </h3>
             </div>
 
             <div className="flex items-center gap-2 text-sm text-green-400">
               <TrendingUp size={17} />
-              <span>12.5% from last month</span>
+              <span>All time orders</span>
             </div>
           </div>
         </div>
 
-        {/* Quick Summary */}
-        <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6">
-          <h2 className="text-lg font-bold">Restaurant Summary</h2>
+        {/* Restaurant Summary */}
+        <div className="rounded-2xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6">
+          <h2 className="text-lg font-bold">
+            Restaurant Summary
+          </h2>
+
           <p className="mt-1 text-xs text-[#78716C]">
             Your restaurant performance
           </p>
 
           <div className="mt-7 space-y-6">
+            {/* Active Items */}
             <div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#A8A29E]">Active Items</span>
-                <span className="font-semibold">18 / 24</span>
+              <div className="flex justify-between gap-2 text-sm">
+                <span className="text-[#A8A29E]">
+                  Active Items
+                </span>
+
+                <span className="font-semibold">
+                  {activeMenuItems} / {totalMenuItems}
+                </span>
               </div>
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full w-3/4 rounded-full bg-orange-500" />
+                <div
+                  style={{
+                    width: `${
+                      totalMenuItems
+                        ? (activeMenuItems / totalMenuItems) * 100
+                        : 0
+                    }%`,
+                  }}
+                  className="h-full rounded-full bg-orange-500 transition-all"
+                />
               </div>
             </div>
 
+            {/* Pending Orders */}
             <div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#A8A29E]">Pending Orders</span>
-                <span className="font-semibold">08</span>
+              <div className="flex justify-between gap-2 text-sm">
+                <span className="text-[#A8A29E]">
+                  Pending Orders
+                </span>
+
+                <span className="font-semibold">
+                  {pendingOrders}
+                </span>
               </div>
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full w-1/3 rounded-full bg-yellow-500" />
+                <div
+                  style={{
+                    width: `${
+                      totalOrders
+                        ? (pendingOrders / totalOrders) * 100
+                        : 0
+                    }%`,
+                  }}
+                  className="h-full rounded-full bg-yellow-500 transition-all"
+                />
               </div>
             </div>
 
+            {/* Accepted Orders */}
             <div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#A8A29E]">Accepted Orders</span>
-                <span className="font-semibold">32</span>
+              <div className="flex justify-between gap-2 text-sm">
+                <span className="text-[#A8A29E]">
+                  Accepted Orders
+                </span>
+
+                <span className="font-semibold">
+                  {acceptedOrders}
+                </span>
               </div>
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full w-2/3 rounded-full bg-green-500" />
+                <div
+                  style={{
+                    width: `${
+                      totalOrders
+                        ? (acceptedOrders / totalOrders) * 100
+                        : 0
+                    }%`,
+                  }}
+                  className="h-full rounded-full bg-green-500 transition-all"
+                />
               </div>
             </div>
           </div>
 
           <Link
             href="/vendor/orders"
-            className="mt-8 flex w-full items-center justify-center gap-2 rounded-lg border border-[#302824] py-3 text-sm font-medium transition hover:border-orange-500 hover:text-orange-400"
+            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-[#302824] py-3 text-sm font-medium transition hover:border-orange-500 hover:text-orange-400"
           >
             Manage Orders
             <ArrowUpRight size={17} />
@@ -326,10 +612,13 @@ export default function VendorOverviewPage() {
       </section>
 
       {/* Recent Orders */}
-      <section className="overflow-hidden rounded-xl border border-[#302824] bg-[#1C1715]">
+      <section className="overflow-hidden rounded-2xl border border-[#302824] bg-[#1C1715]">
         <div className="flex flex-col justify-between gap-3 border-b border-[#302824] p-5 sm:flex-row sm:items-center sm:p-6">
           <div>
-            <h2 className="text-lg font-bold">Recent Customer Orders</h2>
+            <h2 className="text-lg font-bold">
+              Recent Customer Orders
+            </h2>
+
             <p className="mt-1 text-xs text-[#78716C]">
               Keep track of your latest orders
             </p>
@@ -344,99 +633,160 @@ export default function VendorOverviewPage() {
           </Link>
         </div>
 
-        {/* Desktop Table */}
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#100D0B] text-xs text-[#78716C]">
-              <tr>
-                <th className="px-6 py-4 font-medium">Order ID</th>
-                <th className="px-6 py-4 font-medium">Customer</th>
-                <th className="px-6 py-4 font-medium">Menu Item</th>
-                <th className="px-6 py-4 font-medium">Amount</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Time</th>
-              </tr>
-            </thead>
+        {recentOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-5 py-12 text-center">
+            <ShoppingBag
+              size={35}
+              className="text-[#57534E]"
+            />
 
-            <tbody className="divide-y divide-[#302824]">
+            <h3 className="mt-3 font-semibold">
+              No Orders Yet
+            </h3>
+
+            <p className="mt-1 text-sm text-[#78716C]">
+              Your customer orders will appear here.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[#100D0B] text-xs text-[#78716C]">
+                  <tr>
+                    <th className="px-6 py-4 font-medium">
+                      Order ID
+                    </th>
+
+                    <th className="px-6 py-4 font-medium">
+                      Customer
+                    </th>
+
+                    <th className="px-6 py-4 font-medium">
+                      Menu Item
+                    </th>
+
+                    <th className="px-6 py-4 font-medium">
+                      Amount
+                    </th>
+
+                    <th className="px-6 py-4 font-medium">
+                      Status
+                    </th>
+
+                    <th className="px-6 py-4 font-medium">
+                      Time
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-[#302824]">
+                  {recentOrders.map((order) => (
+                    <tr
+                      key={order._id}
+                      className="transition hover:bg-white/[0.02]"
+                    >
+                      <td className="px-6 py-4 font-medium text-orange-400">
+                        #{order._id.slice(-6).toUpperCase()}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {order.customerName}
+                      </td>
+
+                      <td className="px-6 py-4 text-[#A8A29E]">
+                        {order.itemName}
+                      </td>
+
+                      <td className="px-6 py-4 font-medium">
+                        ${order.totalPrice.toFixed(2)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${
+                            order.status === "pending"
+                              ? "bg-yellow-500/10 text-yellow-400"
+                              : order.status === "accepted"
+                                ? "bg-green-500/10 text-green-400"
+                                : order.status === "rejected"
+                                  ? "bg-red-500/10 text-red-400"
+                                  : "bg-gray-500/10 text-gray-400"
+                          }`}
+                        >
+                          {order.status}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-xs text-[#78716C]">
+                        {formatTime(order.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="space-y-3 p-4 md:hidden">
               {recentOrders.map((order) => (
-                <tr key={order.id} className="transition hover:bg-white/[0.02]">
-                  <td className="px-6 py-4 font-medium text-orange-400">
-                    {order.id}
-                  </td>
-                  <td className="px-6 py-4">{order.customer}</td>
-                  <td className="px-6 py-4 text-[#A8A29E]">
-                    {order.item}
-                  </td>
-                  <td className="px-6 py-4 font-medium">{order.amount}</td>
-                  <td className="px-6 py-4">
+                <div
+                  key={order._id}
+                  className="rounded-xl border border-[#302824] bg-[#100D0B] p-4"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-orange-400">
+                      #{order._id.slice(-6).toUpperCase()}
+                    </span>
+
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${
-                        order.status === "Pending"
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-medium capitalize ${
+                        order.status === "pending"
                           ? "bg-yellow-500/10 text-yellow-400"
-                          : "bg-green-500/10 text-green-400"
+                          : order.status === "accepted"
+                            ? "bg-green-500/10 text-green-400"
+                            : order.status === "rejected"
+                              ? "bg-red-500/10 text-red-400"
+                              : "bg-gray-500/10 text-gray-400"
                       }`}
                     >
                       {order.status}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-xs text-[#78716C]">
-                    {order.time}
-                  </td>
-                </tr>
+                  </div>
+
+                  <h3 className="mt-3 text-sm font-semibold">
+                    {order.itemName}
+                  </h3>
+
+                  <p className="mt-1 text-xs text-[#78716C]">
+                    {order.customerName}
+                  </p>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-[#302824] pt-3">
+                    <span className="text-xs text-[#78716C]">
+                      {formatTime(order.createdAt)}
+                    </span>
+
+                    <span className="font-semibold">
+                      ${order.totalPrice.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="space-y-3 p-4 md:hidden">
-          {recentOrders.map((order) => (
-            <div
-              key={order.id}
-              className="rounded-lg border border-[#302824] bg-[#100D0B] p-4"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-semibold text-orange-400">
-                  {order.id}
-                </span>
-
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${
-                    order.status === "Pending"
-                      ? "bg-yellow-500/10 text-yellow-400"
-                      : "bg-green-500/10 text-green-400"
-                  }`}
-                >
-                  {order.status}
-                </span>
-              </div>
-
-              <h3 className="mt-3 text-sm font-semibold">
-                {order.item}
-              </h3>
-
-              <p className="mt-1 text-xs text-[#78716C]">
-                {order.customer}
-              </p>
-
-              <div className="mt-4 flex items-center justify-between border-t border-[#302824] pt-3">
-                <span className="text-xs text-[#78716C]">
-                  {order.time}
-                </span>
-
-                <span className="font-semibold">{order.amount}</span>
-              </div>
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </section>
 
       {/* Popular Items */}
-      <section className="rounded-xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6">
+      <section className="rounded-2xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold">Popular Menu Items</h2>
+            <h2 className="text-lg font-bold">
+              Popular Menu Items
+            </h2>
+
             <p className="mt-1 text-xs text-[#78716C]">
               Your best-selling food items
             </p>
@@ -450,46 +800,70 @@ export default function VendorOverviewPage() {
           </Link>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {popularItems.map((item, index) => (
-            <div
-              key={item.name}
-              className="flex items-center gap-4 rounded-xl border border-[#302824] bg-[#100D0B] p-3"
-            >
-              <img
-                src={item.image}
-                alt={item.name}
-                className="h-16 w-16 rounded-lg object-cover"
-              />
+        {popularItems.length === 0 ? (
+          <div className="py-10 text-center">
+            <UtensilsCrossed
+              size={35}
+              className="mx-auto text-[#57534E]"
+            />
 
-              <div className="min-w-0 flex-1">
-                <h3 className="truncate text-sm font-semibold">
-                  {item.name}
-                </h3>
-
-                <p className="mt-1 text-xs text-[#78716C]">
-                  {item.category}
-                </p>
-
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <span className="text-sm font-bold text-orange-400">
-                    {item.price}
-                  </span>
-
-                  <span className="text-xs text-[#A8A29E]">
-                    {item.orders} orders
-                  </span>
+            <p className="mt-3 text-sm text-[#78716C]">
+              No menu items available yet.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {popularItems.map((item, index) => (
+              <div
+                key={item._id}
+                className="flex items-center gap-4 rounded-xl border border-[#302824] bg-[#100D0B] p-3 transition hover:border-orange-500/30"
+              >
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#302824]">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-full w-full object-cover transition duration-300 hover:scale-110"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <UtensilsCrossed
+                        size={22}
+                        className="text-[#78716C]"
+                      />
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              {index === 0 && (
-                <span className="self-start rounded-md bg-orange-500/10 px-2 py-1 text-[10px] font-semibold text-orange-400">
-                  #1
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-semibold">
+                    {item.name}
+                  </h3>
+
+                  <p className="mt-1 text-xs text-[#78716C]">
+                    {item.category || "Menu Item"}
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm font-bold text-orange-400">
+                      ${item.price.toFixed(2)}
+                    </span>
+
+                    <span className="text-xs text-[#A8A29E]">
+                      {item.orders} orders
+                    </span>
+                  </div>
+                </div>
+
+                {index === 0 && item.orders > 0 && (
+                  <span className="self-start rounded-md bg-orange-500/10 px-2 py-1 text-[10px] font-semibold text-orange-400">
+                    #1
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
