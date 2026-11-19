@@ -1,5 +1,6 @@
 "use client";
 
+import { Toaster } from "sonner";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -215,6 +216,7 @@ export default function VendorLayout({
           </div>
         </main>
       </div>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }
