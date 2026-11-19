@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import EditMenuDialog, {
-  type MenuItem,
-} from "./components/EditMenuDialog";
+import EditMenuDialog, { type MenuItem } from "./components/EditMenuDialog";
 
 import {
   Plus,
@@ -50,6 +48,8 @@ export default function VendorMenuPage() {
 
   const [showDeleteId, setShowDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
@@ -136,35 +136,78 @@ export default function VendorMenuPage() {
       ?.toLowerCase()
       .includes(search.toLowerCase());
 
-    const matchesCategory =
-      category === "All" || item.category === category;
+    const matchesCategory = category === "All" || item.category === category;
 
     const matchesStatus = status === "All" || item.status === status;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const activeItems = items.filter(
-    (item) => item.status === "Active",
-  ).length;
+  const activeItems = items.filter((item) => item.status === "Active").length;
 
   const inactiveItems = items.filter(
     (item) => item.status === "Inactive",
   ).length;
 
-  // Temporary frontend status change
-  const toggleStatus = (id: string) => {
-    setItems((previousItems) =>
-      previousItems.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: item.status === "Active" ? "Inactive" : "Active",
-              available: !item.available,
-            }
-          : item,
-      ),
-    );
+  // Update menu item availability
+  const toggleStatus = async (id: string) => {
+    const selectedItem = items.find((item) => item.id === id);
+
+    if (!selectedItem || selectedItem.status === "Pending") return;
+
+    const newAvailability = !selectedItem.available;
+
+    try {
+      setTogglingId(id);
+
+      const response = await fetch(
+        `http://localhost:5000/menu/${id}/availability`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            available: newAvailability,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update availability");
+      }
+
+      setItems((previousItems) =>
+        previousItems.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                available: newAvailability,
+                status: newAvailability ? "Active" : "Inactive",
+              }
+            : item,
+        ),
+      );
+
+      setToast({
+        message: newAvailability
+          ? "Menu item is now available!"
+          : "Menu item is now unavailable!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Availability update error:", error);
+
+      setToast({
+        message:
+          error instanceof Error ? error.message : "Something went wrong!",
+        type: "error",
+      });
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   // Update item after editing
@@ -218,9 +261,7 @@ export default function VendorMenuPage() {
 
       setToast({
         message:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong!",
+          error instanceof Error ? error.message : "Something went wrong!",
         type: "error",
       });
     } finally {
@@ -231,9 +272,7 @@ export default function VendorMenuPage() {
   if (isPending || loadingItems) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
-        <p className="text-sm text-[#A8A29E]">
-          Loading menu items...
-        </p>
+        <p className="text-sm text-[#A8A29E]">Loading menu items...</p>
       </div>
     );
   }
@@ -252,7 +291,6 @@ export default function VendorMenuPage() {
 
   return (
     <div className="space-y-7 text-white">
-
       {/* Toast */}
       {toast && (
         <div
@@ -268,9 +306,7 @@ export default function VendorMenuPage() {
             <AlertCircle size={20} />
           )}
 
-          <p className="flex-1 text-sm font-medium">
-            {toast.message}
-          </p>
+          <p className="flex-1 text-sm font-medium">{toast.message}</p>
 
           <button
             onClick={() => setToast(null)}
@@ -284,13 +320,9 @@ export default function VendorMenuPage() {
       {/* Heading */}
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm text-orange-500">
-            Restaurant Management
-          </p>
+          <p className="text-sm text-orange-500">Restaurant Management</p>
 
-          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">
-            My Menu Items
-          </h1>
+          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">My Menu Items</h1>
 
           <p className="mt-2 text-sm text-[#A8A29E]">
             Manage your food items, prices and availability.
@@ -308,20 +340,15 @@ export default function VendorMenuPage() {
 
       {/* Statistics */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-
         <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5">
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#A8A29E]">Total Items</p>
             <Package className="text-orange-500" size={21} />
           </div>
 
-          <h2 className="mt-3 text-3xl font-bold">
-            {items.length}
-          </h2>
+          <h2 className="mt-3 text-3xl font-bold">{items.length}</h2>
 
-          <p className="mt-1 text-xs text-[#78716C]">
-            All menu items
-          </p>
+          <p className="mt-1 text-xs text-[#78716C]">All menu items</p>
         </div>
 
         <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5">
@@ -330,13 +357,9 @@ export default function VendorMenuPage() {
             <CheckCircle2 className="text-green-400" size={21} />
           </div>
 
-          <h2 className="mt-3 text-3xl font-bold">
-            {activeItems}
-          </h2>
+          <h2 className="mt-3 text-3xl font-bold">{activeItems}</h2>
 
-          <p className="mt-1 text-xs text-[#78716C]">
-            Currently available
-          </p>
+          <p className="mt-1 text-xs text-[#78716C]">Currently available</p>
         </div>
 
         <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5">
@@ -345,13 +368,9 @@ export default function VendorMenuPage() {
             <XCircle className="text-red-400" size={21} />
           </div>
 
-          <h2 className="mt-3 text-3xl font-bold">
-            {inactiveItems}
-          </h2>
+          <h2 className="mt-3 text-3xl font-bold">{inactiveItems}</h2>
 
-          <p className="mt-1 text-xs text-[#78716C]">
-            Currently unavailable
-          </p>
+          <p className="mt-1 text-xs text-[#78716C]">Currently unavailable</p>
         </div>
       </section>
 
@@ -376,7 +395,6 @@ export default function VendorMenuPage() {
       {/* Search and Filters */}
       <section className="rounded-xl border border-[#302824] bg-[#1C1715] p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row">
-
           <div className="relative flex-1">
             <Search
               size={19}
@@ -393,7 +411,6 @@ export default function VendorMenuPage() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-
             <div className="relative flex-1 sm:w-48">
               <SlidersHorizontal
                 size={16}
@@ -412,9 +429,7 @@ export default function VendorMenuPage() {
                 <option value="Specialty / Gourmet Pizzas">
                   Specialty / Gourmet Pizzas
                 </option>
-                <option value="Sides & Appetizers">
-                  Sides & Appetizers
-                </option>
+                <option value="Sides & Appetizers">Sides & Appetizers</option>
                 <option value="Beverages & Desserts">
                   Beverages & Desserts
                 </option>
@@ -517,7 +532,6 @@ export default function VendorMenuPage() {
 
                 {/* Actions */}
                 <div className="mt-5 grid grid-cols-3 gap-2">
-
                   <button
                     onClick={() => setEditingItem(item)}
                     className="flex items-center justify-center gap-1 rounded-lg border border-orange-500/20 py-2.5 text-xs font-semibold text-orange-400 transition hover:bg-orange-500/10"
@@ -527,23 +541,30 @@ export default function VendorMenuPage() {
                   </button>
 
                   <button
-                    disabled={item.status === "Pending"}
+                    disabled={
+                      item.status === "Pending" || togglingId === item.id
+                    }
                     onClick={() => toggleStatus(item.id)}
                     className={`flex items-center justify-center gap-1 rounded-lg border py-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                      item.status === "Active"
-                        ? "border-red-500/20 text-red-400 hover:bg-red-500/10"
-                        : "border-green-500/20 text-green-400 hover:bg-green-500/10"
+                      item.available
+                        ? "border-green-500/20 text-green-400 hover:bg-green-500/10"
+                        : "border-red-500/20 text-red-400 hover:bg-red-500/10"
                     }`}
                   >
-                    {item.status === "Active" ? (
+                    {togglingId === item.id ? (
                       <>
-                        <EyeOff size={14} />
-                        Off
+                        <Loader2 size={14} className="animate-spin" />
+                        Updating...
                       </>
-                    ) : (
+                    ) : item.available ? (
                       <>
                         <Eye size={14} />
                         On
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff size={14} />
+                        Off
                       </>
                     )}
                   </button>
@@ -555,7 +576,6 @@ export default function VendorMenuPage() {
                     <Trash2 size={14} />
                     Delete
                   </button>
-
                 </div>
               </div>
             </div>
@@ -565,9 +585,7 @@ export default function VendorMenuPage() {
         <div className="rounded-xl border border-[#302824] bg-[#1C1715] px-5 py-16 text-center">
           <Package size={40} className="mx-auto text-[#78716C]" />
 
-          <h3 className="mt-4 text-lg font-bold">
-            No Menu Items Found
-          </h3>
+          <h3 className="mt-4 text-lg font-bold">No Menu Items Found</h3>
 
           <p className="mt-2 text-sm text-[#A8A29E]">
             {error
@@ -601,7 +619,6 @@ export default function VendorMenuPage() {
       {showDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-[#302824] bg-[#1C1715] p-6 shadow-2xl">
-
             <div className="flex items-center justify-between">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
                 <Trash2 size={23} />
@@ -616,9 +633,7 @@ export default function VendorMenuPage() {
               </button>
             </div>
 
-            <h2 className="mt-5 text-xl font-bold">
-              Delete Menu Item?
-            </h2>
+            <h2 className="mt-5 text-xl font-bold">Delete Menu Item?</h2>
 
             <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
               Are you sure you want to delete this menu item? This action cannot
@@ -652,7 +667,6 @@ export default function VendorMenuPage() {
                 )}
               </button>
             </div>
-
           </div>
         </div>
       )}
