@@ -38,7 +38,7 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
       const role = data.user.role;
 
       if (role === "admin") {
-        router.push("/admin/dashboard");
+        router.push("/admin");
       } else if (role === "vendor") {
         router.push("/");
       } else {

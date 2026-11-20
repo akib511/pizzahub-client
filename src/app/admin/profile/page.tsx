@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 import {
   User,
   Mail,
@@ -18,10 +20,52 @@ import {
   EyeOff,
 } from "lucide-react";
 
+const uploadImage = async (file: File): Promise<string> => {
+  const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("ImageBB API key is missing.");
+  }
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error("Image upload failed.");
+  }
+
+  return data.data.url;
+};
+
 export default function AdminProfilePage() {
-  const [name, setName] = useState("Admin User");
-  const [email, setEmail] = useState("admin@pizzahub.com");
-  const [role, setRole] = useState("Super Admin");
+  const { data: session, isPending } = authClient.useSession();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [image, setImage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const role = "Super Admin";
+
+  useEffect(() => {
+    if (session?.user) {
+      const userInfo = session.user as typeof session.user & {
+        profileImage?: string;
+      };
+
+      setName(userInfo.name || "");
+      setEmail(userInfo.email || "");
+      setImage(userInfo.image || userInfo.profileImage || "");
+    }
+  }, [session]);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -37,8 +81,78 @@ export default function AdminProfilePage() {
     transactions: false,
   });
 
-  const handleSaveProfile = () => {
-    alert("Profile settings saved successfully!");
+  const [preferencesLoading, setPreferencesLoading] = useState(true);
+  const [savingPreference, setSavingPreference] = useState(false);
+
+  useEffect(() => {
+    if (!email) return;
+
+    const loadPreferences = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/admin/preferences/${encodeURIComponent(email)}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to load preferences.");
+        }
+
+        const data = await response.json();
+        setNotifications(data);
+      } catch {
+        toast.error("Failed to load notification preferences.");
+      } finally {
+        setPreferencesLoading(false);
+      }
+    };
+
+    loadPreferences();
+  }, [email]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      setUploading(true);
+
+      const imageUrl = await uploadImage(file);
+
+      setImage(imageUrl);
+    } catch {
+      alert("Image upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!name.trim()) {
+      toast.error("Please enter your name.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const { error } = await authClient.updateUser({
+        name: name.trim(),
+        image: image || undefined,
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to update profile.");
+        return;
+      }
+
+      toast.success("Profile updated successfully!");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePasswordChange = () => {
@@ -64,11 +178,47 @@ export default function AdminProfilePage() {
     setConfirmPassword("");
   };
 
-  const toggleNotification = (key: keyof typeof notifications) => {
+  const toggleNotification = async (key: keyof typeof notifications) => {
+    if (savingPreference || preferencesLoading) return;
+
+    const updatedValue = !notifications[key];
+
     setNotifications((prev) => ({
       ...prev,
-      [key]: !prev[key],
+      [key]: updatedValue,
     }));
+
+    try {
+      setSavingPreference(true);
+
+      const response = await fetch(
+        `http://localhost:5000/admin/preferences/${encodeURIComponent(email)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            [key]: updatedValue,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update preferences.");
+      }
+
+      toast.success("Notification preference updated!");
+    } catch {
+      setNotifications((prev) => ({
+        ...prev,
+        [key]: !updatedValue,
+      }));
+
+      toast.error("Failed to update notification preference.");
+    } finally {
+      setSavingPreference(false);
+    }
   };
 
   return (
@@ -97,16 +247,38 @@ export default function AdminProfilePage() {
           {/* Avatar */}
           <div className="mb-6 flex items-center gap-4">
             <div className="relative">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-2xl font-bold text-white">
-                AU
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-2xl font-bold text-white">
+                {image ? (
+                  <img
+                    src={image}
+                    alt="Admin Profile"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  name.charAt(0).toUpperCase() || "A"
+                )}
               </div>
 
-              <button
-                className="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#1C1715] bg-orange-500 text-black transition hover:bg-orange-400"
+              <label
+                htmlFor="adminProfileImage"
+                className="absolute -bottom-2 -right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-[#1C1715] bg-orange-500 text-black transition hover:bg-orange-400"
                 title="Change profile picture"
               >
-                <Camera size={14} />
-              </button>
+                {uploading ? (
+                  <span className="text-xs">...</span>
+                ) : (
+                  <Camera size={14} />
+                )}
+              </label>
+
+              <input
+                id="adminProfileImage"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploading}
+                className="hidden"
+              />
             </div>
 
             <div>
@@ -118,7 +290,7 @@ export default function AdminProfilePage() {
               </div>
 
               <p className="mt-2 text-xs text-stone-500">
-                JPG, PNG or WEBP
+                {uploading ? "Uploading image..." : "JPG, PNG or WEBP"}
               </p>
             </div>
           </div>
@@ -171,103 +343,11 @@ export default function AdminProfilePage() {
           <div className="mt-5 flex justify-end">
             <button
               onClick={handleSaveProfile}
+              disabled={loading || uploading}
               className="flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-orange-400"
             >
               <Save size={16} />
-              Save Changes
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Password Section */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1C1715]">
-        <div className="border-b border-white/[0.06] px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Lock size={17} className="text-orange-400" />
-            <h2 className="font-semibold text-white">Change Password</h2>
-          </div>
-
-          <p className="mt-1 text-xs text-stone-500">
-            Keep your admin account secure.
-          </p>
-        </div>
-
-        <div className="space-y-4 p-5">
-          {/* Current Password */}
-          <div>
-            <label className="mb-2 block text-sm text-stone-400">
-              Current Password
-            </label>
-
-            <div className="relative">
-              <input
-                type={showCurrent ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
-                className="w-full rounded-lg border border-white/[0.07] bg-[#100D0B] px-3 py-2.5 pr-10 text-sm text-white outline-none focus:border-orange-500/50"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-white"
-              >
-                {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* New Password */}
-            <div>
-              <label className="mb-2 block text-sm text-stone-400">
-                New Password
-              </label>
-
-              <div className="relative">
-                <input
-                  type={showNew ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Minimum 8 characters"
-                  className="w-full rounded-lg border border-white/[0.07] bg-[#100D0B] px-3 py-2.5 pr-10 text-sm text-white outline-none focus:border-orange-500/50"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-white"
-                >
-                  {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="mb-2 block text-sm text-stone-400">
-                Confirm New Password
-              </label>
-
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-                className="w-full rounded-lg border border-white/[0.07] bg-[#100D0B] px-3 py-2.5 text-sm text-white outline-none focus:border-orange-500/50"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              onClick={handlePasswordChange}
-              className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-stone-300 transition hover:border-orange-500/30 hover:text-orange-400"
-            >
-              <Lock size={15} />
-              Update Password
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>
@@ -316,9 +396,7 @@ export default function AdminProfilePage() {
               className="flex items-center justify-between gap-4 px-5 py-4"
             >
               <div>
-                <p className="text-sm font-medium text-white">
-                  {item.title}
-                </p>
+                <p className="text-sm font-medium text-white">{item.title}</p>
 
                 <p className="mt-1 text-xs text-stone-500">
                   {item.description}
@@ -327,17 +405,14 @@ export default function AdminProfilePage() {
 
               <button
                 onClick={() => toggleNotification(item.key)}
+                disabled={preferencesLoading || savingPreference}
                 className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-                  notifications[item.key]
-                    ? "bg-orange-500"
-                    : "bg-stone-700"
+                  notifications[item.key] ? "bg-orange-500" : "bg-stone-700"
                 }`}
               >
                 <span
                   className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${
-                    notifications[item.key]
-                      ? "left-6"
-                      : "left-1"
+                    notifications[item.key] ? "left-6" : "left-1"
                   }`}
                 />
               </button>
@@ -351,9 +426,7 @@ export default function AdminProfilePage() {
         <div className="border-b border-white/[0.06] px-5 py-4">
           <div className="flex items-center gap-2">
             <Settings size={17} className="text-orange-400" />
-            <h2 className="font-semibold text-white">
-              Platform Information
-            </h2>
+            <h2 className="font-semibold text-white">Platform Information</h2>
           </div>
         </div>
 
@@ -387,9 +460,7 @@ export default function AdminProfilePage() {
                   <span className="text-xs">{item.label}</span>
                 </div>
 
-                <p className="mt-2 font-semibold text-white">
-                  {item.value}
-                </p>
+                <p className="mt-2 font-semibold text-white">{item.value}</p>
               </div>
             );
           })}
@@ -398,20 +469,15 @@ export default function AdminProfilePage() {
 
       {/* Security Note */}
       <div className="flex gap-3 rounded-xl border border-orange-500/10 bg-orange-500/[0.03] p-4">
-        <ShieldCheck
-          size={18}
-          className="mt-0.5 shrink-0 text-orange-400"
-        />
+        <ShieldCheck size={18} className="mt-0.5 shrink-0 text-orange-400" />
 
         <div>
-          <p className="text-sm font-medium text-white">
-            Account Security
-          </p>
+          <p className="text-sm font-medium text-white">Account Security</p>
 
           <p className="mt-1 text-xs leading-5 text-stone-500">
-            Your admin account has full access to manage users, vendors,
-            menu items, orders and transactions. Keep your credentials
-            secure and never share your password.
+            Your admin account has full access to manage users, vendors, menu
+            items, orders and transactions. Keep your credentials secure and
+            never share your password.
           </p>
         </div>
       </div>
