@@ -1,8 +1,9 @@
 "use client";
 
-import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+
 import {
   User,
   Mail,
@@ -10,14 +11,10 @@ import {
   Save,
   ShieldCheck,
   Bell,
-  Lock,
   Settings,
   Globe,
   Store,
   ShoppingBag,
-  Check,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 
 const uploadImage = async (file: File): Promise<string> => {
@@ -45,35 +42,70 @@ const uploadImage = async (file: File): Promise<string> => {
 };
 
 export default function AdminProfilePage() {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
 
   const [name, setName] = useState("");
+  const [savedName, setSavedName] = useState("");
   const [email, setEmail] = useState("");
   const [image, setImage] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [platformStats, setPlatformStats] = useState({
+    totalVendors: 0,
+    totalOrders: 0,
+  });
+
+  const [statsLoading, setStatsLoading] = useState(true);
+
   const role = "Super Admin";
 
+  // Load Admin Information
   useEffect(() => {
     if (session?.user) {
       const userInfo = session.user as typeof session.user & {
         profileImage?: string;
       };
 
-      setName(userInfo.name || "");
+      const currentName = userInfo.name || "";
+
+      setName(currentName);
+      setSavedName(currentName);
       setEmail(userInfo.email || "");
       setImage(userInfo.image || userInfo.profileImage || "");
     }
-  }, [session]);
+  }, [session?.user?.id, session?.user?.name, session?.user?.image]);
+  // Load Platform Statistics
+  useEffect(() => {
+    const loadPlatformStats = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/admin/platform-stats",
+        );
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+        if (!response.ok) {
+          throw new Error("Failed to load platform statistics.");
+        }
 
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
+        const data = await response.json();
 
+        setPlatformStats({
+          totalVendors: data.totalVendors,
+          totalOrders: data.totalOrders,
+        });
+      } catch {
+        toast.error("Failed to load platform information.");
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    loadPlatformStats();
+  }, []);
+
+  // Load Notification Preferences
   const [notifications, setNotifications] = useState({
     newOrders: true,
     vendorApplications: true,
@@ -98,7 +130,13 @@ export default function AdminProfilePage() {
         }
 
         const data = await response.json();
-        setNotifications(data);
+
+        setNotifications({
+          newOrders: data.newOrders ?? true,
+          vendorApplications: data.vendorApplications ?? true,
+          menuApprovals: data.menuApprovals ?? true,
+          transactions: data.transactions ?? false,
+        });
       } catch {
         toast.error("Failed to load notification preferences.");
       } finally {
@@ -109,25 +147,32 @@ export default function AdminProfilePage() {
     loadPreferences();
   }, [email]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Select Profile Image
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
 
-    try {
-      setUploading(true);
-
-      const imageUrl = await uploadImage(file);
-
-      setImage(imageUrl);
-    } catch {
-      alert("Image upload failed. Please try again.");
-    } finally {
-      setUploading(false);
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image.");
       e.target.value = "";
+      return;
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+    setImage(URL.createObjectURL(file));
+
+    toast.info("Image selected. Click Save Changes to update.");
+    e.target.value = "";
   };
 
+  // Save Admin Profile
   const handleSaveProfile = async () => {
     if (!name.trim()) {
       toast.error("Please enter your name.");
@@ -137,51 +182,50 @@ export default function AdminProfilePage() {
     try {
       setLoading(true);
 
+      let finalImage = image;
+
+      // Upload image only after clicking Save Changes
+      if (selectedFile) {
+        setUploading(true);
+        finalImage = await uploadImage(selectedFile);
+      }
+
       const { error } = await authClient.updateUser({
         name: name.trim(),
-        image: image || undefined,
+        ...(selectedFile ? { image: finalImage } : {}),
       });
 
       if (error) {
         toast.error(error.message || "Failed to update profile.");
         return;
       }
+      setImage(finalImage);
+      setSavedName(name.trim());
+      setName(name.trim());
+      setSelectedFile(null);
+
+      window.dispatchEvent(new Event("profile-updated"));
 
       toast.success("Profile updated successfully!");
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      console.error("Profile update error:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.",
+      );
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
-  const handlePasswordChange = () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      alert("Please fill in all password fields.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      alert("New password and confirm password do not match.");
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      alert("Password must be at least 8 characters.");
-      return;
-    }
-
-    alert("Password updated successfully!");
-
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-  };
-
+  // Toggle Notification Preferences
   const toggleNotification = async (key: keyof typeof notifications) => {
     if (savingPreference || preferencesLoading) return;
 
-    const updatedValue = !notifications[key];
+    const previousValue = notifications[key];
+    const updatedValue = !previousValue;
 
     setNotifications((prev) => ({
       ...prev,
@@ -212,7 +256,7 @@ export default function AdminProfilePage() {
     } catch {
       setNotifications((prev) => ({
         ...prev,
-        [key]: !updatedValue,
+        [key]: previousValue,
       }));
 
       toast.error("Failed to update notification preference.");
@@ -238,6 +282,7 @@ export default function AdminProfilePage() {
       <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1C1715]">
         <div className="border-b border-white/[0.06] px-5 py-4">
           <h2 className="font-semibold text-white">Personal Information</h2>
+
           <p className="mt-1 text-xs text-stone-500">
             Update your account information.
           </p>
@@ -264,11 +309,7 @@ export default function AdminProfilePage() {
                 className="absolute -bottom-2 -right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-[#1C1715] bg-orange-500 text-black transition hover:bg-orange-400"
                 title="Change profile picture"
               >
-                {uploading ? (
-                  <span className="text-xs">...</span>
-                ) : (
-                  <Camera size={14} />
-                )}
+                <Camera size={14} />
               </label>
 
               <input
@@ -276,13 +317,15 @@ export default function AdminProfilePage() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                disabled={uploading}
+                disabled={loading}
                 className="hidden"
               />
             </div>
 
             <div>
-              <h3 className="font-semibold text-white">{name}</h3>
+              <h3 className="font-semibold text-white">
+                {savedName || "Admin"}
+              </h3>
 
               <div className="mt-1 flex items-center gap-1.5 text-xs text-orange-400">
                 <ShieldCheck size={14} />
@@ -290,7 +333,9 @@ export default function AdminProfilePage() {
               </div>
 
               <p className="mt-2 text-xs text-stone-500">
-                {uploading ? "Uploading image..." : "JPG, PNG or WEBP"}
+                {selectedFile
+                  ? "New image selected"
+                  : "JPG, PNG or WEBP (Max 5MB)"}
               </p>
             </div>
           </div>
@@ -311,6 +356,7 @@ export default function AdminProfilePage() {
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  disabled={loading}
                   className="w-full rounded-lg border border-white/[0.07] bg-[#100D0B] py-2.5 pl-10 pr-3 text-sm text-white outline-none focus:border-orange-500/50"
                   placeholder="Enter your name"
                 />
@@ -331,9 +377,8 @@ export default function AdminProfilePage() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border border-white/[0.07] bg-[#100D0B] py-2.5 pl-10 pr-3 text-sm text-white outline-none focus:border-orange-500/50"
-                  placeholder="Enter your email"
+                  readOnly
+                  className="w-full cursor-not-allowed rounded-lg border border-white/[0.07] bg-[#100D0B] py-2.5 pl-10 pr-3 text-sm text-stone-400 outline-none"
                 />
               </div>
             </div>
@@ -343,11 +388,15 @@ export default function AdminProfilePage() {
           <div className="mt-5 flex justify-end">
             <button
               onClick={handleSaveProfile}
-              disabled={loading || uploading}
-              className="flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-orange-400"
+              disabled={loading || !session?.user}
+              className="flex items-center gap-2 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Save size={16} />
-              {loading ? "Saving..." : "Save Changes"}
+              {uploading
+                ? "Uploading..."
+                : loading
+                  ? "Saving..."
+                  : "Save Changes"}
             </button>
           </div>
         </div>
@@ -404,11 +453,14 @@ export default function AdminProfilePage() {
               </div>
 
               <button
+                type="button"
                 onClick={() => toggleNotification(item.key)}
                 disabled={preferencesLoading || savingPreference}
+                aria-label={`Toggle ${item.title}`}
+                aria-pressed={notifications[item.key]}
                 className={`relative h-6 w-11 shrink-0 rounded-full transition ${
                   notifications[item.key] ? "bg-orange-500" : "bg-stone-700"
-                }`}
+                } disabled:opacity-50`}
               >
                 <span
                   className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${
@@ -439,12 +491,16 @@ export default function AdminProfilePage() {
             },
             {
               label: "Registered Vendors",
-              value: "86 Vendors",
+              value: statsLoading
+                ? "Loading..."
+                : `${platformStats.totalVendors} Vendors`,
               icon: Store,
             },
             {
               label: "Total Orders",
-              value: "3,642 Orders",
+              value: statsLoading
+                ? "Loading..."
+                : `${platformStats.totalOrders.toLocaleString()} Orders`,
               icon: ShoppingBag,
             },
           ].map((item) => {
