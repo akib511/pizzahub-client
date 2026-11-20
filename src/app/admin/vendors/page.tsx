@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -24,8 +25,8 @@ type Vendor = {
   name?: string;
   email: string;
   restaurantName?: string;
+  restaurantLogo?: string;
   phone?: string;
-  image?: string;
   profileImage?: string;
   createdAt?: string;
   subscriptionPlan?: string;
@@ -80,8 +81,7 @@ export default function AdminVendorsPage() {
   });
 
   const premiumCount = vendors.filter(
-    (vendor) =>
-      vendor.subscriptionPlan?.toLowerCase() === "premium",
+    (vendor) => vendor.subscriptionPlan?.toLowerCase() === "premium",
   ).length;
 
   const freeCount = vendors.length - premiumCount;
@@ -261,7 +261,7 @@ export default function AdminVendorsPage() {
       {/* Vendor Directory */}
       <div className="rounded-2xl border border-white/[0.07] bg-[#15110F]">
         {/* Toolbar */}
-        <div className="flex flex-col justify-between gap-4 border-b border-white/[0.06] p-4 sm:p-5 lg:flex-row lg:items-center">
+        <div className="flex flex-col justify-between gap-4 border-b border-white/[0.06] p-4 sm:flex-row sm:items-center sm:p-5">
           <div>
             <h2 className="text-lg font-semibold text-white">
               Vendor Directory
@@ -303,9 +303,7 @@ export default function AdminVendorsPage() {
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 size={30} className="animate-spin text-orange-400" />
 
-            <p className="mt-3 text-sm text-[#A8A29E]">
-              Loading ...
-            </p>
+            <p className="mt-3 text-sm text-[#A8A29E]">Loading ...</p>
           </div>
         )}
 
@@ -326,11 +324,9 @@ export default function AdminVendorsPage() {
         {/* Vendor Cards */}
         {!loading && !error && (
           <>
-            <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3 sm:p-5">
+            <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">
               {filteredVendors.map((vendor) => {
-                const restaurantImage =
-                  vendor.image || vendor.profileImage;
-
+                const restaurantImage = vendor.restaurantLogo;
                 const premium = getPlan(vendor) === "Premium";
 
                 return (
@@ -386,10 +382,18 @@ export default function AdminVendorsPage() {
 
                     {/* Card Content */}
                     <div className="p-4">
-                      {/* Vendor */}
+                      {/* Vendor Profile */}
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-xs font-bold text-orange-400">
-                          {getInitials(getVendorName(vendor))}
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-500/10 text-xs font-bold text-orange-400">
+                          {vendor.profileImage ? (
+                            <img
+                              src={vendor.profileImage}
+                              alt={getVendorName(vendor)}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            getInitials(getVendorName(vendor))
+                          )}
                         </div>
 
                         <div className="min-w-0">
@@ -465,12 +469,9 @@ export default function AdminVendorsPage() {
           >
             {/* Cover */}
             <div className="relative h-40">
-              {selectedVendor.image || selectedVendor.profileImage ? (
+              {selectedVendor.restaurantLogo ? (
                 <img
-                  src={
-                    selectedVendor.image ||
-                    selectedVendor.profileImage
-                  }
+                  src={selectedVendor.restaurantLogo}
                   alt={getRestaurantName(selectedVendor)}
                   className="h-full w-full object-cover"
                 />
@@ -498,9 +499,18 @@ export default function AdminVendorsPage() {
 
             {/* Details */}
             <div className="space-y-4 p-5">
+              {/* Vendor Profile */}
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 font-bold text-orange-400">
-                  {getInitials(getVendorName(selectedVendor))}
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-orange-500/10 font-bold text-orange-400">
+                  {selectedVendor.profileImage ? (
+                    <img
+                      src={selectedVendor.profileImage}
+                      alt={getVendorName(selectedVendor)}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    getInitials(getVendorName(selectedVendor))
+                  )}
                 </div>
 
                 <div className="min-w-0">

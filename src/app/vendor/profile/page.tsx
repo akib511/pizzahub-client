@@ -41,9 +41,16 @@ export default function VendorProfilePage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
-  // Upload Image
+  // Pending image files (not yet uploaded — preview only)
+  const [pendingProfileImage, setPendingProfileImage] = useState<File | null>(null);
+  const [pendingRestaurantLogo, setPendingRestaurantLogo] = useState<File | null>(null);
+
+  // Local preview URLs (created from pending files)
+  const [profileImagePreview, setProfileImagePreview] = useState<string>("");
+  const [restaurantLogoPreview, setRestaurantLogoPreview] = useState<string>("");
+
+  // Upload Image to ImgBB
   const uploadImage = async (file: File): Promise<string> => {
     const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
@@ -128,32 +135,28 @@ export default function VendorProfilePage() {
     }));
   };
 
-  // Image Upload
-  const handleImageUpload = async (
+  // Handle image selection — preview only, no upload yet
+  const handleImageSelect = (
     file: File,
     field: "profileImage" | "restaurantLogo"
   ) => {
-    try {
-      setUploading(true);
+    const previewUrl = URL.createObjectURL(file);
 
-      const imageUrl = await uploadImage(file);
-
-      setProfile((previous) => ({
-        ...previous,
-        [field]: imageUrl,
-      }));
-
-      toast.success("Image uploaded successfully!");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Image upload failed"
-      );
-    } finally {
-      setUploading(false);
+    if (field === "profileImage") {
+      // Revoke old preview URL to avoid memory leaks
+      if (profileImagePreview) URL.revokeObjectURL(profileImagePreview);
+      setPendingProfileImage(file);
+      setProfileImagePreview(previewUrl);
+    } else {
+      if (restaurantLogoPreview) URL.revokeObjectURL(restaurantLogoPreview);
+      setPendingRestaurantLogo(file);
+      setRestaurantLogoPreview(previewUrl);
     }
+
+    toast.success("Image selected! Click 'Save Changes' to apply.");
   };
 
-  // Save Profile
+  // Save Profile — upload pending images first, then save all data
   const handleSave = async () => {
     if (!session?.user?.email) {
       toast.error("Please login first");
@@ -168,6 +171,18 @@ export default function VendorProfilePage() {
     setSaving(true);
 
     try {
+      // Upload pending images to ImgBB before saving
+      let profileImageUrl = profile.profileImage;
+      let restaurantLogoUrl = profile.restaurantLogo;
+
+      if (pendingProfileImage) {
+        profileImageUrl = await uploadImage(pendingProfileImage);
+      }
+
+      if (pendingRestaurantLogo) {
+        restaurantLogoUrl = await uploadImage(pendingRestaurantLogo);
+      }
+
       const response = await fetch(
         `http://localhost:5000/vendor/profile/${encodeURIComponent(session.user.email)}`,
         {
@@ -181,8 +196,8 @@ export default function VendorProfilePage() {
             restaurantName: profile.restaurantName,
             location: profile.location,
             description: profile.description,
-            profileImage: profile.profileImage,
-            restaurantLogo: profile.restaurantLogo,
+            profileImage: profileImageUrl,
+            restaurantLogo: restaurantLogoUrl,
           }),
         }
       );
@@ -192,6 +207,21 @@ export default function VendorProfilePage() {
       if (!response.ok) {
         throw new Error(data.message || "Failed to update profile");
       }
+
+      // Update profile state with the uploaded URLs
+      setProfile((previous) => ({
+        ...previous,
+        profileImage: profileImageUrl,
+        restaurantLogo: restaurantLogoUrl,
+      }));
+
+      // Clear pending files and preview URLs
+      if (profileImagePreview) URL.revokeObjectURL(profileImagePreview);
+      if (restaurantLogoPreview) URL.revokeObjectURL(restaurantLogoPreview);
+      setPendingProfileImage(null);
+      setPendingRestaurantLogo(null);
+      setProfileImagePreview("");
+      setRestaurantLogoPreview("");
 
       toast.success("Profile updated successfully!");
     } catch (error) {
@@ -267,9 +297,9 @@ export default function VendorProfilePage() {
           {/* Vendor Information */}
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-orange-500/20 bg-orange-500/10">
-              {profile.profileImage ? (
+              {(profileImagePreview || profile.profileImage) ? (
                 <img
-                  src={profile.profileImage}
+                  src={profileImagePreview || profile.profileImage}
                   alt="Profile"
                   className="h-full w-full object-cover"
                 />
@@ -297,9 +327,9 @@ export default function VendorProfilePage() {
           {/* Restaurant Logo */}
           <div className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-[#100D0B]/70 p-3">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#211A16]">
-              {profile.restaurantLogo ? (
+              {(restaurantLogoPreview || profile.restaurantLogo) ? (
                 <img
-                  src={profile.restaurantLogo}
+                  src={restaurantLogoPreview || profile.restaurantLogo}
                   alt="Restaurant Logo"
                   className="h-full w-full object-cover"
                 />
@@ -353,12 +383,12 @@ export default function VendorProfilePage() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                disabled={uploading}
+                disabled={saving}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
 
                   if (file) {
-                    handleImageUpload(file, "profileImage");
+                    handleImageSelect(file, "profileImage");
                   }
 
                   e.target.value = "";
@@ -394,12 +424,12 @@ export default function VendorProfilePage() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                disabled={uploading}
+                disabled={saving}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
 
                   if (file) {
-                    handleImageUpload(file, "restaurantLogo");
+                    handleImageSelect(file, "restaurantLogo");
                   }
 
                   e.target.value = "";
@@ -409,9 +439,9 @@ export default function VendorProfilePage() {
           </div>
         </div>
 
-        {uploading && (
+        {(pendingProfileImage || pendingRestaurantLogo) && (
           <p className="relative mt-3 text-xs text-orange-400">
-            Uploading image, please wait...
+            Image selected — click &apos;Save Changes&apos; to upload and apply.
           </p>
         )}
       </div>
@@ -664,7 +694,7 @@ export default function VendorProfilePage() {
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving || uploading}
+          disabled={saving}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-orange-500/30 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           <Save size={17} />
