@@ -13,27 +13,33 @@ export const auth = betterAuth({
 
 
 user: {
-  additionalFields: {
-    role: {
-      type: "string",
-      required: false,
-      defaultValue: "buyer",
-      input: true,
-    },
-
-    subscriptionPlan: {
-      type: "string",
-      required: false,
-      defaultValue: "free",
-      input: false,
-    },
-
-    subscriptionExpiresAt: {
-      type: "date",
-      required: false,
-      input: false,
-    },
+ additionalFields: {
+  role: {
+    type: "string",
+    required: false,
+    defaultValue: "buyer",
+    input: true,
   },
+
+  profileImage: {
+    type: "string",
+    required: false,
+    input: false,
+  },
+
+  subscriptionPlan: {
+    type: "string",
+    required: false,
+    defaultValue: "free",
+    input: false,
+  },
+
+  subscriptionExpiresAt: {
+    type: "date",
+    required: false,
+    input: false,
+  },
+},
 },
 
 
