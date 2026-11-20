@@ -1,160 +1,140 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   Search,
   Users,
   UserCheck,
-  UserX,
   ShieldCheck,
   MoreHorizontal,
-  Eye,
-  Ban,
-  CheckCircle2,
   Mail,
   CalendarDays,
   X,
   Filter,
+  Store,
 } from "lucide-react";
 
-const usersData = [
-  {
-    id: 1,
-    name: "Sarah Ahmed",
-    email: "sarah.ahmed@gmail.com",
-    role: "Customer",
-    status: "Active",
-    joined: "Nov 12, 2026",
-    orders: 24,
-    avatar: "SA",
-    color: "bg-purple-500/15 text-purple-400",
-  },
-  {
-    id: 2,
-    name: "James Wilson",
-    email: "james.wilson@gmail.com",
-    role: "Vendor",
-    status: "Active",
-    joined: "Nov 10, 2026",
-    orders: 156,
-    avatar: "JW",
-    color: "bg-blue-500/15 text-blue-400",
-  },
-  {
-    id: 3,
-    name: "Emily Carter",
-    email: "emily.carter@gmail.com",
-    role: "Customer",
-    status: "Active",
-    joined: "Nov 08, 2026",
-    orders: 12,
-    avatar: "EC",
-    color: "bg-pink-500/15 text-pink-400",
-  },
-  {
-    id: 4,
-    name: "Michael Brown",
-    email: "michael.brown@gmail.com",
-    role: "Vendor",
-    status: "Blocked",
-    joined: "Nov 05, 2026",
-    orders: 89,
-    avatar: "MB",
-    color: "bg-amber-500/15 text-amber-400",
-  },
-  {
-    id: 5,
-    name: "Olivia Martin",
-    email: "olivia.martin@gmail.com",
-    role: "Customer",
-    status: "Active",
-    joined: "Nov 03, 2026",
-    orders: 31,
-    avatar: "OM",
-    color: "bg-green-500/15 text-green-400",
-  },
-  {
-    id: 6,
-    name: "Daniel Smith",
-    email: "daniel.smith@gmail.com",
-    role: "Admin",
-    status: "Active",
-    joined: "Oct 29, 2026",
-    orders: 0,
-    avatar: "DS",
-    color: "bg-orange-500/15 text-orange-400",
-  },
-  {
-    id: 7,
-    name: "Sophia Johnson",
-    email: "sophia.johnson@gmail.com",
-    role: "Vendor",
-    status: "Active",
-    joined: "Oct 25, 2026",
-    orders: 203,
-    avatar: "SJ",
-    color: "bg-cyan-500/15 text-cyan-400",
-  },
-  {
-    id: 8,
-    name: "William Davis",
-    email: "william.davis@gmail.com",
-    role: "Customer",
-    status: "Blocked",
-    joined: "Oct 21, 2026",
-    orders: 7,
-    avatar: "WD",
-    color: "bg-red-500/15 text-red-400",
-  },
-];
+type User = {
+  _id: string;
+  name?: string;
+  email: string;
+  role: string;
+  image?: string;
+  profileImage?: string;
+  restaurantName?: string;
+  phone?: string;
+  createdAt?: string | Date;
+  subscriptionPlan?: string;
+  subscriptionExpiresAt?: string | Date;
+  orders: number;
+};
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState(usersData);
+  const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // Fetch users from backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_URL}/admin/users`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+
+        const data: User[] = await response.json();
+
+        setUsers(data);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        setError("Unable to load users. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Search and role filtering
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      (user.name || "").toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase());
 
     const matchesRole =
-      roleFilter === "All" || user.role === roleFilter;
+      roleFilter === "All" ||
+     (user.role || "unknown").toLowerCase() === roleFilter.toLowerCase();
 
-    const matchesStatus =
-      statusFilter === "All" || user.status === statusFilter;
-
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesRole;
   });
 
-  const activeUsers = users.filter(
-    (user) => user.status === "Active"
-  ).length;
-
-  const blockedUsers = users.filter(
-    (user) => user.status === "Blocked"
+  // Statistics
+  const customerUsers = users.filter(
+    (user) => user.role === "customer",
   ).length;
 
   const vendorUsers = users.filter(
-    (user) => user.role === "Vendor"
+    (user) => user.role === "vendor",
   ).length;
 
-  const toggleStatus = (userId: number) => {
-    setUsers((previousUsers) =>
-      previousUsers.map((user) =>
-        user.id === userId
-          ? {
-              ...user,
-              status:
-                user.status === "Active" ? "Blocked" : "Active",
-            }
-          : user
-      )
-    );
+  const adminUsers = users.filter(
+    (user) => user.role === "admin",
+  ).length;
 
-    setSelectedUser(null);
+  const getUserName = (user: User) => {
+    return user.name || "Unnamed User";
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
+  const getAvatarColor = (role: string) => {
+    if (role === "vendor") {
+      return "bg-blue-500/15 text-blue-400";
+    }
+
+    if (role === "admin") {
+      return "bg-orange-500/15 text-orange-400";
+    }
+
+    return "bg-purple-500/15 text-purple-400";
+  };
+
+  const formatDate = (date?: string | Date) => {
+    if (!date) return "Not available";
+
+    const parsedDate = new Date(date);
+
+    if (isNaN(parsedDate.getTime())) {
+      return "Not available";
+    }
+
+    return parsedDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
   };
 
   return (
@@ -197,31 +177,31 @@ export default function AdminUsersPage() {
           value={users.length}
           icon={Users}
           color="orange"
-          percentage="+12.8%"
+          percentage="All accounts"
         />
 
         <StatCard
-          title="Active Users"
-          value={activeUsers}
+          title="Customers"
+          value={customerUsers}
           icon={UserCheck}
           color="green"
-          percentage="Currently active"
+          percentage="Customer accounts"
         />
 
         <StatCard
           title="Vendors"
           value={vendorUsers}
-          icon={ShieldCheck}
+          icon={Store}
           color="blue"
           percentage="Business accounts"
         />
 
         <StatCard
-          title="Blocked Users"
-          value={blockedUsers}
-          icon={UserX}
+          title="Admins"
+          value={adminUsers}
+          icon={ShieldCheck}
           color="red"
-          percentage="Restricted accounts"
+          percentage="Admin accounts"
         />
       </div>
 
@@ -267,195 +247,185 @@ export default function AdminUsersPage() {
                     All Roles
                   </option>
 
-                  <option value="Customer" className="bg-[#15110F]">
+                  <option value="customer" className="bg-[#15110F]">
                     Customer
                   </option>
 
-                  <option value="Vendor" className="bg-[#15110F]">
+                  <option value="vendor" className="bg-[#15110F]">
                     Vendor
                   </option>
 
-                  <option value="Admin" className="bg-[#15110F]">
+                  <option value="admin" className="bg-[#15110F]">
                     Admin
                   </option>
                 </select>
               </div>
             </div>
           </div>
-
-          {/* Status filters */}
-          <div className="flex flex-wrap gap-2">
-            {["All", "Active", "Blocked"].map((status) => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                  statusFilter === status
-                    ? "bg-orange-500 text-white"
-                    : "border border-white/[0.07] bg-white/[0.02] text-[#A8A29E] hover:bg-white/[0.05]"
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
         </div>
 
+        {/* Loading */}
+        {loading && (
+          <div className="flex justify-center py-16">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-orange-400 border-t-transparent" />
+          </div>
+        )}
+
+        {/* Error */}
+        {!loading && error && (
+          <div className="py-12 text-center">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
         {/* Desktop Table */}
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                <th className="px-5 py-3 text-xs font-medium text-[#78716C]">
-                  USER
-                </th>
+        {!loading && !error && (
+          <>
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+                    <th className="px-5 py-3 text-xs font-medium text-[#78716C]">
+                      USER
+                    </th>
 
-                <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
-                  ROLE
-                </th>
+                    <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
+                      ROLE
+                    </th>
 
-                <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
-                  STATUS
-                </th>
+                    <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
+                      JOINED
+                    </th>
 
-                <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
-                  JOINED
-                </th>
+                    <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
+                      ORDERS
+                    </th>
 
-                <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
-                  ORDERS
-                </th>
+                    <th className="px-4 py-3 text-xs font-medium text-[#78716C] text-right">
+                      ACTION
+                    </th>
+                  </tr>
+                </thead>
 
-                <th className="px-4 py-3 text-xs font-medium text-[#78716C] text-right">
-                  ACTION
-                </th>
-              </tr>
-            </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr
+                      key={user._id}
+                      className="border-b border-white/[0.04] transition hover:bg-white/[0.025]"
+                    >
+                      {/* User */}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <UserAvatar user={user} />
 
-            <tbody>
+                          <div>
+                            <p className="text-sm font-medium text-white">
+                              {getUserName(user)}
+                            </p>
+
+                            <p className="mt-0.5 text-xs text-[#78716C]">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Role */}
+                      <td className="px-4 py-4">
+                        <RoleBadge role={user.role} />
+                      </td>
+
+                      {/* Joined */}
+                      <td className="px-4 py-4 text-xs text-[#A8A29E]">
+                        {formatDate(user.createdAt)}
+                      </td>
+
+                      {/* Orders */}
+                      <td className="px-4 py-4">
+                        <span className="text-sm font-medium text-white">
+                          {user.orders}
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-4 py-4">
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => setSelectedUser(user)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.07] text-[#A8A29E] transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
+                          >
+                            <MoreHorizontal size={17} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {filteredUsers.length === 0 && <EmptyState />}
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="space-y-3 p-3 md:hidden">
               {filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-white/[0.04] transition hover:bg-white/[0.025]"
+                <div
+                  key={user._id}
+                  className="rounded-xl border border-white/[0.06] bg-[#0D0A09] p-4"
                 >
-                  {/* User */}
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${user.color}`}
-                      >
-                        {user.avatar}
-                      </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <UserAvatar user={user} />
 
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          {user.name}
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-white">
+                          {getUserName(user)}
                         </p>
 
-                        <p className="mt-0.5 text-xs text-[#78716C]">
+                        <p className="mt-1 truncate text-xs text-[#78716C]">
                           {user.email}
                         </p>
                       </div>
                     </div>
-                  </td>
 
-                  {/* Role */}
-                  <td className="px-4 py-4">
-                    <RoleBadge role={user.role} />
-                  </td>
-
-                  {/* Status */}
-                  <td className="px-4 py-4">
-                    <StatusBadge status={user.status} />
-                  </td>
-
-                  {/* Joined */}
-                  <td className="px-4 py-4 text-xs text-[#A8A29E]">
-                    {user.joined}
-                  </td>
-
-                  {/* Orders */}
-                  <td className="px-4 py-4">
-                    <span className="text-sm font-medium text-white">
-                      {user.orders}
-                    </span>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-4 py-4">
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => setSelectedUser(user)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.07] text-[#A8A29E] transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
-                      >
-                        <MoreHorizontal size={17} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {filteredUsers.length === 0 && (
-            <EmptyState />
-          )}
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="space-y-3 p-3 md:hidden">
-          {filteredUsers.map((user) => (
-            <div
-              key={user.id}
-              className="rounded-xl border border-white/[0.06] bg-[#0D0A09] p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${user.color}`}
-                  >
-                    {user.avatar}
+                    <button
+                      onClick={() => setSelectedUser(user)}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.07] text-[#A8A29E]"
+                    >
+                      <MoreHorizontal size={17} />
+                    </button>
                   </div>
 
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white">
-                      {user.name}
-                    </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <RoleBadge role={user.role} />
+                  </div>
 
-                    <p className="mt-1 truncate text-xs text-[#78716C]">
-                      {user.email}
-                    </p>
+                  <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3 text-xs text-[#78716C]">
+                    <span>
+                      Joined {formatDate(user.createdAt)}
+                    </span>
+
+                    <span>{user.orders} orders</span>
                   </div>
                 </div>
+              ))}
 
-                <button
-                  onClick={() => setSelectedUser(user)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.07] text-[#A8A29E]"
-                >
-                  <MoreHorizontal size={17} />
-                </button>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <RoleBadge role={user.role} />
-                <StatusBadge status={user.status} />
-              </div>
-
-              <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3 text-xs text-[#78716C]">
-                <span>Joined {user.joined}</span>
-                <span>{user.orders} orders</span>
-              </div>
+              {filteredUsers.length === 0 && <EmptyState />}
             </div>
-          ))}
-
-          {filteredUsers.length === 0 && <EmptyState />}
-        </div>
+          </>
+        )}
       </div>
 
       {/* User Details Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-[#181310] shadow-2xl">
+        <div
+          onClick={() => setSelectedUser(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="my-auto w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-[#181310] shadow-2xl"
+          >
             {/* Modal Header */}
             <div className="relative border-b border-white/[0.06] p-5">
               <button
@@ -466,19 +436,15 @@ export default function AdminUsersPage() {
               </button>
 
               <div className="flex items-center gap-4">
-                <div
-                  className={`flex h-14 w-14 items-center justify-center rounded-2xl text-base font-bold ${selectedUser.color}`}
-                >
-                  {selectedUser.avatar}
-                </div>
+                <UserAvatar user={selectedUser} large />
 
-                <div>
+                <div className="min-w-0">
                   <h3 className="text-lg font-bold text-white">
-                    {selectedUser.name}
+                    {getUserName(selectedUser)}
                   </h3>
 
-                  <p className="mt-1 text-xs text-[#78716C]">
-                    User ID: #{selectedUser.id}
+                  <p className="mt-1 break-all text-xs text-[#78716C]">
+                    User ID: {selectedUser._id}
                   </p>
                 </div>
               </div>
@@ -487,78 +453,86 @@ export default function AdminUsersPage() {
             {/* Details */}
             <div className="space-y-4 p-5">
               <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                <Mail size={17} className="text-orange-400" />
+                <Mail size={17} className="shrink-0 text-orange-400" />
 
-                <div>
-                  <p className="text-[10px] text-[#78716C]">EMAIL ADDRESS</p>
-                  <p className="mt-1 text-sm text-white">
+                <div className="min-w-0">
+                  <p className="text-[10px] text-[#78716C]">
+                    EMAIL ADDRESS
+                  </p>
+
+                  <p className="mt-1 break-all text-sm text-white">
                     {selectedUser.email}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                <CalendarDays size={17} className="text-orange-400" />
+                <CalendarDays
+                  size={17}
+                  className="shrink-0 text-orange-400"
+                />
 
                 <div>
-                  <p className="text-[10px] text-[#78716C]">JOINED DATE</p>
+                  <p className="text-[10px] text-[#78716C]">
+                    JOINED DATE
+                  </p>
+
                   <p className="mt-1 text-sm text-white">
-                    {selectedUser.joined}
+                    {formatDate(selectedUser.createdAt)}
                   </p>
                 </div>
               </div>
 
+              {selectedUser.role === "vendor" && (
+                <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                  <p className="text-xs text-[#78716C]">
+                    RESTAURANT NAME
+                  </p>
+
+                  <p className="mt-1 text-sm text-white">
+                    {selectedUser.restaurantName || "Not provided"}
+                  </p>
+
+                  <p className="mt-3 text-xs text-[#78716C]">
+                    SUBSCRIPTION PLAN
+                  </p>
+
+                  <p className="mt-1 text-sm capitalize text-white">
+                    {selectedUser.subscriptionPlan || "Free"}
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                  <p className="text-xs text-[#78716C]">Account Role</p>
+                  <p className="text-xs text-[#78716C]">
+                    Account Role
+                  </p>
+
                   <div className="mt-2">
                     <RoleBadge role={selectedUser.role} />
                   </div>
                 </div>
 
                 <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                  <p className="text-xs text-[#78716C]">Account Status</p>
-                  <div className="mt-2">
-                    <StatusBadge status={selectedUser.status} />
-                  </div>
+                  <p className="text-xs text-[#78716C]">
+                    Total Orders
+                  </p>
+
+                  <p className="mt-2 text-xl font-bold text-white">
+                    {selectedUser.orders}
+                  </p>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                <p className="text-xs text-[#78716C]">Total Orders</p>
-                <p className="mt-1 text-xl font-bold text-white">
-                  {selectedUser.orders}
-                </p>
-              </div>
+              {selectedUser.phone && (
+                <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                  <p className="text-xs text-[#78716C]">Phone Number</p>
 
-              {/* Action */}
-              {selectedUser.role !== "Admin" && (
-                <button
-                  onClick={() => toggleStatus(selectedUser.id)}
-                  className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition ${
-                    selectedUser.status === "Active"
-                      ? "border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/15"
-                      : "border border-green-500/20 bg-green-500/10 text-green-400 hover:bg-green-500/15"
-                  }`}
-                >
-                  {selectedUser.status === "Active" ? (
-                    <>
-                      <Ban size={16} />
-                      Block User
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={16} />
-                      Unblock User
-                    </>
-                  )}
-                </button>
-              )}
-
-              {selectedUser.role === "Admin" && (
-                <p className="rounded-xl border border-orange-500/10 bg-orange-500/5 p-3 text-center text-xs text-orange-400">
-                  Admin accounts cannot be blocked from this panel.
-                </p>
+                  <p className="mt-1 text-sm text-white">
+                    {selectedUser.phone}
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -568,9 +542,65 @@ export default function AdminUsersPage() {
   );
 }
 
+
+function UserAvatar({
+  user,
+  large = false,
+}: {
+  user: User;
+  large?: boolean;
+}) {
+  const image = user.image || user.profileImage;
+
+  const color =
+    user.role === "vendor"
+      ? "bg-blue-500/15 text-blue-400"
+      : user.role === "admin"
+        ? "bg-orange-500/15 text-orange-400"
+        : "bg-purple-500/15 text-purple-400";
+
+  const initials = (user.name || "U")
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <div
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl font-bold ${
+        large ? "h-14 w-14 text-base" : "h-10 w-10 text-xs"
+      } ${color}`}
+    >
+      {image ? (
+       
+        <img
+          src={image}
+          alt={user.name || "User"}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        initials
+      )}
+    </div>
+  );
+}
+
 /* Stats Card */
-function StatCard({ title, value, icon: Icon, color, percentage }: any) {
-  const colors: any = {
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  color,
+  percentage,
+}: {
+  title: string;
+  value: number;
+  icon: LucideIcon;
+  color: "orange" | "green" | "blue" | "red";
+  percentage: string;
+}) {
+  const colors = {
     orange: "bg-orange-500/10 text-orange-400",
     green: "bg-green-500/10 text-green-400",
     blue: "bg-blue-500/10 text-blue-400",
@@ -603,39 +633,23 @@ function StatCard({ title, value, icon: Icon, color, percentage }: any) {
 }
 
 /* Role Badge */
-function RoleBadge({ role }: { role: string }) {
-  const styles: any = {
-    Customer: "bg-purple-500/10 text-purple-400 border-purple-500/10",
-    Vendor: "bg-blue-500/10 text-blue-400 border-blue-500/10",
-    Admin: "bg-orange-500/10 text-orange-400 border-orange-500/10",
+function RoleBadge({ role }: { role?: string }) {
+  const normalizedRole = (role || "unknown").toLowerCase();
+
+  const styles: Record<string, string> = {
+    customer: "bg-purple-500/10 text-purple-400 border-purple-500/10",
+    vendor: "bg-blue-500/10 text-blue-400 border-blue-500/10",
+    admin: "bg-orange-500/10 text-orange-400 border-orange-500/10",
+    unknown: "bg-gray-500/10 text-gray-400 border-gray-500/10",
   };
 
   return (
     <span
-      className={`inline-flex rounded-md border px-2 py-1 text-[10px] font-medium ${styles[role]}`}
-    >
-      {role}
-    </span>
-  );
-}
-
-/* Status Badge */
-function StatusBadge({ status }: { status: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-medium ${
-        status === "Active"
-          ? "bg-green-500/10 text-green-400"
-          : "bg-red-500/10 text-red-400"
+      className={`inline-flex rounded-md border px-2 py-1 text-[10px] font-medium ${
+        styles[normalizedRole] || styles.unknown
       }`}
     >
-      <span
-        className={`h-1.5 w-1.5 rounded-full ${
-          status === "Active" ? "bg-green-400" : "bg-red-400"
-        }`}
-      />
-
-      {status}
+      {normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}
     </span>
   );
 }
