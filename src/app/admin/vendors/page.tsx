@@ -1,168 +1,128 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   Store,
-  CheckCircle2,
-  Clock,
   Crown,
   MapPin,
   UtensilsCrossed,
   Eye,
-  MoreHorizontal,
   X,
   Mail,
   Phone,
   CalendarDays,
-  ShieldCheck,
-  Ban,
-  Check,
-  XCircle,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 
-const vendorsData = [
-  {
-    id: 1,
-    name: "James Wilson",
-    email: "james.wilson@gmail.com",
-    restaurant: "Bella Italia",
-    location: "New York, USA",
-    phone: "+1 234 567 8901",
-    status: "Approved",
-    plan: "Premium",
-    menuItems: 24,
-    orders: 156,
-    joined: "Nov 10, 2026",
-    avatar: "BI",
-    image:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    name: "Michael Brown",
-    email: "michael.brown@gmail.com",
-    restaurant: "Urban Pizza",
-    location: "Chicago, USA",
-    phone: "+1 234 567 8902",
-    status: "Pending",
-    plan: "Free",
-    menuItems: 8,
-    orders: 89,
-    joined: "Nov 05, 2026",
-    avatar: "UP",
-    image:
-      "https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    name: "Sophia Johnson",
-    email: "sophia.johnson@gmail.com",
-    restaurant: "The Food Corner",
-    location: "Los Angeles, USA",
-    phone: "+1 234 567 8903",
-    status: "Approved",
-    plan: "Free",
-    menuItems: 3,
-    orders: 203,
-    joined: "Oct 25, 2026",
-    avatar: "FC",
-    image:
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    name: "David Miller",
-    email: "david.miller@gmail.com",
-    restaurant: "Fire Crust",
-    location: "Miami, USA",
-    phone: "+1 234 567 8904",
-    status: "Rejected",
-    plan: "Free",
-    menuItems: 0,
-    orders: 0,
-    joined: "Oct 22, 2026",
-    avatar: "FC",
-    image:
-      "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 5,
-    name: "Daniel Smith",
-    email: "daniel.smith@gmail.com",
-    restaurant: "Slice House",
-    location: "Houston, USA",
-    phone: "+1 234 567 8905",
-    status: "Approved",
-    plan: "Premium",
-    menuItems: 32,
-    orders: 412,
-    joined: "Oct 18, 2026",
-    avatar: "SH",
-    image:
-      "https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 6,
-    name: "Robert Taylor",
-    email: "robert.taylor@gmail.com",
-    restaurant: "Cheesy Bites",
-    location: "Dallas, USA",
-    phone: "+1 234 567 8906",
-    status: "Pending",
-    plan: "Free",
-    menuItems: 5,
-    orders: 12,
-    joined: "Oct 15, 2026",
-    avatar: "CB",
-    image:
-      "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=800&q=80",
-  },
-];
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+type Vendor = {
+  _id: string;
+  name?: string;
+  email: string;
+  restaurantName?: string;
+  phone?: string;
+  image?: string;
+  profileImage?: string;
+  createdAt?: string;
+  subscriptionPlan?: string;
+  subscriptionExpiresAt?: string;
+  menuItems: number;
+  orders: number;
+};
 
 export default function AdminVendorsPage() {
-  const [vendors, setVendors] = useState(vendorsData);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [selectedVendor, setSelectedVendor] = useState<any>(null);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchVendors = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch(`${API_URL}/admin/vendors`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch vendors");
+      }
+
+      const data: Vendor[] = await response.json();
+      setVendors(data);
+    } catch (error) {
+      console.error("Failed to fetch vendors:", error);
+      setError("Unable to load vendors. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVendors();
+  }, []);
 
   const filteredVendors = vendors.filter((vendor) => {
-    const matchesSearch =
-      vendor.name.toLowerCase().includes(search.toLowerCase()) ||
-      vendor.restaurant.toLowerCase().includes(search.toLowerCase()) ||
-      vendor.email.toLowerCase().includes(search.toLowerCase());
+    const name = (vendor.name || "").toLowerCase();
+    const restaurant = (vendor.restaurantName || "").toLowerCase();
+    const email = (vendor.email || "").toLowerCase();
+    const searchText = search.toLowerCase();
 
-    const matchesStatus =
-      statusFilter === "All" || vendor.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+    return (
+      name.includes(searchText) ||
+      restaurant.includes(searchText) ||
+      email.includes(searchText)
+    );
   });
 
-  const approvedCount = vendors.filter(
-    (vendor) => vendor.status === "Approved"
-  ).length;
-
-  const pendingCount = vendors.filter(
-    (vendor) => vendor.status === "Pending"
-  ).length;
-
   const premiumCount = vendors.filter(
-    (vendor) => vendor.plan === "Premium"
+    (vendor) =>
+      vendor.subscriptionPlan?.toLowerCase() === "premium",
   ).length;
 
-  const updateVendorStatus = (
-    vendorId: number,
-    status: string
-  ) => {
-    setVendors((previous) =>
-      previous.map((vendor) =>
-        vendor.id === vendorId
-          ? { ...vendor, status }
-          : vendor
-      )
-    );
+  const freeCount = vendors.length - premiumCount;
 
-    setSelectedVendor(null);
+  const formatDate = (date?: string) => {
+    if (!date) return "Not available";
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "Not available";
+    }
+
+    return parsedDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const getRestaurantName = (vendor: Vendor) =>
+    vendor.restaurantName || "Restaurant not added";
+
+  const getVendorName = (vendor: Vendor) =>
+    vendor.name || "Unknown Vendor";
+
+  const getPlan = (vendor: Vendor) =>
+    vendor.subscriptionPlan?.toLowerCase() === "premium"
+      ? "Premium"
+      : "Free";
+
+  const getInitials = (name?: string) => {
+    if (!name) return "V";
+
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase();
   };
 
   return (
@@ -180,29 +140,29 @@ export default function AdminVendorsPage() {
           </h1>
 
           <p className="mt-1 text-sm text-[#A8A29E]">
-            Review restaurants, manage applications and monitor vendors.
+            View restaurants, vendor profiles and subscription details.
           </p>
         </div>
 
         <div className="rounded-xl border border-orange-500/10 bg-orange-500/[0.04] px-4 py-3">
-          <p className="text-xs text-[#A8A29E]">Vendor Applications</p>
+          <p className="text-xs text-[#A8A29E]">Total Vendors</p>
 
           <div className="mt-1 flex items-center gap-2">
-            <Clock size={17} className="text-orange-400" />
+            <Store size={17} className="text-orange-400" />
 
             <span className="text-xl font-bold text-white">
-              {pendingCount}
+              {vendors.length}
             </span>
 
             <span className="text-xs text-orange-400">
-              Awaiting review
+              Registered vendors
             </span>
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
         <StatCard
           title="Total Vendors"
           value={vendors.length}
@@ -211,70 +171,54 @@ export default function AdminVendorsPage() {
         />
 
         <StatCard
-          title="Approved"
-          value={approvedCount}
-          icon={CheckCircle2}
-          color="green"
-        />
-
-        <StatCard
-          title="Pending Review"
-          value={pendingCount}
-          icon={Clock}
-          color="blue"
-        />
-
-        <StatCard
           title="Premium Vendors"
           value={premiumCount}
           icon={Crown}
           color="purple"
         />
+
+        <StatCard
+          title="Free Vendors"
+          value={freeCount}
+          icon={UtensilsCrossed}
+          color="blue"
+        />
       </div>
 
-      {/* Featured Overview */}
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        {/* Pending Applications */}
+      {/* Overview */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Vendor Overview */}
         <div className="relative overflow-hidden rounded-2xl border border-orange-500/10 bg-[#17110E] p-5">
           <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-orange-500/[0.05] blur-3xl" />
 
           <div className="relative flex items-start justify-between">
             <div>
               <p className="text-xs font-medium text-orange-400">
-                APPLICATION REVIEW
+                RESTAURANT NETWORK
               </p>
 
               <h2 className="mt-2 text-xl font-bold text-white">
-                Pending Applications
+                Vendor Directory
               </h2>
 
               <p className="mt-1 text-sm text-[#A8A29E]">
-                Vendors waiting for admin approval.
+                All registered restaurant partners.
               </p>
             </div>
 
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
-              <Clock size={20} />
+              <Store size={20} />
             </div>
           </div>
 
-          <div className="relative mt-5 flex items-end justify-between">
-            <div>
-              <span className="text-4xl font-bold text-white">
-                {pendingCount}
-              </span>
+          <div className="relative mt-5">
+            <span className="text-4xl font-bold text-white">
+              {vendors.length}
+            </span>
 
-              <span className="ml-2 text-sm text-[#78716C]">
-                applications
-              </span>
-            </div>
-
-            <button
-              onClick={() => setStatusFilter("Pending")}
-              className="rounded-lg border border-orange-500/20 bg-orange-500/10 px-3 py-2 text-xs font-medium text-orange-400 transition hover:bg-orange-500/15"
-            >
-              Review Applications
-            </button>
+            <span className="ml-2 text-sm text-[#78716C]">
+              total vendors
+            </span>
           </div>
         </div>
 
@@ -293,7 +237,7 @@ export default function AdminVendorsPage() {
               </h2>
 
               <p className="mt-1 text-sm text-[#A8A29E]">
-                Vendors with active premium plans.
+                Vendors with premium subscriptions.
               </p>
             </div>
 
@@ -302,19 +246,13 @@ export default function AdminVendorsPage() {
             </div>
           </div>
 
-          <div className="relative mt-5 flex items-end justify-between">
-            <div>
-              <span className="text-4xl font-bold text-white">
-                {premiumCount}
-              </span>
+          <div className="relative mt-5">
+            <span className="text-4xl font-bold text-white">
+              {premiumCount}
+            </span>
 
-              <span className="ml-2 text-sm text-[#78716C]">
-                premium vendors
-              </span>
-            </div>
-
-            <span className="rounded-lg bg-purple-500/10 px-3 py-2 text-xs font-medium text-purple-400">
-              Premium
+            <span className="ml-2 text-sm text-[#78716C]">
+              premium vendors
             </span>
           </div>
         </div>
@@ -335,7 +273,6 @@ export default function AdminVendorsPage() {
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
-            {/* Search */}
             <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-[#0D0A09] px-3 py-2.5 sm:w-64">
               <Search size={16} className="text-[#78716C]" />
 
@@ -347,168 +284,201 @@ export default function AdminVendorsPage() {
               />
             </div>
 
-            {/* Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-xl border border-white/[0.07] bg-[#0D0A09] px-3 py-2.5 text-sm text-white outline-none"
+            <button
+              onClick={fetchVendors}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-[#0D0A09] px-4 py-2.5 text-sm text-[#A8A29E] transition hover:bg-white/[0.05] hover:text-white disabled:opacity-50"
             >
-              <option value="All">All Vendors</option>
-              <option value="Approved">Approved</option>
-              <option value="Pending">Pending</option>
-              <option value="Rejected">Rejected</option>
-            </select>
+              <RefreshCw
+                size={15}
+                className={loading ? "animate-spin" : ""}
+              />
+              Refresh
+            </button>
           </div>
         </div>
 
-        {/* Vendor Cards */}
-        <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3 sm:p-5">
-          {filteredVendors.map((vendor) => (
-            <div
-              key={vendor.id}
-              className="group overflow-hidden rounded-xl border border-white/[0.06] bg-[#0D0A09] transition hover:border-orange-500/20"
+        {/* Loading */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 size={30} className="animate-spin text-orange-400" />
+
+            <p className="mt-3 text-sm text-[#A8A29E]">
+              Loading ...
+            </p>
+          </div>
+        )}
+
+        {/* Error */}
+        {!loading && error && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <p className="text-sm text-red-400">{error}</p>
+
+            <button
+              onClick={fetchVendors}
+              className="mt-4 rounded-lg bg-orange-500/10 px-4 py-2 text-xs font-medium text-orange-400 hover:bg-orange-500/20"
             >
-              {/* Restaurant Image */}
-              <div className="relative h-36 overflow-hidden">
-                <img
-                  src={vendor.image}
-                  alt={vendor.restaurant}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                />
+              Try Again
+            </button>
+          </div>
+        )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        {/* Vendor Cards */}
+        {!loading && !error && (
+          <>
+            <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-3 sm:p-5">
+              {filteredVendors.map((vendor) => {
+                const restaurantImage =
+                  vendor.image || vendor.profileImage;
 
-                {/* Status */}
-                <div className="absolute left-3 top-3">
-                  <VendorStatus status={vendor.status} />
-                </div>
+                const premium = getPlan(vendor) === "Premium";
 
-                {/* Plan */}
-                <div className="absolute right-3 top-3">
-                  {vendor.plan === "Premium" ? (
-                    <span className="flex items-center gap-1 rounded-lg border border-purple-400/20 bg-black/50 px-2 py-1 text-[10px] font-medium text-purple-300 backdrop-blur-md">
-                      <Crown size={11} />
-                      Premium
-                    </span>
-                  ) : (
-                    <span className="rounded-lg border border-white/10 bg-black/50 px-2 py-1 text-[10px] text-white/70 backdrop-blur-md">
-                      Free Plan
-                    </span>
-                  )}
-                </div>
-
-                {/* Restaurant Name */}
-                <div className="absolute bottom-3 left-3 right-3">
-                  <h3 className="text-lg font-bold text-white">
-                    {vendor.restaurant}
-                  </h3>
-
-                  <div className="mt-1 flex items-center gap-1 text-xs text-white/60">
-                    <MapPin size={12} />
-                    {vendor.location}
-                  </div>
-                </div>
-              </div>
-
-              {/* Card Content */}
-              <div className="p-4">
-                {/* Vendor */}
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-xs font-bold text-orange-400">
-                    {vendor.avatar}
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-white">
-                      {vendor.name}
-                    </p>
-
-                    <p className="truncate text-xs text-[#78716C]">
-                      {vendor.email}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-3">
-                    <div className="flex items-center gap-1.5 text-[#78716C]">
-                      <UtensilsCrossed size={13} />
-                      <span className="text-[10px]">Menu Items</span>
-                    </div>
-
-                    <p className="mt-1 text-lg font-bold text-white">
-                      {vendor.menuItems}
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-3">
-                    <div className="flex items-center gap-1.5 text-[#78716C]">
-                      <Store size={13} />
-                      <span className="text-[10px]">Total Orders</span>
-                    </div>
-
-                    <p className="mt-1 text-lg font-bold text-white">
-                      {vendor.orders}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="mt-4 flex gap-2">
-                  <button
-                    onClick={() => setSelectedVendor(vendor)}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] py-2.5 text-xs font-medium text-[#A8A29E] transition hover:bg-white/[0.06] hover:text-white"
+                return (
+                  <div
+                    key={vendor._id}
+                    className="group overflow-hidden rounded-xl border border-white/[0.06] bg-[#0D0A09] transition hover:border-orange-500/20"
                   >
-                    <Eye size={14} />
-                    View Details
-                  </button>
+                    {/* Restaurant Image */}
+                    <div className="relative h-36 overflow-hidden">
+                      {restaurantImage ? (
+                        <img
+                          src={restaurantImage}
+                          alt={getRestaurantName(vendor)}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-[#211914]">
+                          <Store
+                            size={35}
+                            className="text-orange-400/40"
+                          />
+                        </div>
+                      )}
 
-                  {vendor.status === "Pending" && (
-                    <>
-                      <button
-                        onClick={() =>
-                          updateVendorStatus(vendor.id, "Approved")
-                        }
-                        className="flex h-10 w-10 items-center justify-center rounded-lg border border-green-500/15 bg-green-500/10 text-green-400 transition hover:bg-green-500/20"
-                        title="Approve"
-                      >
-                        <Check size={16} />
-                      </button>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                      <button
-                        onClick={() =>
-                          updateVendorStatus(vendor.id, "Rejected")
-                        }
-                        className="flex h-10 w-10 items-center justify-center rounded-lg border border-red-500/15 bg-red-500/10 text-red-400 transition hover:bg-red-500/20"
-                        title="Reject"
-                      >
-                        <X size={16} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
+                      {/* Plan */}
+                      <div className="absolute right-3 top-3">
+                        {premium ? (
+                          <span className="flex items-center gap-1 rounded-lg border border-purple-400/20 bg-black/50 px-2 py-1 text-[10px] font-medium text-purple-300 backdrop-blur-md">
+                            <Crown size={11} />
+                            Premium
+                          </span>
+                        ) : (
+                          <span className="rounded-lg border border-white/10 bg-black/50 px-2 py-1 text-[10px] text-white/70 backdrop-blur-md">
+                            Free Plan
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Restaurant Name */}
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <h3 className="text-lg font-bold text-white">
+                          {getRestaurantName(vendor)}
+                        </h3>
+
+                        <div className="mt-1 flex items-center gap-1 text-xs text-white/60">
+                          <MapPin size={12} />
+                          <span>Location not available</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card Content */}
+                    <div className="p-4">
+                      {/* Vendor */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-xs font-bold text-orange-400">
+                          {getInitials(getVendorName(vendor))}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-white">
+                            {getVendorName(vendor)}
+                          </p>
+
+                          <p className="truncate text-xs text-[#78716C]">
+                            {vendor.email}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-3">
+                          <div className="flex items-center gap-1.5 text-[#78716C]">
+                            <UtensilsCrossed size={13} />
+                            <span className="text-[10px]">
+                              Menu Items
+                            </span>
+                          </div>
+
+                          <p className="mt-1 text-lg font-bold text-white">
+                            {vendor.menuItems}
+                          </p>
+                        </div>
+
+                        <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-3">
+                          <div className="flex items-center gap-1.5 text-[#78716C]">
+                            <Store size={13} />
+                            <span className="text-[10px]">
+                              Total Orders
+                            </span>
+                          </div>
+
+                          <p className="mt-1 text-lg font-bold text-white">
+                            {vendor.orders}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="mt-4">
+                        <button
+                          onClick={() => setSelectedVendor(vendor)}
+                          className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] py-2.5 text-xs font-medium text-[#A8A29E] transition hover:bg-white/[0.06] hover:text-white"
+                        >
+                          <Eye size={14} />
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
 
-        {filteredVendors.length === 0 && (
-          <EmptyState />
+            {filteredVendors.length === 0 && <EmptyState />}
+          </>
         )}
       </div>
 
       {/* Vendor Details Modal */}
       {selectedVendor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#181310] shadow-2xl">
+        <div
+          onClick={() => setSelectedVendor(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#181310] shadow-2xl"
+          >
             {/* Cover */}
             <div className="relative h-40">
-              <img
-                src={selectedVendor.image}
-                alt={selectedVendor.restaurant}
-                className="h-full w-full object-cover"
-              />
+              {selectedVendor.image || selectedVendor.profileImage ? (
+                <img
+                  src={
+                    selectedVendor.image ||
+                    selectedVendor.profileImage
+                  }
+                  alt={getRestaurantName(selectedVendor)}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-[#211914]">
+                  <Store size={40} className="text-orange-400/40" />
+                </div>
+              )}
 
               <div className="absolute inset-0 bg-gradient-to-t from-[#181310] to-transparent" />
 
@@ -521,13 +491,8 @@ export default function AdminVendorsPage() {
 
               <div className="absolute bottom-3 left-4">
                 <h2 className="text-xl font-bold text-white">
-                  {selectedVendor.restaurant}
+                  {getRestaurantName(selectedVendor)}
                 </h2>
-
-                <p className="mt-1 flex items-center gap-1 text-xs text-white/70">
-                  <MapPin size={12} />
-                  {selectedVendor.location}
-                </p>
               </div>
             </div>
 
@@ -535,12 +500,12 @@ export default function AdminVendorsPage() {
             <div className="space-y-4 p-5">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 font-bold text-orange-400">
-                  {selectedVendor.avatar}
+                  {getInitials(getVendorName(selectedVendor))}
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <h3 className="font-semibold text-white">
-                    {selectedVendor.name}
+                    {getVendorName(selectedVendor)}
                   </h3>
 
                   <p className="text-xs text-[#78716C]">
@@ -559,83 +524,59 @@ export default function AdminVendorsPage() {
                 <DetailItem
                   icon={Phone}
                   label="Phone"
-                  value={selectedVendor.phone}
+                  value={selectedVendor.phone || "Not available"}
                 />
 
                 <DetailItem
                   icon={CalendarDays}
                   label="Joined"
-                  value={selectedVendor.joined}
+                  value={formatDate(selectedVendor.createdAt)}
                 />
 
                 <DetailItem
-                  icon={ShieldCheck}
+                  icon={Crown}
                   label="Subscription"
-                  value={selectedVendor.plan}
+                  value={getPlan(selectedVendor)}
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <MiniStat
                   label="Menu Items"
                   value={selectedVendor.menuItems}
                 />
 
                 <MiniStat
-                  label="Orders"
+                  label="Total Orders"
                   value={selectedVendor.orders}
-                />
-
-                <MiniStat
-                  label="Status"
-                  value={selectedVendor.status}
                 />
               </div>
 
-              {/* Approval Actions */}
-              {selectedVendor.status === "Pending" && (
-                <div className="grid grid-cols-2 gap-3 pt-1">
-                  <button
-                    onClick={() =>
-                      updateVendorStatus(
-                        selectedVendor.id,
-                        "Approved"
-                      )
-                    }
-                    className="flex items-center justify-center gap-2 rounded-xl bg-green-500/10 py-3 text-sm font-semibold text-green-400 transition hover:bg-green-500/20"
-                  >
-                    <CheckCircle2 size={16} />
-                    Approve Vendor
-                  </button>
+              {getPlan(selectedVendor) === "Premium" &&
+                selectedVendor.subscriptionExpiresAt && (
+                  <div className="rounded-xl border border-purple-500/10 bg-purple-500/[0.04] p-3">
+                    <p className="text-xs text-purple-400">
+                      Subscription Expires
+                    </p>
 
-                  <button
-                    onClick={() =>
-                      updateVendorStatus(
-                        selectedVendor.id,
-                        "Rejected"
-                      )
-                    }
-                    className="flex items-center justify-center gap-2 rounded-xl bg-red-500/10 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/20"
-                  >
-                    <XCircle size={16} />
-                    Reject Vendor
-                  </button>
-                </div>
-              )}
+                    <p className="mt-1 text-sm font-semibold text-white">
+                      {formatDate(
+                        selectedVendor.subscriptionExpiresAt,
+                      )}
+                    </p>
+                  </div>
+                )}
 
-              {selectedVendor.status === "Approved" && (
-                <div className="flex items-center justify-center gap-2 rounded-xl border border-green-500/10 bg-green-500/[0.04] py-3 text-sm text-green-400">
-                  <CheckCircle2 size={16} />
-                  Vendor is approved
-                </div>
-              )}
-
-              {selectedVendor.status === "Rejected" && (
-                <div className="flex items-center justify-center gap-2 rounded-xl border border-red-500/10 bg-red-500/[0.04] py-3 text-sm text-red-400">
-                  <XCircle size={16} />
-                  Application rejected
-                </div>
-              )}
+              <div
+                className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-sm ${
+                  getPlan(selectedVendor) === "Premium"
+                    ? "border-purple-500/10 bg-purple-500/[0.04] text-purple-400"
+                    : "border-white/[0.06] bg-white/[0.02] text-[#A8A29E]"
+                }`}
+              >
+                <Crown size={16} />
+                {getPlan(selectedVendor)} Subscription
+              </div>
             </div>
           </div>
         </div>
@@ -645,20 +586,31 @@ export default function AdminVendorsPage() {
 }
 
 /* Stats Card */
-function StatCard({ title, value, icon: Icon, color }: any) {
-  const styles: any = {
+type StatCardProps = {
+  title: string;
+  value: number;
+  icon: React.ElementType;
+  color: "orange" | "blue" | "purple";
+};
+
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  color,
+}: StatCardProps) {
+  const styles = {
     orange: "bg-orange-500/10 text-orange-400",
-    green: "bg-green-500/10 text-green-400",
     blue: "bg-blue-500/10 text-blue-400",
     purple: "bg-purple-500/10 text-purple-400",
   };
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#15110F] p-4 sm:p-5 transition hover:border-white/[0.1]">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${styles[color]}`}>
-          <Icon size={19} />
-        </div>
+    <div className="rounded-2xl border border-white/[0.06] bg-[#15110F] p-4 transition hover:border-white/[0.1] sm:p-5">
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-xl ${styles[color]}`}
+      >
+        <Icon size={19} />
       </div>
 
       <p className="mt-4 text-xs text-[#A8A29E]">{title}</p>
@@ -670,25 +622,18 @@ function StatCard({ title, value, icon: Icon, color }: any) {
   );
 }
 
-/* Vendor Status */
-function VendorStatus({ status }: { status: string }) {
-  const styles: any = {
-    Approved: "bg-green-500/10 text-green-400 border-green-500/15",
-    Pending: "bg-orange-500/10 text-orange-400 border-orange-500/15",
-    Rejected: "bg-red-500/10 text-red-400 border-red-500/15",
-  };
-
-  return (
-    <span
-      className={`rounded-lg border px-2.5 py-1 text-[10px] font-medium backdrop-blur-md ${styles[status]}`}
-    >
-      {status}
-    </span>
-  );
-}
-
 /* Detail Item */
-function DetailItem({ icon: Icon, label, value }: any) {
+type DetailItemProps = {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+};
+
+function DetailItem({
+  icon: Icon,
+  label,
+  value,
+}: DetailItemProps) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
       <Icon size={16} className="shrink-0 text-orange-400" />
@@ -705,7 +650,12 @@ function DetailItem({ icon: Icon, label, value }: any) {
 }
 
 /* Mini Stat */
-function MiniStat({ label, value }: any) {
+type MiniStatProps = {
+  label: string;
+  value: number;
+};
+
+function MiniStat({ label, value }: MiniStatProps) {
   return (
     <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
       <p className="text-[10px] text-[#78716C]">{label}</p>
@@ -730,7 +680,7 @@ function EmptyState() {
       </p>
 
       <p className="mt-1 text-xs text-[#78716C]">
-        Try changing your search or filter.
+        Try changing your search.
       </p>
     </div>
   );
