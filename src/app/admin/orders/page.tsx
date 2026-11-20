@@ -1,165 +1,119 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
 import {
   Search,
   Eye,
-  Package,
   Clock,
   CheckCircle2,
   XCircle,
-  Truck,
   ShoppingBag,
   ChevronDown,
   MapPin,
   CalendarDays,
   User,
   Store,
-  Phone,
   X,
-  ArrowUpRight,
 } from "lucide-react";
 
-const initialOrders = [
-  {
-    id: "ORD-1001",
-    customer: "Rahim Ahmed",
-    customerEmail: "rahim@gmail.com",
-    vendor: "Pizza Palace",
-    vendorEmail: "pizza@gmail.com",
-    items: [
-      { name: "Pepperoni Pizza", quantity: 2, price: 18 },
-      { name: "Garlic Bread", quantity: 1, price: 5 },
-    ],
-    total: 41,
-    status: "pending",
-    payment: "Paid",
-    date: "Nov 19, 2026",
-    address: "Dhanmondi, Dhaka, Bangladesh",
-    phone: "+880 1712-345678",
-  },
-  {
-    id: "ORD-1002",
-    customer: "Sadia Islam",
-    customerEmail: "sadia@gmail.com",
-    vendor: "Italian Corner",
-    vendorEmail: "italian@gmail.com",
-    items: [
-      { name: "Margherita Pizza", quantity: 1, price: 15 },
-      { name: "Coke", quantity: 2, price: 3 },
-    ],
-    total: 21,
-    status: "processing",
-    payment: "Paid",
-    date: "Nov 18, 2026",
-    address: "Banani, Dhaka, Bangladesh",
-    phone: "+880 1812-456789",
-  },
-  {
-    id: "ORD-1003",
-    customer: "Tanvir Hasan",
-    customerEmail: "tanvir@gmail.com",
-    vendor: "Pizza Palace",
-    vendorEmail: "pizza@gmail.com",
-    items: [
-      { name: "BBQ Chicken Pizza", quantity: 2, price: 20 },
-    ],
-    total: 40,
-    status: "delivered",
-    payment: "Paid",
-    date: "Nov 18, 2026",
-    address: "Uttara, Dhaka, Bangladesh",
-    phone: "+880 1912-567890",
-  },
-  {
-    id: "ORD-1004",
-    customer: "Nusrat Jahan",
-    customerEmail: "nusrat@gmail.com",
-    vendor: "Pizza House",
-    vendorEmail: "house@gmail.com",
-    items: [
-      { name: "Four Cheese Pizza", quantity: 1, price: 22 },
-      { name: "French Fries", quantity: 1, price: 6 },
-    ],
-    total: 28,
-    status: "cancelled",
-    payment: "Refunded",
-    date: "Nov 17, 2026",
-    address: "Mirpur, Dhaka, Bangladesh",
-    phone: "+880 1612-678901",
-  },
-  {
-    id: "ORD-1005",
-    customer: "Fahim Rahman",
-    customerEmail: "fahim@gmail.com",
-    vendor: "Italian Corner",
-    vendorEmail: "italian@gmail.com",
-    items: [
-      { name: "Spicy Beef Pizza", quantity: 1, price: 19 },
-      { name: "Coke", quantity: 1, price: 3 },
-    ],
-    total: 22,
-    status: "pending",
-    payment: "Paid",
-    date: "Nov 17, 2026",
-    address: "Mohammadpur, Dhaka, Bangladesh",
-    phone: "+880 1512-789012",
-  },
-  {
-    id: "ORD-1006",
-    customer: "Mehedi Hasan",
-    customerEmail: "mehedi@gmail.com",
-    vendor: "Pizza House",
-    vendorEmail: "house@gmail.com",
-    items: [
-      { name: "Veggie Garden Pizza", quantity: 2, price: 16 },
-    ],
-    total: 32,
-    status: "processing",
-    payment: "Paid",
-    date: "Nov 16, 2026",
-    address: "Gulshan, Dhaka, Bangladesh",
-    phone: "+880 1312-890123",
-  },
-];
+type OrderStatus = "pending" | "accepted" | "rejected" | "cancelled";
 
-const statusStyles: Record<string, string> = {
+interface Order {
+  _id: string;
+  itemId: string;
+  itemName: string;
+  itemImage?: string;
+  vendorId: string;
+  vendorEmail: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  deliveryDate: string;
+  deliveryAddress: string;
+  message?: string;
+  status: OrderStatus;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+const API_URL = "http://localhost:5000";
+
+const statusStyles: Record<OrderStatus, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  processing: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  delivered: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
+  accepted: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  rejected: "bg-red-500/10 text-red-400 border-red-500/20",
+  cancelled: "bg-stone-500/10 text-stone-400 border-stone-500/20",
+};
+
+const formatDate = (date: string) => {
+  if (!date) return "N/A";
+
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const formatOrderId = (id: string) => {
+  return `ORD-${id.slice(-6).toUpperCase()}`;
 };
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch all orders
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${API_URL}/admin/orders`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch orders");
+      }
+
+      const data: Order[] = await response.json();
+
+      setOrders(data);
+    } catch (error) {
+      console.error("Orders fetch error:", error);
+      toast.error("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // Search and Filter
   const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(search.toLowerCase()) ||
-      order.customer.toLowerCase().includes(search.toLowerCase()) ||
-      order.vendor.toLowerCase().includes(search.toLowerCase());
+    const searchValue = search.toLowerCase();
 
-    const matchesFilter =
-      filter === "all" || order.status === filter;
+    const matchesSearch =
+      formatOrderId(order._id).toLowerCase().includes(searchValue) ||
+      order.customerName?.toLowerCase().includes(searchValue) ||
+      order.customerEmail?.toLowerCase().includes(searchValue) ||
+      order.vendorEmail?.toLowerCase().includes(searchValue) ||
+      order.itemName?.toLowerCase().includes(searchValue);
+
+    const matchesFilter = filter === "all" || order.status === filter;
 
     return matchesSearch && matchesFilter;
   });
 
-  const updateStatus = (id: string, status: string) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === id ? { ...order, status } : order
-      )
-    );
-
-    if (selectedOrder?.id === id) {
-      setSelectedOrder({ ...selectedOrder, status });
-    }
-  };
-
+  // Dashboard statistics
   const stats = [
     {
       title: "Total Orders",
@@ -176,25 +130,25 @@ export default function AdminOrdersPage() {
       bg: "bg-amber-500/10",
     },
     {
-      title: "Processing",
-      value: orders.filter((o) => o.status === "processing").length,
-      icon: Package,
+      title: "Accepted",
+      value: orders.filter((o) => o.status === "accepted").length,
+      icon: CheckCircle2,
       color: "text-blue-400",
       bg: "bg-blue-500/10",
     },
     {
-      title: "Delivered",
-      value: orders.filter((o) => o.status === "delivered").length,
-      icon: CheckCircle2,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10",
+      title: "Rejected",
+      value: orders.filter((o) => o.status === "rejected").length,
+      icon: XCircle,
+      color: "text-red-400",
+      bg: "bg-red-500/10",
     },
     {
       title: "Cancelled",
       value: orders.filter((o) => o.status === "cancelled").length,
       icon: XCircle,
-      color: "text-red-400",
-      bg: "bg-red-500/10",
+      color: "text-stone-400",
+      bg: "bg-stone-500/10",
     },
   ];
 
@@ -206,8 +160,9 @@ export default function AdminOrdersPage() {
           <h1 className="text-2xl font-bold text-white sm:text-3xl">
             Orders Management
           </h1>
+
           <p className="mt-1 text-sm text-stone-400">
-            Monitor and manage all platform orders.
+            Monitor and view all platform orders.
           </p>
         </div>
 
@@ -272,8 +227,8 @@ export default function AdminOrdersPage() {
           >
             <option value="all">All Orders</option>
             <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="delivered">Delivered</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
             <option value="cancelled">Cancelled</option>
           </select>
 
@@ -294,132 +249,156 @@ export default function AdminOrdersPage() {
           </span>
         </div>
 
-        {/* Desktop Table */}
-        <div className="hidden overflow-x-auto lg:block">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-white/[0.06] text-xs text-stone-500">
-                <th className="px-5 py-4 font-medium">ORDER ID</th>
-                <th className="px-5 py-4 font-medium">CUSTOMER</th>
-                <th className="px-5 py-4 font-medium">VENDOR</th>
-                <th className="px-5 py-4 font-medium">AMOUNT</th>
-                <th className="px-5 py-4 font-medium">STATUS</th>
-                <th className="px-5 py-4 font-medium">DATE</th>
-                <th className="px-5 py-4 font-medium">ACTION</th>
-              </tr>
-            </thead>
+        {loading ? (
+          <div className="py-16 text-center text-sm text-stone-400">
+            Loading orders...
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-white/[0.06] text-xs text-stone-500">
+                    <th className="px-5 py-4 font-medium">ORDER ID</th>
+                    <th className="px-5 py-4 font-medium">CUSTOMER</th>
+                    <th className="px-5 py-4 font-medium">VENDOR</th>
+                    <th className="px-5 py-4 font-medium">AMOUNT</th>
+                    <th className="px-5 py-4 font-medium">STATUS</th>
+                    <th className="px-5 py-4 font-medium">DATE</th>
+                    <th className="px-5 py-4 font-medium">ACTION</th>
+                  </tr>
+                </thead>
 
-            <tbody>
+                <tbody>
+                  {filteredOrders.map((order) => (
+                    <tr
+                      key={order._id}
+                      className="border-b border-white/[0.04] transition hover:bg-white/[0.02]"
+                    >
+                      <td className="px-5 py-4">
+                        <span className="font-medium text-orange-400">
+                          {formatOrderId(order._id)}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <p className="text-sm font-medium text-white">
+                          {order.customerName}
+                        </p>
+
+                        <p className="mt-1 text-xs text-stone-500">
+                          {order.customerEmail}
+                        </p>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <p className="text-sm text-stone-300">
+                          {order.vendorEmail}
+                        </p>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <span className="font-semibold text-white">
+                          ${Number(order.totalPrice).toFixed(2)}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-xs capitalize ${statusStyles[order.status]}`}
+                        >
+                          {order.status}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-4 text-xs text-stone-400">
+                        {formatDate(order.createdAt)}
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="flex items-center gap-1.5 rounded-lg border border-white/[0.07] px-3 py-2 text-xs text-stone-300 transition hover:border-orange-500/30 hover:text-orange-400"
+                        >
+                          <Eye size={14} />
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="space-y-3 p-3 lg:hidden">
               {filteredOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="border-b border-white/[0.04] transition hover:bg-white/[0.02]"
+                <div
+                  key={order._id}
+                  className="rounded-xl border border-white/[0.06] bg-[#100D0B] p-4"
                 >
-                  <td className="px-5 py-4">
-                    <span className="font-medium text-orange-400">
-                      {order.id}
-                    </span>
-                  </td>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-orange-400">
+                        {formatOrderId(order._id)}
+                      </p>
 
-                  <td className="px-5 py-4">
-                    <p className="text-sm font-medium text-white">
-                      {order.customer}
-                    </p>
-                    <p className="mt-1 text-xs text-stone-500">
-                      {order.customerEmail}
-                    </p>
-                  </td>
+                      <p className="mt-1 text-sm text-white">
+                        {order.customerName}
+                      </p>
 
-                  <td className="px-5 py-4">
-                    <p className="text-sm text-stone-300">{order.vendor}</p>
-                  </td>
+                      <p className="text-xs text-stone-500">
+                        {order.vendorEmail}
+                      </p>
+                    </div>
 
-                  <td className="px-5 py-4">
-                    <span className="font-semibold text-white">
-                      ${order.total.toFixed(2)}
-                    </span>
-                  </td>
-
-                  <td className="px-5 py-4">
                     <span
-                      className={`rounded-full border px-2.5 py-1 text-xs capitalize ${statusStyles[order.status]}`}
+                      className={`rounded-full border px-2 py-1 text-[10px] capitalize ${statusStyles[order.status]}`}
                     >
                       {order.status}
                     </span>
-                  </td>
+                  </div>
 
-                  <td className="px-5 py-4 text-xs text-stone-400">
-                    {order.date}
-                  </td>
+                  <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
+                    <div>
+                      <p className="text-lg font-bold text-white">
+                        ${Number(order.totalPrice).toFixed(2)}
+                      </p>
 
-                  <td className="px-5 py-4">
+                      <p className="text-xs text-stone-500">
+                        {formatDate(order.createdAt)}
+                      </p>
+                    </div>
+
                     <button
                       onClick={() => setSelectedOrder(order)}
-                      className="flex items-center gap-1.5 rounded-lg border border-white/[0.07] px-3 py-2 text-xs text-stone-300 transition hover:border-orange-500/30 hover:text-orange-400"
+                      className="flex items-center gap-2 rounded-lg bg-orange-500/10 px-3 py-2 text-sm text-orange-400 transition hover:bg-orange-500/20"
                     >
-                      <Eye size={14} />
+                      <Eye size={15} />
                       Details
                     </button>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="space-y-3 p-3 lg:hidden">
-          {filteredOrders.map((order) => (
-            <div
-              key={order.id}
-              className="rounded-xl border border-white/[0.06] bg-[#100D0B] p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-orange-400">{order.id}</p>
-                  <p className="mt-1 text-sm text-white">{order.customer}</p>
-                  <p className="text-xs text-stone-500">{order.vendor}</p>
-                </div>
-
-                <span
-                  className={`rounded-full border px-2 py-1 text-[10px] capitalize ${statusStyles[order.status]}`}
-                >
-                  {order.status}
-                </span>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
-                <div>
-                  <p className="text-lg font-bold text-white">
-                    ${order.total.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-stone-500">{order.date}</p>
-                </div>
-
-                <button
-                  onClick={() => setSelectedOrder(order)}
-                  className="flex items-center gap-2 rounded-lg bg-orange-500/10 px-3 py-2 text-sm text-orange-400 transition hover:bg-orange-500/20"
-                >
-                  <Eye size={15} />
-                  Details
-                </button>
-              </div>
             </div>
-          ))}
-        </div>
 
-        {/* Empty State */}
-        {filteredOrders.length === 0 && (
-          <div className="py-16 text-center">
-            <ShoppingBag
-              size={35}
-              className="mx-auto mb-3 text-stone-600"
-            />
-            <h3 className="font-medium text-white">No orders found</h3>
-            <p className="mt-1 text-sm text-stone-500">
-              Try changing your search or filter.
-            </p>
-          </div>
+            {/* Empty State */}
+            {filteredOrders.length === 0 && (
+              <div className="py-16 text-center">
+                <ShoppingBag
+                  size={35}
+                  className="mx-auto mb-3 text-stone-600"
+                />
+
+                <h3 className="font-medium text-white">No orders found</h3>
+
+                <p className="mt-1 text-sm text-stone-500">
+                  Try changing your search or filter.
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -437,8 +416,9 @@ export default function AdminOrdersPage() {
             <div className="sticky top-0 flex items-center justify-between border-b border-white/[0.06] bg-[#1C1715] px-5 py-4">
               <div>
                 <p className="text-xs text-stone-500">Order Details</p>
+
                 <h2 className="mt-1 text-lg font-bold text-white">
-                  {selectedOrder.id}
+                  {formatOrderId(selectedOrder._id)}
                 </h2>
               </div>
 
@@ -451,16 +431,12 @@ export default function AdminOrdersPage() {
             </div>
 
             <div className="space-y-5 p-5">
-              {/* Status & Payment */}
+              {/* Status */}
               <div className="flex flex-wrap items-center gap-2">
                 <span
                   className={`rounded-full border px-3 py-1.5 text-xs capitalize ${statusStyles[selectedOrder.status]}`}
                 >
                   {selectedOrder.status}
-                </span>
-
-                <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-400">
-                  Payment: {selectedOrder.payment}
                 </span>
               </div>
 
@@ -473,17 +449,12 @@ export default function AdminOrdersPage() {
                   </div>
 
                   <p className="font-medium text-white">
-                    {selectedOrder.customer}
+                    {selectedOrder.customerName}
                   </p>
 
                   <p className="mt-1 break-all text-xs text-stone-500">
                     {selectedOrder.customerEmail}
                   </p>
-
-                  <div className="mt-3 flex items-center gap-2 text-xs text-stone-400">
-                    <Phone size={13} />
-                    {selectedOrder.phone}
-                  </div>
                 </div>
 
                 <div className="rounded-xl border border-white/[0.06] bg-[#100D0B] p-4">
@@ -492,11 +463,7 @@ export default function AdminOrdersPage() {
                     <span className="text-xs font-medium">VENDOR</span>
                   </div>
 
-                  <p className="font-medium text-white">
-                    {selectedOrder.vendor}
-                  </p>
-
-                  <p className="mt-1 break-all text-xs text-stone-500">
+                  <p className="break-all font-medium text-white">
                     {selectedOrder.vendorEmail}
                   </p>
                 </div>
@@ -510,79 +477,68 @@ export default function AdminOrdersPage() {
                 </h3>
 
                 <p className="text-sm text-stone-300">
-                  {selectedOrder.address}
+                  {selectedOrder.deliveryAddress}
                 </p>
 
                 <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
                   <CalendarDays size={14} />
-                  Order Date: {selectedOrder.date}
+                  Order Date: {formatDate(selectedOrder.createdAt)}
+                </div>
+
+                <div className="mt-2 flex items-center gap-2 text-xs text-stone-500">
+                  <CalendarDays size={14} />
+                  Delivery Date: {formatDate(selectedOrder.deliveryDate)}
                 </div>
               </div>
 
-              {/* Items */}
+              {/* Ordered Item */}
               <div>
                 <h3 className="mb-3 text-sm font-medium text-white">
                   Ordered Items
                 </h3>
 
                 <div className="overflow-hidden rounded-xl border border-white/[0.06]">
-                  {selectedOrder.items.map((item: any, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3 last:border-0"
-                    >
-                      <div>
-                        <p className="text-sm text-white">{item.name}</p>
-                        <p className="mt-1 text-xs text-stone-500">
-                          Quantity: {item.quantity}
-                        </p>
-                      </div>
+                  <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3">
+                    <div>
+                      <p className="text-sm text-white">
+                        {selectedOrder.itemName}
+                      </p>
 
-                      <p className="text-sm font-medium text-white">
-                        ${(item.price * item.quantity).toFixed(2)}
+                      <p className="mt-1 text-xs text-stone-500">
+                        Quantity: {selectedOrder.quantity}
                       </p>
                     </div>
-                  ))}
+
+                    <p className="text-sm font-medium text-white">
+                      $
+                      {(
+                        Number(selectedOrder.unitPrice) *
+                        selectedOrder.quantity
+                      ).toFixed(2)}
+                    </p>
+                  </div>
                 </div>
+
+                {selectedOrder.message && (
+                  <div className="mt-3 rounded-xl border border-white/[0.06] bg-[#100D0B] p-4">
+                    <p className="mb-1 text-xs text-stone-500">
+                      Customer Message
+                    </p>
+
+                    <p className="text-sm text-stone-300">
+                      {selectedOrder.message}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Total */}
               <div className="flex items-center justify-between rounded-xl border border-orange-500/20 bg-orange-500/[0.05] p-4">
                 <span className="text-sm text-stone-300">Total Amount</span>
+
                 <span className="text-xl font-bold text-orange-400">
-                  ${selectedOrder.total.toFixed(2)}
+                  ${Number(selectedOrder.totalPrice).toFixed(2)}
                 </span>
-              </div>
-
-              {/* Update Status */}
-              <div>
-                <h3 className="mb-2 text-sm font-medium text-white">
-                  Update Order Status
-                </h3>
-
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    "pending",
-                    "processing",
-                    "delivered",
-                    "cancelled",
-                  ].map((status) => (
-                    <button
-                      key={status}
-                      onClick={() =>
-                        updateStatus(selectedOrder.id, status)
-                      }
-                      disabled={selectedOrder.status === status}
-                      className={`rounded-lg border px-3 py-2 text-xs capitalize transition ${
-                        selectedOrder.status === status
-                          ? `${statusStyles[status]} cursor-default`
-                          : "border-white/[0.06] bg-[#100D0B] text-stone-400 hover:border-orange-500/30 hover:text-orange-400"
-                      }`}
-                    >
-                      {status}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
 
