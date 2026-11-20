@@ -13,9 +13,8 @@ import {
   Plus,
 } from "lucide-react";
 
-/* ---------------------------------- */
-/* Stat Card                          */
-/* ---------------------------------- */
+
+// Stat Card   
 
 function StatCard({
   label,
@@ -65,10 +64,6 @@ function StatCard({
   );
 }
 
-/* ---------------------------------- */
-/* Order Type                         */
-/* ---------------------------------- */
-
 type Order = {
   _id: string;
   itemName: string;
@@ -82,10 +77,6 @@ type Order = {
   status: "pending" | "accepted" | "rejected" | "cancelled" | "delivered";
   createdAt?: string;
 };
-
-/* ---------------------------------- */
-/* Customer Dashboard                 */
-/* ---------------------------------- */
 
 export default function CustomerDashboard() {
   const { data: session, isPending } = authClient.useSession();
