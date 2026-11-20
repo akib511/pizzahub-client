@@ -1,3 +1,4 @@
+
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
@@ -11,37 +12,41 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "buyer",
+        input: true,
+      },
 
-user: {
- additionalFields: {
-  role: {
-    type: "string",
-    required: false,
-    defaultValue: "buyer",
-    input: true,
+      profileImage: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+
+      bio: {
+        type: "string",
+        required: false,
+        input: true,
+      },
+
+      subscriptionPlan: {
+        type: "string",
+        required: false,
+        defaultValue: "free",
+        input: false,
+      },
+
+      subscriptionExpiresAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
+    },
   },
-
-  profileImage: {
-    type: "string",
-    required: false,
-    input: false,
-  },
-
-  subscriptionPlan: {
-    type: "string",
-    required: false,
-    defaultValue: "free",
-    input: false,
-  },
-
-  subscriptionExpiresAt: {
-    type: "date",
-    required: false,
-    input: false,
-  },
-},
-},
-
 
   database: mongodbAdapter(db, {
     client,

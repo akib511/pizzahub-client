@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { authClient } from "@/lib/auth-client";
@@ -45,8 +47,30 @@ export default function CustomerLayout({
   const pathname = usePathname();
   const { data: session } = authClient.useSession();
 
+  const [profileImage, setProfileImage] = useState("");
+
   const userName = session?.user?.name || "Customer";
   const initial = userName.charAt(0).toUpperCase();
+
+  // Load Profile Image
+  useEffect(() => {
+    setProfileImage(session?.user?.image || "");
+  }, [session?.user?.image]);
+
+  // Listen for Profile Updates
+  useEffect(() => {
+    const updateProfile = async () => {
+      const { data } = await authClient.getSession();
+
+      setProfileImage(data?.user?.image || "");
+    };
+
+    window.addEventListener("profile-updated", updateProfile);
+
+    return () => {
+      window.removeEventListener("profile-updated", updateProfile);
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -55,13 +79,11 @@ export default function CustomerLayout({
 
   return (
     <div className="min-h-screen bg-[#0B0907] text-white">
-
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
 
         {/* Sidebar */}
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/[0.06] bg-[#0F0C0A] p-5 lg:flex">
 
-          {/* Logo */}
           <Link href="/" className="mb-10 flex items-center gap-2.5 px-2">
             <div className="rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 p-2">
               <Pizza size={21} />
@@ -76,11 +98,9 @@ export default function CustomerLayout({
             Customer Menu
           </p>
 
-          {/* Navigation */}
           <nav className="space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon;
-
               const active = pathname === item.href;
 
               return (
@@ -106,7 +126,6 @@ export default function CustomerLayout({
 
           {/* Bottom Navigation */}
           <div className="mt-auto space-y-2 border-t border-white/[0.06] pt-4">
-
             <Link
               href="/"
               className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm text-gray-400 transition hover:bg-white/[0.04] hover:text-white"
@@ -144,15 +163,28 @@ export default function CustomerLayout({
 
             <div className="flex items-center gap-3 rounded-full border border-white/[0.06] bg-white/[0.02] py-1.5 pl-1.5 pr-4">
 
-              <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-amber-600 text-sm font-bold">
-                {initial}
+              {/* Profile Avatar */}
+              <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-orange-500 to-amber-600 text-sm font-bold">
+
+                {profileImage ? (
+                  <Image
+                    src={profileImage}
+                    alt="Profile"
+                    width={36}
+                    height={36}
+                    unoptimized
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initial
+                )}
+
               </div>
 
               <div className="hidden sm:block">
                 <p className="text-sm font-medium">{userName}</p>
                 <p className="text-[11px] text-gray-500">Customer</p>
               </div>
-
             </div>
           </header>
 
@@ -165,9 +197,7 @@ export default function CustomerLayout({
 
       {/* Mobile Bottom Navigation */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-[#0F0C0A]/95 backdrop-blur-xl lg:hidden">
-
         <div className="mx-auto grid max-w-md grid-cols-4 px-2 py-2">
-
           {navigation.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
@@ -183,6 +213,7 @@ export default function CustomerLayout({
                 }`}
               >
                 <Icon size={20} />
+
                 <span className="text-[10px] font-medium">
                   {item.name === "Dashboard"
                     ? "Home"
@@ -195,7 +226,6 @@ export default function CustomerLayout({
               </Link>
             );
           })}
-
         </div>
       </nav>
     </div>
