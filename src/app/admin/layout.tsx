@@ -78,7 +78,7 @@ export default function AdminLayout({
 
   const sidebarContent = (
     <>
-      {/* Logo */}
+      Logo
       <div className="flex h-16 items-center gap-3 border-b border-white/[0.06] px-5">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500">
           <ShieldCheck size={22} className="text-white" />
@@ -207,37 +207,10 @@ export default function AdminLayout({
               <Menu size={20} />
             </button>
 
-            <div>
-              <p className="text-xs text-[#78716C]">
-                Admin Panel
-              </p>
-
-              <h2 className="text-sm font-semibold text-white">
-                {navigation.find((item) =>
-                  item.href === "/admin"
-                    ? pathname === "/admin"
-                    : pathname.startsWith(item.href)
-                )?.name || "Dashboard"}
-              </h2>
-            </div>
+         
           </div>
 
-          {/* Admin Info */}
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-medium text-white">
-                {userName}
-              </p>
-
-              <p className="text-xs text-orange-400">
-                Administrator
-              </p>
-            </div>
-
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-orange-500/20 bg-orange-500/10">
-              <ShieldCheck size={17} className="text-orange-400" />
-            </div>
-          </div>
+        
         </header>
 
         {/* Page Content */}

@@ -6,13 +6,13 @@ import HowItWorks from '@/components/home/HowItWorks';
 import PizzaCategories from '@/components/home/PizzaCategories';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import Footer from '@/components/shared/Footer';
-import Navbar from '@/components/shared/Navbar';
+// import Navbar from '@/components/shared/Navbar';
 
 
 const page = () => {
   return (
     <div>
-      <Navbar />
+      
       <Hero />
       <FeaturedMenu />
       <PizzaCategories />
