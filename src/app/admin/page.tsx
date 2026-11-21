@@ -202,33 +202,52 @@ export default function AdminDashboardPage() {
     URL.revokeObjectURL(url);
   };
 
-  return (
-    <div className="space-y-7 pb-10">
-      {/* Header Section */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-r from-[#231C19] via-[#1C1715] to-[#191412] p-6 shadow-xl">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-orange-500/10 blur-3xl" />
+  const getStatusStyles = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === "accepted")
+      return {
+        pill: "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20",
+        dot: "bg-emerald-400",
+      };
+    if (s === "rejected" || s === "cancelled")
+      return {
+        pill: "bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20",
+        dot: "bg-rose-400",
+      };
+    return {
+      pill: "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20",
+      dot: "bg-amber-400",
+    };
+  };
 
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  return (
+    <div className="space-y-5 pb-10 sm:space-y-6 md:space-y-7">
+      {/* ============ HEADER ============ */}
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-r from-[#231C19] via-[#1C1715] to-[#191412] p-4 shadow-xl sm:rounded-2xl sm:p-5 md:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-orange-500/10 blur-3xl sm:h-56 sm:w-56" />
+
+        <div className="relative flex flex-col gap-4 sm:gap-5">
           <div>
-            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-400">
-              <Sparkles size={12} />
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-[10px] font-medium text-orange-400 sm:px-3 sm:text-xs">
+              <Sparkles size={11} className="sm:size-3" />
               PizzaHub Admin Control
             </div>
 
-            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl md:text-3xl">
               Dashboard Overview
             </h1>
 
-            <p className="mt-1 text-sm text-[#A8A29E]">
+            <p className="mt-1 text-xs text-[#A8A29E] sm:text-sm">
               Welcome back! Live insights into your restaurants and orders.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-black/25 px-3.5 py-2.5 text-xs font-medium text-[#D6D3D1] backdrop-blur-md">
-              <Calendar size={14} className="text-orange-400" />
+          {/* Actions — stack on mobile */}
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:flex-wrap">
+            <div className="hidden items-center gap-2 rounded-lg border border-white/[0.08] bg-black/25 px-3 py-2 text-xs font-medium text-[#D6D3D1] backdrop-blur-md sm:inline-flex sm:rounded-xl sm:px-3.5 sm:py-2.5">
+              <Calendar size={13} className="text-orange-400 sm:size-3.5" />
               {new Date().toLocaleDateString("en-US", {
-                month: "long",
+                month: "short",
                 day: "numeric",
                 year: "numeric",
               })}
@@ -238,7 +257,7 @@ export default function AdminDashboardPage() {
               type="button"
               onClick={exportReport}
               disabled={!dashboard}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 px-4 text-xs font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:h-auto sm:w-auto sm:rounded-xl sm:py-2.5"
             >
               <Download size={14} />
               Export Report
@@ -247,7 +266,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Loading & Error */}
+      {/* ============ LOADING & ERROR ============ */}
       {loading && (
         <div className="rounded-xl border border-white/[0.07] bg-[#1C1715] p-5 text-center text-sm text-orange-400">
           Loading dashboard data...
@@ -260,50 +279,48 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Dashboard Content */}
+      {/* ============ CONTENT ============ */}
       {!loading && !error && dashboard && (
         <>
-          {/* KPI Statistics */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {/* KPI Statistics — 2 cols on mobile, 4 on xl */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             {stats.map((stat) => {
               const Icon = stat.icon;
 
               return (
                 <div
                   key={stat.title}
-                  className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#1C1715] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.15] hover:shadow-xl hover:shadow-black/40"
+                  className="group relative overflow-hidden rounded-xl border border-white/[0.07] bg-[#1C1715] p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.15] hover:shadow-xl hover:shadow-black/40 sm:rounded-2xl sm:p-4 md:p-5"
                 >
                   <div
-                    className={`pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b ${stat.accent} opacity-40 transition-opacity group-hover:opacity-70`}
+                    className={`pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b ${stat.accent} opacity-40 transition-opacity group-hover:opacity-70 sm:h-24`}
                   />
 
-                  <div className="relative flex items-center justify-between">
-                    <p className="text-xs font-medium uppercase tracking-wider text-[#A8A29E]">
+                  <div className="relative flex items-center justify-between gap-1">
+                    <p className="text-[10px] font-medium uppercase leading-tight tracking-wider text-[#A8A29E] sm:text-xs">
                       {stat.title}
                     </p>
 
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110 ${stat.iconBg}`}
+                      className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110 sm:size-10 sm:rounded-xl ${stat.iconBg}`}
                     >
-                      <Icon size={18} />
+                      <Icon size={15} className="sm:size-[18px]" />
                     </div>
                   </div>
 
-                  <h2 className="relative mt-4 break-words text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                    {stat.value.toLocaleString
-                      ? typeof stat.value === "number"
-                        ? stat.value.toLocaleString()
-                        : stat.value
+                  <h2 className="relative mt-2.5 break-words text-lg font-bold leading-tight tracking-tight text-white sm:mt-4 sm:text-2xl md:text-3xl">
+                    {typeof stat.value === "number"
+                      ? stat.value.toLocaleString()
                       : stat.value}
                   </h2>
 
-                  <div className="relative mt-3 flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
-                      <TrendingUp size={12} />
-                      Live Data
+                  <div className="relative mt-2 flex flex-wrap items-center gap-1.5 sm:mt-3 sm:gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-medium text-emerald-400 sm:px-2 sm:text-xs">
+                      <TrendingUp size={9} className="sm:size-3" />
+                      Live
                     </span>
 
-                    <span className="text-xs text-[#78716C]">
+                    <span className="hidden text-xs text-[#78716C] sm:inline">
                       From database
                     </span>
                   </div>
@@ -314,24 +331,24 @@ export default function AdminDashboardPage() {
 
           {/* Pending Actions */}
           <div>
-            <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-3.5">
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-white">
+                <h2 className="text-sm font-semibold text-white sm:text-base">
                   Pending Actions
                 </h2>
 
-                <span className="relative flex h-2.5 w-2.5">
+                <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orange-500" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500 sm:h-2.5 sm:w-2.5" />
                 </span>
               </div>
 
-              <span className="rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-400">
+              <span className="rounded-full border border-orange-500/20 bg-orange-500/10 px-2.5 py-0.5 text-[10px] font-medium text-orange-400 sm:px-3 sm:py-1 sm:text-xs">
                 {pendingTotal} items require attention
               </span>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
               {[
                 {
                   title: "Menu Approvals",
@@ -354,32 +371,32 @@ export default function AdminDashboardPage() {
                   <Link
                     key={task.title}
                     href={task.href}
-                    className="group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-[#211B18] to-[#1A1513] p-4 transition-all duration-300 hover:border-orange-500/40 hover:shadow-lg hover:shadow-orange-500/5"
+                    className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-white/[0.07] bg-gradient-to-br from-[#211B18] to-[#1A1513] p-3.5 transition-all duration-300 hover:border-orange-500/40 hover:shadow-lg hover:shadow-orange-500/5 sm:rounded-2xl sm:p-4"
                   >
-                    <div className="flex items-center gap-3.5">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400 ring-1 ring-orange-500/20 transition group-hover:bg-orange-500 group-hover:text-white">
-                        <Icon size={19} />
+                    <div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400 ring-1 ring-orange-500/20 transition group-hover:bg-orange-500 group-hover:text-white sm:size-11 sm:rounded-xl">
+                        <Icon size={17} className="sm:size-[19px]" />
                       </div>
 
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-semibold text-white transition-colors group-hover:text-orange-300">
                           {task.title}
                         </p>
 
-                        <p className="mt-0.5 text-xs text-[#8C8580]">
+                        <p className="mt-0.5 truncate text-[11px] text-[#8C8580] sm:text-xs">
                           {task.description}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2.5">
-                      <span className="rounded-lg bg-orange-500/10 px-2.5 py-1 text-base font-bold text-orange-400">
+                    <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+                      <span className="rounded-lg bg-orange-500/10 px-2 py-1 text-sm font-bold text-orange-400 sm:px-2.5 sm:text-base">
                         {task.count}
                       </span>
 
                       <ArrowRight
-                        size={16}
-                        className="text-[#78716C] transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-400"
+                        size={15}
+                        className="text-[#78716C] transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-400 sm:size-4"
                       />
                     </div>
                   </Link>
@@ -388,23 +405,23 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Analytics Chart + Top Vendors */}
-          <div className="grid gap-5 xl:grid-cols-3">
+          {/* Analytics + Top Vendors */}
+          <div className="grid gap-4 sm:gap-5 xl:grid-cols-3">
             {/* Order Value Chart */}
-            <div className="flex flex-col justify-between rounded-2xl border border-white/[0.07] bg-[#1C1715] p-6 xl:col-span-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-col justify-between rounded-xl border border-white/[0.07] bg-[#1C1715] p-4 sm:rounded-2xl sm:p-5 md:p-6 xl:col-span-2">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-white">
+                  <h2 className="text-sm font-semibold text-white sm:text-base">
                     Order Value Overview
                   </h2>
 
-                  <p className="mt-0.5 text-xs text-[#8C8580]">
+                  <p className="mt-0.5 text-[11px] text-[#8C8580] sm:text-xs">
                     Monthly order value from the last 6 months
                   </p>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-lg font-bold text-white">
+                  <p className="text-base font-bold text-white sm:text-lg">
                     {formatCurrency(
                       monthlyRevenue.reduce(
                         (total, item) => total + item.totalOrderValue,
@@ -413,13 +430,14 @@ export default function AdminDashboardPage() {
                     )}
                   </p>
 
-                  <p className="text-[11px] text-[#A8A29E]">
+                  <p className="text-[10px] text-[#A8A29E] sm:text-[11px]">
                     Total order value
                   </p>
                 </div>
               </div>
 
-              <div className="mt-8 grid h-52 grid-cols-6 items-end gap-3 border-b border-white/[0.06] pb-3 pt-6 sm:gap-6">
+              {/* Chart — smaller bars on mobile, no overflow */}
+              <div className="mt-6 grid h-44 grid-cols-6 items-end gap-1.5 border-b border-white/[0.06] pb-3 pt-6 sm:mt-8 sm:h-52 sm:gap-3 md:gap-6">
                 {monthlyRevenue.map((item, idx) => {
                   const isLatest = idx === monthlyRevenue.length - 1;
 
@@ -434,16 +452,16 @@ export default function AdminDashboardPage() {
                   return (
                     <div
                       key={`${item.month}-${item.year}`}
-                      className="group flex h-full flex-col items-center justify-end gap-2"
+                      className="group flex h-full flex-col items-center justify-end gap-1 sm:gap-2"
                     >
-                      <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-center text-[10px] font-medium text-[#D6D3D1] opacity-0 transition-opacity group-hover:opacity-100">
+                      <span className="whitespace-nowrap rounded-md bg-white/[0.06] px-1 py-0.5 text-center text-[9px] font-medium text-[#D6D3D1] opacity-0 transition-opacity group-hover:opacity-100 sm:px-2 sm:text-[10px]">
                         {formatCurrency(item.totalOrderValue)}
                       </span>
 
-                      <div className="relative flex w-full max-w-[44px] flex-1 items-end rounded-xl bg-white/[0.03] p-1">
+                      <div className="relative flex w-full max-w-[40px] flex-1 items-end rounded-lg bg-white/[0.03] p-0.5 sm:max-w-[44px] sm:rounded-xl sm:p-1">
                         <div
                           style={{ height }}
-                          className={`w-full rounded-lg transition-all duration-500 ${
+                          className={`w-full rounded-md transition-all duration-500 sm:rounded-lg ${
                             isLatest
                               ? "bg-gradient-to-t from-orange-600 to-amber-400 shadow-lg shadow-orange-500/25"
                               : "bg-gradient-to-t from-orange-500/30 to-orange-400/60 group-hover:from-orange-500 group-hover:to-amber-400"
@@ -455,15 +473,15 @@ export default function AdminDashboardPage() {
                 })}
               </div>
 
-              <div className="mt-3 grid grid-cols-6 text-center text-xs font-medium text-[#8C8580]">
+              <div className="mt-2 grid grid-cols-6 text-center text-[10px] font-medium text-[#8C8580] sm:mt-3 sm:text-xs">
                 {monthlyRevenue.map((item, idx) => (
                   <span
                     key={`${item.month}-${item.year}`}
-                    className={
+                    className={`truncate ${
                       idx === monthlyRevenue.length - 1
                         ? "font-semibold text-orange-400"
                         : ""
-                    }
+                    }`}
                   >
                     {item.month}
                   </span>
@@ -478,24 +496,24 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Top Vendors */}
-            <div className="flex flex-col justify-between rounded-2xl border border-white/[0.07] bg-[#1C1715]">
-              <div className="border-b border-white/[0.06] p-5">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-white">
+            <div className="flex flex-col justify-between overflow-hidden rounded-xl border border-white/[0.07] bg-[#1C1715] sm:rounded-2xl">
+              <div className="border-b border-white/[0.06] p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-sm font-semibold text-white sm:text-base">
                     Top Vendors
                   </h2>
 
-                  <span className="rounded-md bg-white/[0.05] px-2 py-1 text-[11px] text-[#A8A29E]">
+                  <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-[#A8A29E] sm:px-2 sm:py-1 sm:text-[11px]">
                     All Time
                   </span>
                 </div>
 
-                <p className="mt-0.5 text-xs text-[#8C8580]">
+                <p className="mt-0.5 text-[11px] text-[#8C8580] sm:text-xs">
                   Highest performing partner kitchens
                 </p>
               </div>
 
-              <div className="divide-y divide-white/[0.04] px-5">
+              <div className="divide-y divide-white/[0.04] px-4 sm:px-5">
                 {topVendors.map((vendor, index) => {
                   const rankBadge =
                     index === 0
@@ -514,36 +532,36 @@ export default function AdminDashboardPage() {
                     .toUpperCase();
 
                   return (
-                    <div key={vendor.email} className="py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500/20 to-amber-500/5 text-xs font-bold text-orange-400 ring-1 ring-orange-500/20">
+                    <div key={vendor.email} className="py-3 sm:py-3.5">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
+                        <div className="relative flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/5 text-[10px] font-bold text-orange-400 ring-1 ring-orange-500/20 sm:size-10 sm:rounded-xl sm:text-xs">
                           {initials}
 
                           <span
-                            className={`absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-extrabold ${rankBadge}`}
+                            className={`absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full text-[9px] font-extrabold sm:h-4 sm:w-4 ${rankBadge}`}
                           >
                             {index + 1}
                           </span>
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-white">
+                          <p className="truncate text-[13px] font-medium text-white sm:text-sm">
                             {vendor.name}
                           </p>
 
-                          <p className="text-xs text-[#78716C]">
+                          <p className="text-[10px] text-[#78716C] sm:text-xs">
                             {vendor.totalOrders} orders
                           </p>
                         </div>
 
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-white">
+                        <div className="shrink-0 text-right">
+                          <p className="text-[13px] font-bold text-white sm:text-sm">
                             {formatCurrency(vendor.totalOrderValue)}
                           </p>
                         </div>
                       </div>
 
-                      <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.05]">
+                      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/[0.05] sm:mt-2.5 sm:h-1.5">
                         <div
                           style={{
                             width: `${
@@ -566,37 +584,38 @@ export default function AdminDashboardPage() {
 
               <Link
                 href="/admin/vendors"
-                className="flex items-center justify-center gap-1.5 border-t border-white/[0.06] py-3.5 text-xs font-medium text-orange-400 transition hover:bg-white/[0.02] hover:text-orange-300"
+                className="flex items-center justify-center gap-1.5 border-t border-white/[0.06] py-3 text-[11px] font-medium text-orange-400 transition hover:bg-white/[0.02] hover:text-orange-300 sm:py-3.5 sm:text-xs"
               >
                 View All Vendors
-                <ArrowRight size={14} />
+                <ArrowRight size={13} className="sm:size-3.5" />
               </Link>
             </div>
           </div>
 
-          {/* Recent Orders Table */}
-          <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#1C1715]">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] p-5">
+          {/* ============ RECENT ORDERS ============ */}
+          <div className="overflow-hidden rounded-xl border border-white/[0.07] bg-[#1C1715] sm:rounded-2xl">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] p-4 sm:gap-3 sm:p-5">
               <div>
-                <h2 className="text-base font-semibold text-white">
+                <h2 className="text-sm font-semibold text-white sm:text-base">
                   Recent Orders
                 </h2>
 
-                <p className="mt-0.5 text-xs text-[#8C8580]">
+                <p className="mt-0.5 text-[11px] text-[#8C8580] sm:text-xs">
                   Latest customer orders across all vendors
                 </p>
               </div>
 
               <Link
                 href="/admin/orders"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-orange-500/20 bg-orange-500/10 px-3 py-1.5 text-xs font-medium text-orange-400 transition hover:bg-orange-500/20"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-orange-500/20 bg-orange-500/10 px-2.5 py-1.5 text-[11px] font-medium text-orange-400 transition hover:bg-orange-500/20 sm:px-3 sm:text-xs"
               >
-                View All Orders
-                <ArrowRight size={14} />
+                View All
+                <ArrowRight size={13} className="sm:size-3.5" />
               </Link>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[640px] text-left">
                 <thead>
                   <tr className="border-b border-white/[0.05] bg-white/[0.02] text-[11px] uppercase tracking-wider text-[#8C8580]">
@@ -611,7 +630,7 @@ export default function AdminDashboardPage() {
 
                 <tbody className="divide-y divide-white/[0.04]">
                   {recentOrders.map((order) => {
-                    const status = order.status.toLowerCase();
+                    const styles = getStatusStyles(order.status);
 
                     return (
                       <tr
@@ -640,26 +659,11 @@ export default function AdminDashboardPage() {
 
                         <td className="px-5 py-4">
                           <span
-                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                              status === "accepted"
-                                ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
-                                : status === "rejected" ||
-                                    status === "cancelled"
-                                  ? "bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20"
-                                  : "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20"
-                            }`}
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${styles.pill}`}
                           >
                             <span
-                              className={`h-1.5 w-1.5 rounded-full ${
-                                status === "accepted"
-                                  ? "bg-emerald-400"
-                                  : status === "rejected" ||
-                                      status === "cancelled"
-                                    ? "bg-rose-400"
-                                    : "bg-amber-400"
-                              }`}
+                              className={`h-1.5 w-1.5 rounded-full ${styles.dot}`}
                             />
-
                             {order.status}
                           </span>
                         </td>
@@ -680,60 +684,116 @@ export default function AdminDashboardPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile card list — replaces horizontal scroll table */}
+            <div className="divide-y divide-white/[0.04] md:hidden">
+              {recentOrders.map((order) => {
+                const styles = getStatusStyles(order.status);
+
+                return (
+                  <div key={order._id} className="space-y-2 p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold text-orange-400">
+                          #{order._id.slice(-6).toUpperCase()}
+                        </p>
+
+                        <p className="mt-0.5 truncate text-sm font-medium text-white">
+                          {order.customerName}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium ${styles.pill}`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${styles.dot}`}
+                        />
+                        {order.status}
+                      </span>
+                    </div>
+
+                    <div className="flex items-end justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[11px] text-[#8C8580]">
+                          {order.vendorEmail}
+                        </p>
+
+                        <p className="mt-0.5 text-[10px] text-[#78716C]">
+                          {getTimeAgo(order.createdAt)}
+                        </p>
+                      </div>
+
+                      <p className="shrink-0 text-sm font-bold text-white">
+                        {formatCurrency(order.totalPrice)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {recentOrders.length === 0 && (
+                <p className="px-4 py-10 text-center text-sm text-[#8C8580]">
+                  No orders found yet.
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Bottom Highlights */}
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* ============ BOTTOM HIGHLIGHTS ============ */}
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
             {/* Premium Vendors */}
-            <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-[#1F1916] to-[#1C1715] p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-black shadow-lg shadow-orange-500/20">
-                    <Crown size={22} />
+            <div className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-[#1F1916] to-[#1C1715] p-4 sm:rounded-2xl sm:p-5">
+              <div className="flex items-center justify-between gap-3 sm:gap-4">
+                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-black shadow-lg shadow-orange-500/20 sm:size-12 sm:rounded-xl">
+                    <Crown size={20} className="sm:size-[22px]" />
                   </div>
 
-                  <div>
-                    <p className="text-sm font-semibold text-white">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-white sm:text-sm">
                       Premium Tier Vendors
                     </p>
 
-                    <p className="mt-0.5 text-xs text-[#A8A29E]">
+                    <p className="mt-0.5 truncate text-[11px] text-[#A8A29E] sm:text-xs">
                       Vendors with active premium subscriptions
                     </p>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <h3 className="text-3xl font-extrabold text-amber-400">
+                <div className="shrink-0 text-right">
+                  <h3 className="text-2xl font-extrabold text-amber-400 sm:text-3xl">
                     {dashboard.statistics.premiumVendors}
                   </h3>
 
-                  <p className="text-[11px] text-amber-400/80">Active</p>
+                  <p className="text-[10px] text-amber-400/80 sm:text-[11px]">
+                    Active
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Platform Health */}
-            <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/[0.07] bg-[#1C1715] p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20">
-                  <Activity size={22} />
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-[#1C1715] p-4 sm:gap-4 sm:rounded-2xl sm:p-5">
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 sm:size-12 sm:rounded-xl">
+                  <Activity size={20} className="sm:size-[22px]" />
                 </div>
 
-                <div>
-                  <p className="text-sm font-semibold text-white">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-white sm:text-sm">
                     Platform & API Health
                   </p>
 
-                  <p className="mt-0.5 text-xs text-[#A8A29E]">
+                  <p className="mt-0.5 truncate text-[11px] text-[#A8A29E] sm:text-xs">
                     Dashboard API connection successful
                   </p>
                 </div>
               </div>
 
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-medium text-emerald-400">
-                <CheckCircle2 size={14} />
-                Connected
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-400 sm:gap-1.5 sm:px-3.5 sm:py-1.5 sm:text-xs">
+                <CheckCircle2 size={12} className="sm:size-3.5" />
+                <span className="hidden xs:inline sm:inline">Connected</span>
               </span>
             </div>
           </div>

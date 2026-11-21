@@ -108,17 +108,7 @@ export default function AdminLayout({
 
   const sidebarContent = (
     <>
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-white/[0.06] px-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500">
-          <ShieldCheck size={22} className="text-white" />
-        </div>
-
-        <div>
-          <h1 className="text-lg font-bold text-white">PizzaHub</h1>
-          <p className="text-[11px] text-orange-400">Admin Panel</p>
-        </div>
-      </div>
+    
 
       {/* Sidebar Navigation */}
       <div className="flex-1 overflow-y-auto px-3 py-5">
@@ -195,26 +185,7 @@ export default function AdminLayout({
       {/* Main Area */}
       <div className="lg:pl-64">
 
-        {/* Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/[0.06] bg-[#100D0B]/95 px-4 backdrop-blur-xl sm:px-6">
-          <div>
-            <p className="text-sm font-semibold text-white">
-              Welcome, {userName}
-            </p>
-
-            <p className="text-xs text-stone-500">
-              PizzaHub Administration
-            </p>
-          </div>
-
-          <button
-            onClick={handleSignOut}
-            className="hidden items-center gap-2 rounded-lg border border-white/[0.07] px-3 py-2 text-sm text-stone-400 transition hover:border-red-500/30 hover:text-red-400 lg:flex"
-          >
-            <LogOut size={16} />
-            Sign Out
-          </button>
-        </header>
+  
 
         {/* Page Content */}
         <main className="min-h-[calc(100vh-64px)] p-4 pb-28 sm:p-6 sm:pb-28 lg:p-7">
