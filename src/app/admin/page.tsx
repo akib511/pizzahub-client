@@ -223,7 +223,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-5 pb-10 sm:space-y-6 md:space-y-7">
       {/* ============ HEADER ============ */}
-      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-r from-[#231C19] via-[#1C1715] to-[#191412] p-4 shadow-xl sm:rounded-2xl sm:p-5 md:p-6">
+      <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-r from-muted via-card to-background p-4 shadow-xl sm:rounded-2xl sm:p-5 md:p-6">
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-orange-500/10 blur-3xl sm:h-56 sm:w-56" />
 
         <div className="relative flex flex-col gap-4 sm:gap-5">
@@ -233,18 +233,18 @@ export default function AdminDashboardPage() {
               PizzaHub Admin Control
             </div>
 
-            <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl md:text-3xl">
+            <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
               Dashboard Overview
             </h1>
 
-            <p className="mt-1 text-xs text-[#A8A29E] sm:text-sm">
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
               Welcome back! Live insights into your restaurants and orders.
             </p>
           </div>
 
           {/* Actions — stack on mobile */}
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:flex-wrap">
-            <div className="hidden items-center gap-2 rounded-lg border border-white/[0.08] bg-black/25 px-3 py-2 text-xs font-medium text-[#D6D3D1] backdrop-blur-md sm:inline-flex sm:rounded-xl sm:px-3.5 sm:py-2.5">
+            <div className="hidden items-center gap-2 rounded-lg border border-border bg-black/25 px-3 py-2 text-xs font-medium text-foreground backdrop-blur-md sm:inline-flex sm:rounded-xl sm:px-3.5 sm:py-2.5">
               <Calendar size={13} className="text-orange-400 sm:size-3.5" />
               {new Date().toLocaleDateString("en-US", {
                 month: "short",
@@ -257,7 +257,7 @@ export default function AdminDashboardPage() {
               type="button"
               onClick={exportReport}
               disabled={!dashboard}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 px-4 text-xs font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:h-auto sm:w-auto sm:rounded-xl sm:py-2.5"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 px-4 text-xs font-semibold text-foreground shadow-lg shadow-orange-500/20 transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:h-auto sm:w-auto sm:rounded-xl sm:py-2.5"
             >
               <Download size={14} />
               Export Report
@@ -268,7 +268,7 @@ export default function AdminDashboardPage() {
 
       {/* ============ LOADING & ERROR ============ */}
       {loading && (
-        <div className="rounded-xl border border-white/[0.07] bg-[#1C1715] p-5 text-center text-sm text-orange-400">
+        <div className="rounded-xl border border-border bg-card p-5 text-center text-sm text-orange-400">
           Loading dashboard data...
         </div>
       )}
@@ -290,14 +290,14 @@ export default function AdminDashboardPage() {
               return (
                 <div
                   key={stat.title}
-                  className="group relative overflow-hidden rounded-xl border border-white/[0.07] bg-[#1C1715] p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.15] hover:shadow-xl hover:shadow-black/40 sm:rounded-2xl sm:p-4 md:p-5"
+                  className="group relative overflow-hidden rounded-xl border border-border bg-card p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:shadow-xl hover:shadow-black/40 sm:rounded-2xl sm:p-4 md:p-5"
                 >
                   <div
                     className={`pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b ${stat.accent} opacity-40 transition-opacity group-hover:opacity-70 sm:h-24`}
                   />
 
                   <div className="relative flex items-center justify-between gap-1">
-                    <p className="text-[10px] font-medium uppercase leading-tight tracking-wider text-[#A8A29E] sm:text-xs">
+                    <p className="text-[10px] font-medium uppercase leading-tight tracking-wider text-muted-foreground sm:text-xs">
                       {stat.title}
                     </p>
 
@@ -308,7 +308,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  <h2 className="relative mt-2.5 break-words text-lg font-bold leading-tight tracking-tight text-white sm:mt-4 sm:text-2xl md:text-3xl">
+                  <h2 className="relative mt-2.5 break-words text-lg font-bold leading-tight tracking-tight text-foreground sm:mt-4 sm:text-2xl md:text-3xl">
                     {typeof stat.value === "number"
                       ? stat.value.toLocaleString()
                       : stat.value}
@@ -320,7 +320,7 @@ export default function AdminDashboardPage() {
                       Live
                     </span>
 
-                    <span className="hidden text-xs text-[#78716C] sm:inline">
+                    <span className="hidden text-xs text-muted-foreground sm:inline">
                       From database
                     </span>
                   </div>
@@ -333,7 +333,7 @@ export default function AdminDashboardPage() {
           <div>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-3.5">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-white sm:text-base">
+                <h2 className="text-sm font-semibold text-foreground sm:text-base">
                   Pending Actions
                 </h2>
 
@@ -371,7 +371,7 @@ export default function AdminDashboardPage() {
                   <Link
                     key={task.title}
                     href={task.href}
-                    className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-white/[0.07] bg-gradient-to-br from-[#211B18] to-[#1A1513] p-3.5 transition-all duration-300 hover:border-orange-500/40 hover:shadow-lg hover:shadow-orange-500/5 sm:rounded-2xl sm:p-4"
+                    className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card to-background p-3.5 transition-all duration-300 hover:border-orange-500/40 hover:shadow-lg hover:shadow-orange-500/5 sm:rounded-2xl sm:p-4"
                   >
                     <div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400 ring-1 ring-orange-500/20 transition group-hover:bg-orange-500 group-hover:text-white sm:size-11 sm:rounded-xl">
@@ -379,11 +379,11 @@ export default function AdminDashboardPage() {
                       </div>
 
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-white transition-colors group-hover:text-orange-300">
+                        <p className="text-sm font-semibold text-foreground transition-colors group-hover:text-orange-300">
                           {task.title}
                         </p>
 
-                        <p className="mt-0.5 truncate text-[11px] text-[#8C8580] sm:text-xs">
+                        <p className="mt-0.5 truncate text-[11px] text-muted-foreground sm:text-xs">
                           {task.description}
                         </p>
                       </div>
@@ -396,7 +396,7 @@ export default function AdminDashboardPage() {
 
                       <ArrowRight
                         size={15}
-                        className="text-[#78716C] transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-400 sm:size-4"
+                        className="text-muted-foreground transition-transform duration-300 group-hover:translate-x-1 group-hover:text-orange-400 sm:size-4"
                       />
                     </div>
                   </Link>
@@ -408,20 +408,20 @@ export default function AdminDashboardPage() {
           {/* Analytics + Top Vendors */}
           <div className="grid gap-4 sm:gap-5 xl:grid-cols-3">
             {/* Order Value Chart */}
-            <div className="flex flex-col justify-between rounded-xl border border-white/[0.07] bg-[#1C1715] p-4 sm:rounded-2xl sm:p-5 md:p-6 xl:col-span-2">
+            <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 sm:rounded-2xl sm:p-5 md:p-6 xl:col-span-2">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-semibold text-white sm:text-base">
+                  <h2 className="text-sm font-semibold text-foreground sm:text-base">
                     Order Value Overview
                   </h2>
 
-                  <p className="mt-0.5 text-[11px] text-[#8C8580] sm:text-xs">
+                  <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
                     Monthly order value from the last 6 months
                   </p>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-base font-bold text-white sm:text-lg">
+                  <p className="text-base font-bold text-foreground sm:text-lg">
                     {formatCurrency(
                       monthlyRevenue.reduce(
                         (total, item) => total + item.totalOrderValue,
@@ -430,14 +430,14 @@ export default function AdminDashboardPage() {
                     )}
                   </p>
 
-                  <p className="text-[10px] text-[#A8A29E] sm:text-[11px]">
+                  <p className="text-[10px] text-muted-foreground sm:text-[11px]">
                     Total order value
                   </p>
                 </div>
               </div>
 
               {/* Chart — smaller bars on mobile, no overflow */}
-              <div className="mt-6 grid h-44 grid-cols-6 items-end gap-1.5 border-b border-white/[0.06] pb-3 pt-6 sm:mt-8 sm:h-52 sm:gap-3 md:gap-6">
+              <div className="mt-6 grid h-44 grid-cols-6 items-end gap-1.5 border-b border-border pb-3 pt-6 sm:mt-8 sm:h-52 sm:gap-3 md:gap-6">
                 {monthlyRevenue.map((item, idx) => {
                   const isLatest = idx === monthlyRevenue.length - 1;
 
@@ -454,11 +454,11 @@ export default function AdminDashboardPage() {
                       key={`${item.month}-${item.year}`}
                       className="group flex h-full flex-col items-center justify-end gap-1 sm:gap-2"
                     >
-                      <span className="whitespace-nowrap rounded-md bg-white/[0.06] px-1 py-0.5 text-center text-[9px] font-medium text-[#D6D3D1] opacity-0 transition-opacity group-hover:opacity-100 sm:px-2 sm:text-[10px]">
+                      <span className="whitespace-nowrap rounded-md bg-muted px-1 py-0.5 text-center text-[9px] font-medium text-foreground opacity-0 transition-opacity group-hover:opacity-100 sm:px-2 sm:text-[10px]">
                         {formatCurrency(item.totalOrderValue)}
                       </span>
 
-                      <div className="relative flex w-full max-w-[40px] flex-1 items-end rounded-lg bg-white/[0.03] p-0.5 sm:max-w-[44px] sm:rounded-xl sm:p-1">
+                      <div className="relative flex w-full max-w-[40px] flex-1 items-end rounded-lg bg-muted/50 p-0.5 sm:max-w-[44px] sm:rounded-xl sm:p-1">
                         <div
                           style={{ height }}
                           className={`w-full rounded-md transition-all duration-500 sm:rounded-lg ${
@@ -473,7 +473,7 @@ export default function AdminDashboardPage() {
                 })}
               </div>
 
-              <div className="mt-2 grid grid-cols-6 text-center text-[10px] font-medium text-[#8C8580] sm:mt-3 sm:text-xs">
+              <div className="mt-2 grid grid-cols-6 text-center text-[10px] font-medium text-muted-foreground sm:mt-3 sm:text-xs">
                 {monthlyRevenue.map((item, idx) => (
                   <span
                     key={`${item.month}-${item.year}`}
@@ -489,26 +489,26 @@ export default function AdminDashboardPage() {
               </div>
 
               {monthlyRevenue.length === 0 && (
-                <p className="mt-4 text-center text-xs text-[#8C8580]">
+                <p className="mt-4 text-center text-xs text-muted-foreground">
                   No order data available for this period.
                 </p>
               )}
             </div>
 
             {/* Top Vendors */}
-            <div className="flex flex-col justify-between overflow-hidden rounded-xl border border-white/[0.07] bg-[#1C1715] sm:rounded-2xl">
-              <div className="border-b border-white/[0.06] p-4 sm:p-5">
+            <div className="flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-card sm:rounded-2xl">
+              <div className="border-b border-border p-4 sm:p-5">
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-sm font-semibold text-white sm:text-base">
+                  <h2 className="text-sm font-semibold text-foreground sm:text-base">
                     Top Vendors
                   </h2>
 
-                  <span className="rounded-md bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-[#A8A29E] sm:px-2 sm:py-1 sm:text-[11px]">
+                  <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground sm:px-2 sm:py-1 sm:text-[11px]">
                     All Time
                   </span>
                 </div>
 
-                <p className="mt-0.5 text-[11px] text-[#8C8580] sm:text-xs">
+                <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
                   Highest performing partner kitchens
                 </p>
               </div>
@@ -521,8 +521,8 @@ export default function AdminDashboardPage() {
                       : index === 1
                         ? "bg-zinc-300 text-black"
                         : index === 2
-                          ? "bg-amber-700 text-white"
-                          : "bg-white/10 text-[#A8A29E]";
+                          ? "bg-amber-700 text-foreground"
+                          : "bg-muted text-muted-foreground";
 
                   const initials = vendor.name
                     .split(" ")
@@ -545,23 +545,23 @@ export default function AdminDashboardPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13px] font-medium text-white sm:text-sm">
+                          <p className="truncate text-[13px] font-medium text-foreground sm:text-sm">
                             {vendor.name}
                           </p>
 
-                          <p className="text-[10px] text-[#78716C] sm:text-xs">
+                          <p className="text-[10px] text-muted-foreground sm:text-xs">
                             {vendor.totalOrders} orders
                           </p>
                         </div>
 
                         <div className="shrink-0 text-right">
-                          <p className="text-[13px] font-bold text-white sm:text-sm">
+                          <p className="text-[13px] font-bold text-foreground sm:text-sm">
                             {formatCurrency(vendor.totalOrderValue)}
                           </p>
                         </div>
                       </div>
 
-                      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/[0.05] sm:mt-2.5 sm:h-1.5">
+                      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted sm:mt-2.5 sm:h-1.5">
                         <div
                           style={{
                             width: `${
@@ -576,7 +576,7 @@ export default function AdminDashboardPage() {
                 })}
 
                 {topVendors.length === 0 && (
-                  <p className="py-8 text-center text-xs text-[#8C8580]">
+                  <p className="py-8 text-center text-xs text-muted-foreground">
                     No vendor order data available.
                   </p>
                 )}
@@ -584,7 +584,7 @@ export default function AdminDashboardPage() {
 
               <Link
                 href="/admin/vendors"
-                className="flex items-center justify-center gap-1.5 border-t border-white/[0.06] py-3 text-[11px] font-medium text-orange-400 transition hover:bg-white/[0.02] hover:text-orange-300 sm:py-3.5 sm:text-xs"
+                className="flex items-center justify-center gap-1.5 border-t border-border py-3 text-[11px] font-medium text-orange-400 transition hover:bg-muted/40 hover:text-orange-300 sm:py-3.5 sm:text-xs"
               >
                 View All Vendors
                 <ArrowRight size={13} className="sm:size-3.5" />
@@ -593,14 +593,14 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* ============ RECENT ORDERS ============ */}
-          <div className="overflow-hidden rounded-xl border border-white/[0.07] bg-[#1C1715] sm:rounded-2xl">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] p-4 sm:gap-3 sm:p-5">
+          <div className="overflow-hidden rounded-xl border border-border bg-card sm:rounded-2xl">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4 sm:gap-3 sm:p-5">
               <div>
-                <h2 className="text-sm font-semibold text-white sm:text-base">
+                <h2 className="text-sm font-semibold text-foreground sm:text-base">
                   Recent Orders
                 </h2>
 
-                <p className="mt-0.5 text-[11px] text-[#8C8580] sm:text-xs">
+                <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">
                   Latest customer orders across all vendors
                 </p>
               </div>
@@ -618,7 +618,7 @@ export default function AdminDashboardPage() {
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[640px] text-left">
                 <thead>
-                  <tr className="border-b border-white/[0.05] bg-white/[0.02] text-[11px] uppercase tracking-wider text-[#8C8580]">
+                  <tr className="border-b border-border bg-muted/40 text-[11px] uppercase tracking-wider text-muted-foreground">
                     <th className="px-5 py-3.5 font-semibold">Order ID</th>
                     <th className="px-5 py-3.5 font-semibold">Customer</th>
                     <th className="px-5 py-3.5 font-semibold">Vendor</th>
@@ -635,25 +635,25 @@ export default function AdminDashboardPage() {
                     return (
                       <tr
                         key={order._id}
-                        className="transition-colors hover:bg-white/[0.025]"
+                        className="transition-colors hover:bg-muted"
                       >
                         <td className="px-5 py-4 text-xs font-semibold text-orange-400">
                           #{order._id.slice(-6).toUpperCase()}
                         </td>
 
-                        <td className="px-5 py-4 text-sm font-medium text-white">
+                        <td className="px-5 py-4 text-sm font-medium text-foreground">
                           {order.customerName}
                         </td>
 
-                        <td className="px-5 py-4 text-sm text-[#A8A29E]">
+                        <td className="px-5 py-4 text-sm text-muted-foreground">
                           {order.vendorEmail}
                         </td>
 
-                        <td className="px-5 py-4 text-xs text-[#78716C]">
+                        <td className="px-5 py-4 text-xs text-muted-foreground">
                           {getTimeAgo(order.createdAt)}
                         </td>
 
-                        <td className="px-5 py-4 text-sm font-semibold text-white">
+                        <td className="px-5 py-4 text-sm font-semibold text-foreground">
                           {formatCurrency(order.totalPrice)}
                         </td>
 
@@ -675,7 +675,7 @@ export default function AdminDashboardPage() {
                     <tr>
                       <td
                         colSpan={6}
-                        className="px-5 py-10 text-center text-sm text-[#8C8580]"
+                        className="px-5 py-10 text-center text-sm text-muted-foreground"
                       >
                         No orders found yet.
                       </td>
@@ -698,7 +698,7 @@ export default function AdminDashboardPage() {
                           #{order._id.slice(-6).toUpperCase()}
                         </p>
 
-                        <p className="mt-0.5 truncate text-sm font-medium text-white">
+                        <p className="mt-0.5 truncate text-sm font-medium text-foreground">
                           {order.customerName}
                         </p>
                       </div>
@@ -715,16 +715,16 @@ export default function AdminDashboardPage() {
 
                     <div className="flex items-end justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[11px] text-[#8C8580]">
+                        <p className="truncate text-[11px] text-muted-foreground">
                           {order.vendorEmail}
                         </p>
 
-                        <p className="mt-0.5 text-[10px] text-[#78716C]">
+                        <p className="mt-0.5 text-[10px] text-muted-foreground">
                           {getTimeAgo(order.createdAt)}
                         </p>
                       </div>
 
-                      <p className="shrink-0 text-sm font-bold text-white">
+                      <p className="shrink-0 text-sm font-bold text-foreground">
                         {formatCurrency(order.totalPrice)}
                       </p>
                     </div>
@@ -733,7 +733,7 @@ export default function AdminDashboardPage() {
               })}
 
               {recentOrders.length === 0 && (
-                <p className="px-4 py-10 text-center text-sm text-[#8C8580]">
+                <p className="px-4 py-10 text-center text-sm text-muted-foreground">
                   No orders found yet.
                 </p>
               )}
@@ -743,7 +743,7 @@ export default function AdminDashboardPage() {
           {/* ============ BOTTOM HIGHLIGHTS ============ */}
           <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
             {/* Premium Vendors */}
-            <div className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-[#1F1916] to-[#1C1715] p-4 sm:rounded-2xl sm:p-5">
+            <div className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-muted to-card p-4 sm:rounded-2xl sm:p-5">
               <div className="flex items-center justify-between gap-3 sm:gap-4">
                 <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-black shadow-lg shadow-orange-500/20 sm:size-12 sm:rounded-xl">
@@ -751,11 +751,11 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-white sm:text-sm">
+                    <p className="text-[13px] font-semibold text-foreground sm:text-sm">
                       Premium Tier Vendors
                     </p>
 
-                    <p className="mt-0.5 truncate text-[11px] text-[#A8A29E] sm:text-xs">
+                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground sm:text-xs">
                       Vendors with active premium subscriptions
                     </p>
                   </div>
@@ -774,18 +774,18 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Platform Health */}
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-[#1C1715] p-4 sm:gap-4 sm:rounded-2xl sm:p-5">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 sm:gap-4 sm:rounded-2xl sm:p-5">
               <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                 <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 sm:size-12 sm:rounded-xl">
                   <Activity size={20} className="sm:size-[22px]" />
                 </div>
 
                 <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-white sm:text-sm">
+                  <p className="text-[13px] font-semibold text-foreground sm:text-sm">
                     Platform & API Health
                   </p>
 
-                  <p className="mt-0.5 truncate text-[11px] text-[#A8A29E] sm:text-xs">
+                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground sm:text-xs">
                     Dashboard API connection successful
                   </p>
                 </div>

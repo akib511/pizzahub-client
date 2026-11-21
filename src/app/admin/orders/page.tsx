@@ -47,7 +47,7 @@ const statusStyles: Record<OrderStatus, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   accepted: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   rejected: "bg-red-500/10 text-red-400 border-red-500/20",
-  cancelled: "bg-stone-500/10 text-stone-400 border-stone-500/20",
+  cancelled: "bg-stone-500/10 text-muted-foreground border-stone-500/20",
 };
 
 const formatDate = (date: string) => {
@@ -72,28 +72,26 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
 
   // Fetch all orders
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-
-      const response = await fetch(`${API_URL}/admin/orders`);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch orders");
-      }
-
-      const data: Order[] = await response.json();
-
-      setOrders(data);
-    } catch (error) {
-      console.error("Orders fetch error:", error);
-      toast.error("Failed to load orders");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/orders`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+
+        const data: Order[] = await response.json();
+
+        setOrders(data);
+      } catch (error) {
+        console.error("Orders fetch error:", error);
+        toast.error("Failed to load orders");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchOrders();
   }, []);
 
@@ -147,7 +145,7 @@ export default function AdminOrdersPage() {
       title: "Cancelled",
       value: orders.filter((o) => o.status === "cancelled").length,
       icon: XCircle,
-      color: "text-stone-400",
+      color: "text-muted-foreground",
       bg: "bg-stone-500/10",
     },
   ];
@@ -157,16 +155,16 @@ export default function AdminOrdersPage() {
       {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
             Orders Management
           </h1>
 
-          <p className="mt-1 text-sm text-stone-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Monitor and view all platform orders.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-[#1C1715] px-4 py-2.5 text-sm text-stone-300">
+        <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-muted-foreground">
           <ShoppingBag size={16} className="text-orange-400" />
           {orders.length} Total Orders
         </div>
@@ -180,7 +178,7 @@ export default function AdminOrdersPage() {
           return (
             <div
               key={stat.title}
-              className="rounded-xl border border-white/[0.06] bg-[#1C1715] p-4"
+              className="rounded-xl border border-border bg-card p-4"
             >
               <div className="flex items-center justify-between">
                 <div
@@ -189,12 +187,12 @@ export default function AdminOrdersPage() {
                   <Icon size={18} className={stat.color} />
                 </div>
 
-                <span className="text-xl font-bold text-white">
+                <span className="text-xl font-bold text-foreground">
                   {stat.value}
                 </span>
               </div>
 
-              <p className="mt-3 text-xs text-stone-400 sm:text-sm">
+              <p className="mt-3 text-xs text-muted-foreground sm:text-sm">
                 {stat.title}
               </p>
             </div>
@@ -203,11 +201,11 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-[#1C1715] p-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search
             size={17}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
 
           <input
@@ -215,7 +213,7 @@ export default function AdminOrdersPage() {
             placeholder="Search order, customer or vendor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-white/[0.07] bg-[#100D0B] py-2.5 pl-10 pr-4 text-sm text-white outline-none transition focus:border-orange-500/50"
+            className="w-full rounded-lg border border-border bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition focus:border-orange-500/50"
           />
         </div>
 
@@ -223,7 +221,7 @@ export default function AdminOrdersPage() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="w-full appearance-none rounded-lg border border-white/[0.07] bg-[#100D0B] px-3 py-2.5 text-sm text-stone-300 outline-none focus:border-orange-500/50"
+            className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-muted-foreground outline-none focus:border-orange-500/50"
           >
             <option value="all">All Orders</option>
             <option value="pending">Pending</option>
@@ -234,23 +232,23 @@ export default function AdminOrdersPage() {
 
           <ChevronDown
             size={16}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-stone-500"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
         </div>
       </div>
 
       {/* Orders Table */}
-      <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#1C1715]">
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-4">
-          <h2 className="font-semibold text-white">All Orders</h2>
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex items-center justify-between border-b border-border px-4 py-4">
+          <h2 className="font-semibold text-foreground">All Orders</h2>
 
-          <span className="text-xs text-stone-500">
+          <span className="text-xs text-muted-foreground">
             Showing {filteredOrders.length} orders
           </span>
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-sm text-stone-400">
+          <div className="py-16 text-center text-sm text-muted-foreground">
             Loading orders...
           </div>
         ) : (
@@ -259,7 +257,7 @@ export default function AdminOrdersPage() {
             <div className="hidden overflow-x-auto lg:block">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-white/[0.06] text-xs text-stone-500">
+                  <tr className="border-b border-border text-xs text-muted-foreground">
                     <th className="px-5 py-4 font-medium">ORDER ID</th>
                     <th className="px-5 py-4 font-medium">CUSTOMER</th>
                     <th className="px-5 py-4 font-medium">VENDOR</th>
@@ -274,7 +272,7 @@ export default function AdminOrdersPage() {
                   {filteredOrders.map((order) => (
                     <tr
                       key={order._id}
-                      className="border-b border-white/[0.04] transition hover:bg-white/[0.02]"
+                      className="border-b border-border transition hover:bg-muted/40"
                     >
                       <td className="px-5 py-4">
                         <span className="font-medium text-orange-400">
@@ -283,23 +281,23 @@ export default function AdminOrdersPage() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <p className="text-sm font-medium text-white">
+                        <p className="text-sm font-medium text-foreground">
                           {order.customerName}
                         </p>
 
-                        <p className="mt-1 text-xs text-stone-500">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           {order.customerEmail}
                         </p>
                       </td>
 
                       <td className="px-5 py-4">
-                        <p className="text-sm text-stone-300">
+                        <p className="text-sm text-muted-foreground">
                           {order.vendorEmail}
                         </p>
                       </td>
 
                       <td className="px-5 py-4">
-                        <span className="font-semibold text-white">
+                        <span className="font-semibold text-foreground">
                           ${Number(order.totalPrice).toFixed(2)}
                         </span>
                       </td>
@@ -312,14 +310,14 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
 
-                      <td className="px-5 py-4 text-xs text-stone-400">
+                      <td className="px-5 py-4 text-xs text-muted-foreground">
                         {formatDate(order.createdAt)}
                       </td>
 
                       <td className="px-5 py-4">
                         <button
                           onClick={() => setSelectedOrder(order)}
-                          className="flex items-center gap-1.5 rounded-lg border border-white/[0.07] px-3 py-2 text-xs text-stone-300 transition hover:border-orange-500/30 hover:text-orange-400"
+                          className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground transition hover:border-orange-500/30 hover:text-orange-400"
                         >
                           <Eye size={14} />
                           Details
@@ -336,7 +334,7 @@ export default function AdminOrdersPage() {
               {filteredOrders.map((order) => (
                 <div
                   key={order._id}
-                  className="rounded-xl border border-white/[0.06] bg-[#100D0B] p-4"
+                  className="rounded-xl border border-border bg-background p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -344,11 +342,11 @@ export default function AdminOrdersPage() {
                         {formatOrderId(order._id)}
                       </p>
 
-                      <p className="mt-1 text-sm text-white">
+                      <p className="mt-1 text-sm text-foreground">
                         {order.customerName}
                       </p>
 
-                      <p className="text-xs text-stone-500">
+                      <p className="text-xs text-muted-foreground">
                         {order.vendorEmail}
                       </p>
                     </div>
@@ -360,13 +358,13 @@ export default function AdminOrdersPage() {
                     </span>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
+                  <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
                     <div>
-                      <p className="text-lg font-bold text-white">
+                      <p className="text-lg font-bold text-foreground">
                         ${Number(order.totalPrice).toFixed(2)}
                       </p>
 
-                      <p className="text-xs text-stone-500">
+                      <p className="text-xs text-muted-foreground">
                         {formatDate(order.createdAt)}
                       </p>
                     </div>
@@ -388,12 +386,12 @@ export default function AdminOrdersPage() {
               <div className="py-16 text-center">
                 <ShoppingBag
                   size={35}
-                  className="mx-auto mb-3 text-stone-600"
+                  className="mx-auto mb-3 text-muted-foreground"
                 />
 
-                <h3 className="font-medium text-white">No orders found</h3>
+                <h3 className="font-medium text-foreground">No orders found</h3>
 
-                <p className="mt-1 text-sm text-stone-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Try changing your search or filter.
                 </p>
               </div>
@@ -409,22 +407,22 @@ export default function AdminOrdersPage() {
           onClick={() => setSelectedOrder(null)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#1C1715] shadow-2xl"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="sticky top-0 flex items-center justify-between border-b border-white/[0.06] bg-[#1C1715] px-5 py-4">
+            <div className="sticky top-0 flex items-center justify-between border-b border-border bg-card px-5 py-4">
               <div>
-                <p className="text-xs text-stone-500">Order Details</p>
+                <p className="text-xs text-muted-foreground">Order Details</p>
 
-                <h2 className="mt-1 text-lg font-bold text-white">
+                <h2 className="mt-1 text-lg font-bold text-foreground">
                   {formatOrderId(selectedOrder._id)}
                 </h2>
               </div>
 
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="rounded-lg p-2 text-stone-400 transition hover:bg-white/5 hover:text-white"
+                className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
               >
                 <X size={20} />
               </button>
@@ -442,50 +440,50 @@ export default function AdminOrdersPage() {
 
               {/* Customer & Vendor */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/[0.06] bg-[#100D0B] p-4">
+                <div className="rounded-xl border border-border bg-background p-4">
                   <div className="mb-3 flex items-center gap-2 text-orange-400">
                     <User size={16} />
                     <span className="text-xs font-medium">CUSTOMER</span>
                   </div>
 
-                  <p className="font-medium text-white">
+                  <p className="font-medium text-foreground">
                     {selectedOrder.customerName}
                   </p>
 
-                  <p className="mt-1 break-all text-xs text-stone-500">
+                  <p className="mt-1 break-all text-xs text-muted-foreground">
                     {selectedOrder.customerEmail}
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-white/[0.06] bg-[#100D0B] p-4">
+                <div className="rounded-xl border border-border bg-background p-4">
                   <div className="mb-3 flex items-center gap-2 text-orange-400">
                     <Store size={16} />
                     <span className="text-xs font-medium">VENDOR</span>
                   </div>
 
-                  <p className="break-all font-medium text-white">
+                  <p className="break-all font-medium text-foreground">
                     {selectedOrder.vendorEmail}
                   </p>
                 </div>
               </div>
 
               {/* Delivery Information */}
-              <div className="rounded-xl border border-white/[0.06] bg-[#100D0B] p-4">
-                <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-white">
+              <div className="rounded-xl border border-border bg-background p-4">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
                   <MapPin size={16} className="text-orange-400" />
                   Delivery Information
                 </h3>
 
-                <p className="text-sm text-stone-300">
+                <p className="text-sm text-muted-foreground">
                   {selectedOrder.deliveryAddress}
                 </p>
 
-                <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
+                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                   <CalendarDays size={14} />
                   Order Date: {formatDate(selectedOrder.createdAt)}
                 </div>
 
-                <div className="mt-2 flex items-center gap-2 text-xs text-stone-500">
+                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                   <CalendarDays size={14} />
                   Delivery Date: {formatDate(selectedOrder.deliveryDate)}
                 </div>
@@ -493,23 +491,23 @@ export default function AdminOrdersPage() {
 
               {/* Ordered Item */}
               <div>
-                <h3 className="mb-3 text-sm font-medium text-white">
+                <h3 className="mb-3 text-sm font-medium text-foreground">
                   Ordered Items
                 </h3>
 
-                <div className="overflow-hidden rounded-xl border border-white/[0.06]">
-                  <div className="flex items-center justify-between border-b border-white/[0.04] px-4 py-3">
+                <div className="overflow-hidden rounded-xl border border-border">
+                  <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <div>
-                      <p className="text-sm text-white">
+                      <p className="text-sm text-foreground">
                         {selectedOrder.itemName}
                       </p>
 
-                      <p className="mt-1 text-xs text-stone-500">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Quantity: {selectedOrder.quantity}
                       </p>
                     </div>
 
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-sm font-medium text-foreground">
                       $
                       {(
                         Number(selectedOrder.unitPrice) *
@@ -520,12 +518,12 @@ export default function AdminOrdersPage() {
                 </div>
 
                 {selectedOrder.message && (
-                  <div className="mt-3 rounded-xl border border-white/[0.06] bg-[#100D0B] p-4">
-                    <p className="mb-1 text-xs text-stone-500">
+                  <div className="mt-3 rounded-xl border border-border bg-background p-4">
+                    <p className="mb-1 text-xs text-muted-foreground">
                       Customer Message
                     </p>
 
-                    <p className="text-sm text-stone-300">
+                    <p className="text-sm text-muted-foreground">
                       {selectedOrder.message}
                     </p>
                   </div>
@@ -534,7 +532,7 @@ export default function AdminOrdersPage() {
 
               {/* Total */}
               <div className="flex items-center justify-between rounded-xl border border-orange-500/20 bg-orange-500/[0.05] p-4">
-                <span className="text-sm text-stone-300">Total Amount</span>
+                <span className="text-sm text-muted-foreground">Total Amount</span>
 
                 <span className="text-xl font-bold text-orange-400">
                   ${Number(selectedOrder.totalPrice).toFixed(2)}
@@ -543,7 +541,7 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-white/[0.06] p-4">
+            <div className="border-t border-border p-4">
               <button
                 onClick={() => setSelectedOrder(null)}
                 className="w-full rounded-lg bg-orange-500 py-2.5 text-sm font-semibold text-black transition hover:bg-orange-400"

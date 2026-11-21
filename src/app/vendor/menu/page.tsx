@@ -41,6 +41,8 @@ interface ApiMenuItem {
 export default function VendorMenuPage() {
   const { data: session, isPending } = authClient.useSession();
 
+  const vendorEmail = session?.user?.email;
+
   const [items, setItems] = useState<MenuItem[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -55,6 +57,9 @@ export default function VendorMenuPage() {
 
   const [loadingItems, setLoadingItems] = useState(true);
   const [error, setError] = useState("");
+
+  // Derived: still loading while the session resolves, or while fetching.
+  const isLoadingItems = isPending || (loadingItems && !!vendorEmail);
 
   const [toast, setToast] = useState<{
     message: string;
@@ -74,14 +79,7 @@ export default function VendorMenuPage() {
 
   // Load vendor menu items
   useEffect(() => {
-    const vendorEmail = session?.user?.email;
-
-    if (!vendorEmail) {
-      if (!isPending) {
-        setLoadingItems(false);
-      }
-      return;
-    }
+    if (!vendorEmail) return;
 
     const loadMenuItems = async () => {
       try {
@@ -128,7 +126,7 @@ export default function VendorMenuPage() {
     };
 
     loadMenuItems();
-  }, [session?.user?.email, isPending]);
+  }, [vendorEmail, isPending]);
 
   // Search and filter
   const filteredItems = items.filter((item) => {
@@ -269,20 +267,20 @@ export default function VendorMenuPage() {
     }
   };
 
-  if (isPending || loadingItems) {
+  if (isLoadingItems) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
-        <p className="text-sm text-[#A8A29E]">Loading menu items...</p>
+        <p className="text-sm text-muted-foreground">Loading menu items...</p>
       </div>
     );
   }
 
   if (!session?.user) {
     return (
-      <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-10 text-center">
+      <div className="rounded-xl border border-border bg-card p-10 text-center">
         <h2 className="text-xl font-bold">Please Login</h2>
 
-        <p className="mt-2 text-sm text-[#A8A29E]">
+        <p className="mt-2 text-sm text-muted-foreground">
           Login to manage your menu items.
         </p>
       </div>
@@ -290,14 +288,14 @@ export default function VendorMenuPage() {
   }
 
   return (
-    <div className="space-y-7 text-white">
+    <div className="space-y-7 text-foreground">
       {/* Toast */}
       {toast && (
         <div
           className={`fixed right-4 top-5 z-[100] flex max-w-sm items-center gap-3 rounded-xl border p-4 shadow-2xl ${
             toast.type === "success"
-              ? "border-green-500/30 bg-[#14251B] text-green-400"
-              : "border-red-500/30 bg-[#291616] text-red-400"
+              ? "border-green-500/30 bg-green-500/10 text-green-400"
+              : "border-red-500/30 bg-red-500/10 text-red-400"
           }`}
         >
           {toast.type === "success" ? (
@@ -310,7 +308,7 @@ export default function VendorMenuPage() {
 
           <button
             onClick={() => setToast(null)}
-            className="text-[#A8A29E] hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
           >
             <X size={17} />
           </button>
@@ -324,7 +322,7 @@ export default function VendorMenuPage() {
 
           <h1 className="mt-1 text-2xl font-bold sm:text-3xl">My Menu Items</h1>
 
-          <p className="mt-2 text-sm text-[#A8A29E]">
+          <p className="mt-2 text-sm text-muted-foreground">
             Manage your food items, prices and availability.
           </p>
         </div>
@@ -340,37 +338,37 @@ export default function VendorMenuPage() {
 
       {/* Statistics */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5">
+        <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#A8A29E]">Total Items</p>
+            <p className="text-sm text-muted-foreground">Total Items</p>
             <Package className="text-orange-500" size={21} />
           </div>
 
           <h2 className="mt-3 text-3xl font-bold">{items.length}</h2>
 
-          <p className="mt-1 text-xs text-[#78716C]">All menu items</p>
+          <p className="mt-1 text-xs text-muted-foreground">All menu items</p>
         </div>
 
-        <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5">
+        <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#A8A29E]">Active Items</p>
+            <p className="text-sm text-muted-foreground">Active Items</p>
             <CheckCircle2 className="text-green-400" size={21} />
           </div>
 
           <h2 className="mt-3 text-3xl font-bold">{activeItems}</h2>
 
-          <p className="mt-1 text-xs text-[#78716C]">Currently available</p>
+          <p className="mt-1 text-xs text-muted-foreground">Currently available</p>
         </div>
 
-        <div className="rounded-xl border border-[#302824] bg-[#1C1715] p-5">
+        <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#A8A29E]">Inactive Items</p>
+            <p className="text-sm text-muted-foreground">Inactive Items</p>
             <XCircle className="text-red-400" size={21} />
           </div>
 
           <h2 className="mt-3 text-3xl font-bold">{inactiveItems}</h2>
 
-          <p className="mt-1 text-xs text-[#78716C]">Currently unavailable</p>
+          <p className="mt-1 text-xs text-muted-foreground">Currently unavailable</p>
         </div>
       </section>
 
@@ -379,7 +377,7 @@ export default function VendorMenuPage() {
         <div>
           <h3 className="font-semibold">Free Plan Usage</h3>
 
-          <p className="mt-1 text-sm text-[#A8A29E]">
+          <p className="mt-1 text-sm text-muted-foreground">
             You can have up to 3 active menu items on your Free Plan.
           </p>
         </div>
@@ -393,12 +391,12 @@ export default function VendorMenuPage() {
       </section>
 
       {/* Search and Filters */}
-      <section className="rounded-xl border border-[#302824] bg-[#1C1715] p-4 sm:p-5">
+      <section className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row">
           <div className="relative flex-1">
             <Search
               size={19}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-[#78716C]"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
 
             <input
@@ -406,7 +404,7 @@ export default function VendorMenuPage() {
               placeholder="Search menu items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-[#302824] bg-[#100D0B] py-3 pl-11 pr-4 text-sm outline-none placeholder:text-[#78716C] focus:border-orange-500"
+              className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none placeholder:text-muted-foreground focus:border-orange-500"
             />
           </div>
 
@@ -414,13 +412,13 @@ export default function VendorMenuPage() {
             <div className="relative flex-1 sm:w-48">
               <SlidersHorizontal
                 size={16}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#78716C]"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
 
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full appearance-none rounded-lg border border-[#302824] bg-[#100D0B] py-3 pl-9 pr-3 text-sm outline-none focus:border-orange-500"
+                className="w-full appearance-none rounded-lg border border-border bg-background py-3 pl-9 pr-3 text-sm outline-none focus:border-orange-500"
               >
                 <option value="All">All Categories</option>
                 <option value="Classic Pizzas">Classic Pizzas</option>
@@ -439,7 +437,7 @@ export default function VendorMenuPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="rounded-lg border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-orange-500 sm:w-40"
+              className="rounded-lg border border-border bg-background px-4 py-3 text-sm outline-none focus:border-orange-500 sm:w-40"
             >
               <option value="All">All Status</option>
               <option value="Active">Active</option>
@@ -455,7 +453,7 @@ export default function VendorMenuPage() {
         <div>
           <h2 className="text-lg font-bold">All Menu Items</h2>
 
-          <p className="mt-1 text-xs text-[#78716C]">
+          <p className="mt-1 text-xs text-muted-foreground">
             Showing {filteredItems.length} of {items.length} items
           </p>
         </div>
@@ -474,7 +472,7 @@ export default function VendorMenuPage() {
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              className="group overflow-hidden rounded-xl border border-[#302824] bg-[#1C1715] transition hover:border-orange-500/40"
+              className="group overflow-hidden rounded-xl border border-border bg-card transition hover:border-orange-500/40"
             >
               {/* Image */}
               <div className="relative h-48 overflow-hidden">
@@ -515,17 +513,17 @@ export default function VendorMenuPage() {
                   </p>
                 </div>
 
-                <p className="mt-3 line-clamp-2 min-h-10 text-sm leading-5 text-[#A8A29E]">
+                <p className="mt-3 line-clamp-2 min-h-10 text-sm leading-5 text-muted-foreground">
                   {item.description}
                 </p>
 
-                <div className="mt-4 flex items-center justify-between border-t border-[#302824] pt-4">
-                  <div className="flex items-center gap-2 text-xs text-[#A8A29E]">
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <UtensilsCrossed size={15} />
                     {item.orders} Orders
                   </div>
 
-                  <span className="text-xs text-[#78716C]">
+                  <span className="text-xs text-muted-foreground">
                     Menu Item #{item.id.slice(-5)}
                   </span>
                 </div>
@@ -571,7 +569,7 @@ export default function VendorMenuPage() {
 
                   <button
                     onClick={() => setShowDeleteId(item.id)}
-                    className="flex items-center justify-center gap-1 rounded-lg border border-[#302824] py-2.5 text-xs font-semibold text-[#A8A29E] transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+                    className="flex items-center justify-center gap-1 rounded-lg border border-border py-2.5 text-xs font-semibold text-muted-foreground transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
                   >
                     <Trash2 size={14} />
                     Delete
@@ -582,12 +580,12 @@ export default function VendorMenuPage() {
           ))}
         </section>
       ) : (
-        <div className="rounded-xl border border-[#302824] bg-[#1C1715] px-5 py-16 text-center">
-          <Package size={40} className="mx-auto text-[#78716C]" />
+        <div className="rounded-xl border border-border bg-card px-5 py-16 text-center">
+          <Package size={40} className="mx-auto text-muted-foreground" />
 
           <h3 className="mt-4 text-lg font-bold">No Menu Items Found</h3>
 
-          <p className="mt-2 text-sm text-[#A8A29E]">
+          <p className="mt-2 text-sm text-muted-foreground">
             {error
               ? "Unable to load menu items."
               : "Try changing your search or filters."}
@@ -618,7 +616,7 @@ export default function VendorMenuPage() {
       {/* Delete Confirmation Dialog */}
       {showDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-[#302824] bg-[#1C1715] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="flex items-center justify-between">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
                 <Trash2 size={23} />
@@ -627,7 +625,7 @@ export default function VendorMenuPage() {
               <button
                 disabled={deleting}
                 onClick={() => setShowDeleteId(null)}
-                className="rounded-lg p-2 text-[#A8A29E] transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+                className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-50"
               >
                 <X size={20} />
               </button>
@@ -635,7 +633,7 @@ export default function VendorMenuPage() {
 
             <h2 className="mt-5 text-xl font-bold">Delete Menu Item?</h2>
 
-            <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Are you sure you want to delete this menu item? This action cannot
               be undone and the item will be permanently removed.
             </p>
@@ -644,7 +642,7 @@ export default function VendorMenuPage() {
               <button
                 disabled={deleting}
                 onClick={() => setShowDeleteId(null)}
-                className="flex-1 rounded-xl border border-[#302824] px-4 py-3 text-sm font-semibold text-[#A8A29E] transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+                className="flex-1 rounded-xl border border-border px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-50"
               >
                 Cancel
               </button>

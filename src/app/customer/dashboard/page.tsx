@@ -37,10 +37,10 @@ function StatCard({
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-white/[0.07] bg-gradient-to-br from-white/[0.05] to-white/[0.01] p-3 transition duration-300 hover:border-orange-500/20 sm:rounded-2xl sm:p-5">
+    <div className="group relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-white/[0.05] to-white/[0.01] p-3 transition duration-300 hover:border-orange-500/20 sm:rounded-2xl sm:p-5">
 
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-medium text-gray-400 sm:text-sm">
+        <p className="text-xs font-medium text-muted-foreground sm:text-sm">
           {label}
         </p>
 
@@ -51,11 +51,11 @@ function StatCard({
         </div>
       </div>
 
-      <h3 className="mt-2 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl">
+      <h3 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:mt-4 sm:text-3xl">
         {value}
       </h3>
 
-      <p className="mt-1 text-[10px] text-gray-500 sm:text-xs">
+      <p className="mt-1 text-[10px] text-muted-foreground sm:text-xs">
         {hint}
       </p>
 
@@ -86,13 +86,13 @@ export default function CustomerDashboard() {
 
   const email = session?.user?.email;
 
+  // Derived: nothing to load until the session resolves with an email.
+  const isLoading = loading && (isPending || !!email);
+
   useEffect(() => {
     if (isPending) return;
 
-    if (!email) {
-      setLoading(false);
-      return;
-    }
+    if (!email) return;
 
     const fetchOrders = async () => {
       try {
@@ -134,7 +134,7 @@ export default function CustomerDashboard() {
   ).length;
 
   return (
-    <div className="space-y-6 px-3 py-5 pb-24 text-white sm:space-y-8 sm:px-6 sm:py-7 lg:px-8 lg:pb-8">
+    <div className="space-y-6 px-3 py-5 pb-24 text-foreground sm:space-y-8 sm:px-6 sm:py-7 lg:px-8 lg:pb-8">
 
       {/* Order Overview */}
 
@@ -146,7 +146,7 @@ export default function CustomerDashboard() {
               Order Overview
             </h2>
 
-            <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">
+            <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
               Your activity at a glance
             </p>
           </div>
@@ -204,18 +204,18 @@ export default function CustomerDashboard() {
 
       <section>
 
-        <div className="overflow-hidden rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.035] to-transparent sm:rounded-2xl">
+        <div className="overflow-hidden rounded-xl border border-border bg-gradient-to-b from-white/[0.035] to-transparent sm:rounded-2xl">
 
           {/* Header */}
 
-          <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 border-b border-border p-4 sm:p-5">
 
             <div>
               <h2 className="text-sm font-semibold sm:text-base">
                 Recent Orders
               </h2>
 
-              <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
                 Your latest order activity
               </p>
             </div>
@@ -235,8 +235,8 @@ export default function CustomerDashboard() {
 
           {/* Loading */}
 
-          {loading ? (
-            <div className="py-14 text-center text-sm text-gray-500">
+          {isLoading ? (
+            <div className="py-14 text-center text-sm text-muted-foreground">
               Loading orders...
             </div>
 
@@ -246,7 +246,7 @@ export default function CustomerDashboard() {
 
             <div className="flex flex-col items-center justify-center px-5 py-12 text-center sm:py-14">
 
-              <div className="flex size-14 items-center justify-center rounded-full border border-white/[0.06] bg-white/[0.03] sm:size-16">
+              <div className="flex size-14 items-center justify-center rounded-full border border-border bg-muted/50 sm:size-16">
                 <ShoppingBag className="size-6 text-orange-400 sm:size-7" />
               </div>
 
@@ -254,7 +254,7 @@ export default function CustomerDashboard() {
                 No orders yet
               </h3>
 
-              <p className="mt-2 max-w-xs text-xs leading-6 text-gray-500 sm:text-sm">
+              <p className="mt-2 max-w-xs text-xs leading-6 text-muted-foreground sm:text-sm">
                 Your orders will appear here once you order something delicious.
               </p>
 
@@ -277,7 +277,7 @@ export default function CustomerDashboard() {
 
                 <div
                   key={order._id}
-                  className="flex items-center gap-3 p-3 transition hover:bg-white/[0.02] sm:gap-4 sm:p-5"
+                  className="flex items-center gap-3 p-3 transition hover:bg-muted/40 sm:gap-4 sm:p-5"
                 >
 
                   {/* Food Image */}
@@ -292,15 +292,15 @@ export default function CustomerDashboard() {
 
                   <div className="min-w-0 flex-1">
 
-                    <h3 className="truncate text-xs font-semibold text-white sm:text-sm">
+                    <h3 className="truncate text-xs font-semibold text-foreground sm:text-sm">
                       {order.itemName}
                     </h3>
 
-                    <p className="mt-1 text-[11px] text-gray-500 sm:text-xs">
+                    <p className="mt-1 text-[11px] text-muted-foreground sm:text-xs">
                       Quantity: {order.quantity}
                     </p>
 
-                    <p className="mt-1 text-[10px] text-gray-500 sm:text-xs">
+                    <p className="mt-1 text-[10px] text-muted-foreground sm:text-xs">
                       {order.createdAt
                         ? new Date(order.createdAt).toLocaleDateString()
                         : ""}
@@ -312,7 +312,7 @@ export default function CustomerDashboard() {
 
                   <div className="shrink-0 text-right">
 
-                    <p className="text-xs font-semibold text-white sm:text-sm">
+                    <p className="text-xs font-semibold text-foreground sm:text-sm">
                       ৳{order.totalPrice}
                     </p>
 

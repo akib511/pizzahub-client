@@ -28,6 +28,8 @@ interface ImgBBResponse {
 export default function VendorProfilePage() {
   const { data: session, isPending } = authClient.useSession();
 
+  const email = session?.user?.email;
+
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -41,6 +43,9 @@ export default function VendorProfilePage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Derived: still loading while the session resolves, or while fetching.
+  const isLoading = isPending || (loading && !!email);
 
   // Pending image files (not yet uploaded — preview only)
   const [pendingProfileImage, setPendingProfileImage] = useState<File | null>(null);
@@ -82,12 +87,7 @@ export default function VendorProfilePage() {
   useEffect(() => {
     if (isPending) return;
 
-    const email = session?.user?.email;
-
-    if (!email) {
-      setLoading(false);
-      return;
-    }
+    if (!email) return;
 
     const fetchProfile = async () => {
       try {
@@ -121,7 +121,7 @@ export default function VendorProfilePage() {
     };
 
     fetchProfile();
-  }, [session?.user?.email, isPending]);
+  }, [email, isPending]);
 
   // Input Change
   const handleChange = (
@@ -234,13 +234,13 @@ export default function VendorProfilePage() {
   };
 
   // Loading
-  if (loading || isPending) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
           <div className="mx-auto mb-4 h-11 w-11 animate-spin rounded-full border-4 border-orange-500/20 border-t-orange-500" />
 
-          <p className="text-sm text-[#A8A29E]">
+          <p className="text-sm text-muted-foreground">
             Loading vendor profile...
           </p>
         </div>
@@ -251,7 +251,7 @@ export default function VendorProfilePage() {
   if (!session?.user?.email) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-sm text-[#A8A29E]">
+        <p className="text-sm text-muted-foreground">
           Please login to access your profile.
         </p>
       </div>
@@ -265,14 +265,14 @@ export default function VendorProfilePage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Profile Settings
             </h1>
 
             <Sparkles size={19} className="text-orange-400" />
           </div>
 
-          <p className="mt-2 text-sm text-[#A8A29E]">
+          <p className="mt-2 text-sm text-muted-foreground">
             Manage your personal information and restaurant profile.
           </p>
         </div>
@@ -287,7 +287,7 @@ export default function VendorProfilePage() {
       </div>
 
       {/* Profile Header */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#1C1715] p-5 sm:p-7">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7">
 
         {/* Background Decoration */}
         <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-orange-500/[0.07] blur-3xl" />
@@ -309,11 +309,11 @@ export default function VendorProfilePage() {
             </div>
 
             <div className="min-w-0">
-              <h2 className="truncate text-lg font-bold text-white sm:text-xl">
+              <h2 className="truncate text-lg font-bold text-foreground sm:text-xl">
                 {profile.name || "Vendor Name"}
               </h2>
 
-              <p className="mt-1 truncate text-sm text-[#A8A29E]">
+              <p className="mt-1 truncate text-sm text-muted-foreground">
                 {profile.email}
               </p>
 
@@ -325,8 +325,8 @@ export default function VendorProfilePage() {
           </div>
 
           {/* Restaurant Logo */}
-          <div className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-[#100D0B]/70 p-3">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#211A16]">
+          <div className="flex items-center gap-4 rounded-xl border border-border bg-background/70 p-3">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-card">
               {(restaurantLogoPreview || profile.restaurantLogo) ? (
                 <img
                   src={restaurantLogoPreview || profile.restaurantLogo}
@@ -342,11 +342,11 @@ export default function VendorProfilePage() {
             </div>
 
             <div className="min-w-0">
-              <p className="text-xs text-[#78716C]">
+              <p className="text-xs text-muted-foreground">
                 Your Restaurant
               </p>
 
-              <p className="mt-1 max-w-[180px] truncate text-sm font-semibold text-white">
+              <p className="mt-1 max-w-[180px] truncate text-sm font-semibold text-foreground">
                 {profile.restaurantName || "Restaurant Name"}
               </p>
             </div>
@@ -354,21 +354,21 @@ export default function VendorProfilePage() {
         </div>
 
         {/* Image Uploads */}
-        <div className="relative mt-7 grid gap-4 border-t border-white/[0.06] pt-6 sm:grid-cols-2">
+        <div className="relative mt-7 grid gap-4 border-t border-border pt-6 sm:grid-cols-2">
 
           {/* Profile Image */}
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-[#100D0B]/60 p-4">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/60 p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">
                 <Camera size={18} className="text-orange-400" />
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-foreground">
                   Profile Picture
                 </p>
 
-                <p className="mt-1 text-xs text-[#78716C]">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Update your photo
                 </p>
               </div>
@@ -398,18 +398,18 @@ export default function VendorProfilePage() {
           </div>
 
           {/* Restaurant Logo */}
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-[#100D0B]/60 p-4">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background/60 p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">
                 <Store size={18} className="text-orange-400" />
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-foreground">
                   Restaurant Logo
                 </p>
 
-                <p className="mt-1 text-xs text-[#78716C]">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Upload your logo
                 </p>
               </div>
@@ -447,7 +447,7 @@ export default function VendorProfilePage() {
       </div>
 
       {/* Personal Information */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-7">
+      <div className="rounded-2xl border border-border bg-card p-5 sm:p-7">
 
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">
@@ -455,11 +455,11 @@ export default function VendorProfilePage() {
           </div>
 
           <div>
-            <h2 className="font-semibold text-white">
+            <h2 className="font-semibold text-foreground">
               Personal Information
             </h2>
 
-            <p className="mt-1 text-xs text-[#78716C]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Your personal contact details.
             </p>
           </div>
@@ -469,14 +469,14 @@ export default function VendorProfilePage() {
 
           {/* Name */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#D6D3D1]">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Full Name
             </label>
 
             <div className="relative">
               <User
                 size={17}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78716C]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
 
               <input
@@ -485,46 +485,46 @@ export default function VendorProfilePage() {
                 onChange={handleChange}
                 disabled={saving}
                 placeholder="Enter your name"
-                className="w-full rounded-xl border border-white/[0.07] bg-[#100D0B] py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-[#57534E] focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
+                className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
               />
             </div>
           </div>
 
           {/* Email */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#D6D3D1]">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Email Address
             </label>
 
             <div className="relative">
               <Mail
                 size={17}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78716C]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
 
               <input
                 type="email"
                 value={profile.email}
                 readOnly
-                className="w-full cursor-not-allowed rounded-xl border border-white/[0.05] bg-[#100D0B]/70 py-3 pl-11 pr-4 text-sm text-[#78716C] outline-none"
+                className="w-full cursor-not-allowed rounded-xl border border-border bg-background/70 py-3 pl-11 pr-4 text-sm text-muted-foreground outline-none"
               />
             </div>
 
-            <p className="mt-2 text-[11px] text-[#57534E]">
+            <p className="mt-2 text-[11px] text-muted-foreground">
               Email address cannot be changed.
             </p>
           </div>
 
           {/* Phone */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#D6D3D1]">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Phone Number
             </label>
 
             <div className="relative">
               <Phone
                 size={17}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78716C]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
 
               <input
@@ -533,7 +533,7 @@ export default function VendorProfilePage() {
                 onChange={handleChange}
                 disabled={saving}
                 placeholder="+880 1XXXXXXXXX"
-                className="w-full rounded-xl border border-white/[0.07] bg-[#100D0B] py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-[#57534E] focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
+                className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
               />
             </div>
           </div>
@@ -542,7 +542,7 @@ export default function VendorProfilePage() {
       </div>
 
       {/* Restaurant Information */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-7">
+      <div className="rounded-2xl border border-border bg-card p-5 sm:p-7">
 
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">
@@ -550,11 +550,11 @@ export default function VendorProfilePage() {
           </div>
 
           <div>
-            <h2 className="font-semibold text-white">
+            <h2 className="font-semibold text-foreground">
               Restaurant Information
             </h2>
 
-            <p className="mt-1 text-xs text-[#78716C]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Tell customers about your restaurant.
             </p>
           </div>
@@ -564,14 +564,14 @@ export default function VendorProfilePage() {
 
           {/* Restaurant Name */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#D6D3D1]">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Restaurant Name
             </label>
 
             <div className="relative">
               <Store
                 size={17}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78716C]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
 
               <input
@@ -580,21 +580,21 @@ export default function VendorProfilePage() {
                 onChange={handleChange}
                 disabled={saving}
                 placeholder="Enter restaurant name"
-                className="w-full rounded-xl border border-white/[0.07] bg-[#100D0B] py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-[#57534E] focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
+                className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
               />
             </div>
           </div>
 
           {/* Location */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#D6D3D1]">
+            <label className="mb-2 block text-sm font-medium text-foreground">
               Restaurant Location
             </label>
 
             <div className="relative">
               <MapPin
                 size={17}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78716C]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
 
               <input
@@ -603,7 +603,7 @@ export default function VendorProfilePage() {
                 onChange={handleChange}
                 disabled={saving}
                 placeholder="Enter restaurant location"
-                className="w-full rounded-xl border border-white/[0.07] bg-[#100D0B] py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-[#57534E] focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
+                className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
               />
             </div>
           </div>
@@ -611,11 +611,11 @@ export default function VendorProfilePage() {
           {/* Description */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm font-medium text-[#D6D3D1]">
+              <label className="text-sm font-medium text-foreground">
                 Restaurant Description
               </label>
 
-              <span className="text-xs text-[#57534E]">
+              <span className="text-xs text-muted-foreground">
                 {profile.description.length} characters
               </span>
             </div>
@@ -627,7 +627,7 @@ export default function VendorProfilePage() {
               disabled={saving}
               placeholder="Tell customers about your restaurant, food quality and services..."
               rows={5}
-              className="w-full resize-none rounded-xl border border-white/[0.07] bg-[#100D0B] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-[#57534E] focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
+              className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm leading-6 text-foreground outline-none transition placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/10 disabled:opacity-50"
             />
           </div>
 
@@ -635,7 +635,7 @@ export default function VendorProfilePage() {
       </div>
 
       {/* Account Security */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-7">
+      <div className="rounded-2xl border border-border bg-card p-5 sm:p-7">
 
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">
@@ -643,29 +643,29 @@ export default function VendorProfilePage() {
           </div>
 
           <div>
-            <h2 className="font-semibold text-white">
+            <h2 className="font-semibold text-foreground">
               Account Security
             </h2>
 
-            <p className="mt-1 text-xs text-[#78716C]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Keep your account safe and secure.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-xl border border-white/[0.05] bg-[#100D0B]/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-xl border border-border bg-background/60 p-4 sm:flex-row sm:items-center sm:justify-between">
 
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04]">
-              <Lock size={18} className="text-[#A8A29E]" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
+              <Lock size={18} className="text-muted-foreground" />
             </div>
 
             <div>
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-foreground">
                 Password
               </p>
 
-              <p className="mt-1 text-xs text-[#78716C]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Change your account password.
               </p>
             </div>
@@ -676,7 +676,7 @@ export default function VendorProfilePage() {
             onClick={() =>
               toast.info("Password change will be implemented later.")
             }
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] px-4 py-2.5 text-sm font-medium text-[#D6D3D1] transition hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-400"
+            className="flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-orange-500/30 hover:bg-orange-500/5 hover:text-orange-400"
           >
             <Lock size={15} />
             Change Password
@@ -685,9 +685,9 @@ export default function VendorProfilePage() {
       </div>
 
       {/* Save Changes */}
-      <div className="flex flex-col-reverse gap-3 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
 
-        <p className="text-center text-xs text-[#78716C] sm:text-left">
+        <p className="text-center text-xs text-muted-foreground sm:text-left">
           Make sure your information is correct before saving.
         </p>
 

@@ -55,7 +55,7 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
 };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#100D0B] px-4 py-8 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground">
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="mb-8 flex justify-center">
@@ -69,12 +69,12 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
         </Link>
 
         {/* Login Card */}
-        <div className="rounded-2xl border border-[#302824] bg-[#1C1715] p-6 sm:p-8">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           {/* Heading */}
           <div className="text-center">
             <h2 className="text-2xl font-bold">Welcome Back</h2>
 
-            <p className="mt-2 text-sm text-[#A8A29E]">
+            <p className="mt-2 text-sm text-muted-foreground">
               Sign in to continue to PizzaHub
             </p>
           </div>
@@ -82,7 +82,7 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
           {/* Google Login */}
           <button
             type="button"
-            className="mt-7 flex w-full items-center justify-center gap-3 rounded-lg border border-[#302824] bg-[#100D0B] py-3 text-sm transition hover:bg-[#25201D]"
+            className="mt-7 flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background py-3 text-sm transition hover:bg-muted"
           >
             <svg viewBox="0 0 48 48" className="h-5 w-5">
               <path
@@ -107,11 +107,11 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#302824]" />
+            <div className="h-px flex-1 bg-border" />
 
-            <span className="text-xs text-[#78716C]">OR</span>
+            <span className="text-xs text-muted-foreground">OR</span>
 
-            <div className="h-px flex-1 bg-[#302824]" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           {/* Form */}
@@ -128,7 +128,7 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-lg border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none transition placeholder:text-[#78716C] focus:border-orange-500"
+                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-orange-500"
               />
             </div>
 
@@ -145,20 +145,20 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
                 </Link>
               </div>
 
-              <div className="flex items-center rounded-lg border border-[#302824] bg-[#100D0B] px-4 focus-within:border-orange-500">
+              <div className="flex items-center rounded-lg border border-border bg-background px-4 focus-within:border-orange-500">
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full py-3 text-sm outline-none placeholder:text-[#78716C]"
+                  className="w-full py-3 text-sm outline-none placeholder:text-muted-foreground"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-[#78716C] hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -166,7 +166,7 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
             </div>
 
             {/* Remember Me */}
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-[#A8A29E]">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
               <input type="checkbox" className="accent-orange-500" />
               Remember me
             </label>
@@ -189,7 +189,7 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
           </form>
 
           {/* Sign Up */}
-          <p className="mt-6 text-center text-sm text-[#A8A29E]">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Dont have an account?{" "}
             <Link
               href="/sign-up"
@@ -203,7 +203,7 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
         {/* Back Home */}
         <Link
           href="/"
-          className="mt-6 block text-center text-sm text-[#78716C] transition hover:text-white"
+          className="mt-6 block text-center text-sm text-muted-foreground transition hover:text-foreground"
         >
           ← Back to Home
         </Link>

@@ -1,6 +1,5 @@
 "use client";
 
-import { Toaster } from "sonner";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -86,7 +85,11 @@ const mobileLinks = [
   },
 ];
 
-export default function VendorLayout({ children }) {
+export default function VendorLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
 
   const { data: session } = authClient.useSession();
@@ -98,7 +101,7 @@ export default function VendorLayout({ children }) {
     window.location.href = "/sign-in";
   };
 
-const isActive = (href) => {
+const isActive = (href: string) => {
   if (href === "/") {
     return pathname === "/";
   }
@@ -108,15 +111,15 @@ const isActive = (href) => {
     : pathname.startsWith(href);
 };
   return (
-    <div className="min-h-screen bg-[#0B0907] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen">
 
         {/* Desktop Sidebar */}
-        <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-[#302824] bg-[#100D0B] lg:flex">
+        <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
 
 
           {/* Vendor Information */}
-          <div className="mx-4 mt-6 rounded-xl border border-[#302824] bg-[#1C1715] p-4">
+          <div className="mx-4 mt-6 rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-500/15 text-orange-500">
                 <Store size={22} />
@@ -127,7 +130,7 @@ const isActive = (href) => {
                   {vendorName}
                 </p>
 
-                <p className="text-xs text-[#A8A29E]">
+                <p className="text-xs text-muted-foreground">
                   Restaurant Partner
                 </p>
               </div>
@@ -137,7 +140,7 @@ const isActive = (href) => {
           {/* Sidebar Navigation */}
           <nav className="mt-7 flex-1 space-y-2 overflow-y-auto px-4">
 
-            <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-wider text-[#78716C]">
+            <p className="mb-4 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Vendor Menu
             </p>
 
@@ -151,7 +154,7 @@ const isActive = (href) => {
                   className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition ${
                     isActive(item.href)
                       ? "bg-orange-500 text-white shadow-lg shadow-orange-500/10"
-                      : "text-[#A8A29E] hover:bg-[#1C1715] hover:text-white"
+                      : "text-muted-foreground hover:bg-card hover:text-foreground"
                   }`}
                 >
                   <Icon size={19} />
@@ -162,10 +165,10 @@ const isActive = (href) => {
           </nav>
 
           {/* Sign Out - Desktop Only */}
-          <div className="border-t border-[#302824] p-4">
+          <div className="border-t border-border p-4">
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-[#A8A29E] transition hover:bg-red-500/10 hover:text-red-400"
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition hover:bg-red-500/10 hover:text-red-400"
             >
               <LogOut size={19} />
               Sign Out
@@ -185,7 +188,7 @@ const isActive = (href) => {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#302824] bg-[#100D0B]/95 px-2 pt-2 pb-[max(8px,env(safe-area-inset-bottom))] shadow-[0_-5px_20px_rgba(0,0,0,0.3)] backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-sidebar-border bg-sidebar/95 px-2 pt-2 pb-[max(8px,env(safe-area-inset-bottom))] shadow-[0_-5px_20px_rgba(0,0,0,0.3)] backdrop-blur-xl lg:hidden">
 
         <div className="mx-auto grid max-w-lg grid-cols-5 gap-1">
 
@@ -202,7 +205,7 @@ const isActive = (href) => {
                 className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl py-2 transition-all duration-200 ${
                   active
                     ? "bg-orange-500/15 text-orange-500"
-                    : "text-[#78716C] hover:bg-white/5 hover:text-white"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 <Icon
@@ -220,7 +223,6 @@ const isActive = (href) => {
         </div>
       </nav>
 
-      <Toaster position="top-right" richColors />
     </div>
   );
 }

@@ -113,9 +113,9 @@ function CategoryCard({
   return (
     <Link
       href={`/menu?category=${encodeURIComponent(category.value)}`}
-      className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] focus-visible:ring-offset-2 focus-visible:ring-offset-[#100D0B]"
+      className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      <div className="relative h-full overflow-hidden rounded-xl border border-white/[0.06] bg-[#1A1716] transition-all duration-300 hover:-translate-y-1 hover:border-[#F97316]/40 hover:shadow-2xl hover:shadow-[#F97316]/10 active:scale-[0.98] sm:rounded-2xl">
+      <div className="relative h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10 active:scale-[0.98] sm:rounded-2xl">
         
         {/* Image Section */}
         <div className="relative h-48 overflow-hidden sm:h-48">
@@ -127,10 +127,9 @@ function CategoryCard({
           />
           
           {/* Gradient Overlay - Deeper on mobile for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1716] via-black/30 to-transparent sm:via-black/20" />
-
+<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
           {/* Floating Pill Tag */}
-          <span className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide text-white/90 backdrop-blur-md sm:px-3 sm:text-[11px]">
+          <span className="absolute bottom-3 left-3 rounded-full border border-border bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide text-white/90 backdrop-blur-md sm:px-3 sm:text-[11px]">
             {category.items}
           </span>
         </div>
@@ -138,16 +137,16 @@ function CategoryCard({
         {/* Content Section */}
         <div className="flex items-center justify-between gap-3 p-3.5 sm:p-4">
           <div className="min-w-0">
-            <h3 className="truncate text-[15px] font-semibold text-white transition-colors group-hover:text-[#F97316] sm:text-base">
+            <h3 className="truncate text-[15px] font-semibold text-foreground transition-colors group-hover:text-primary sm:text-base">
               {category.name}
             </h3>
-            <p className="mt-1 line-clamp-2 text-[11px] leading-[1.4] text-stone-400 sm:text-xs sm:leading-5">
+            <p className="mt-1 line-clamp-2 text-[11px] leading-[1.4] text-muted-foreground sm:text-xs sm:leading-5">
               {category.description}
             </p>
           </div>
 
           {/* Arrow Icon - Cleaner on mobile */}
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#F97316]/20 bg-[#F97316]/5 text-[#F97316] transition-all duration-300 group-hover:bg-[#F97316] group-hover:text-white sm:size-9">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/5 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white sm:size-9">
             <ArrowUpRight size={16} strokeWidth={2.5} className="sm:hidden" />
             <ArrowRight size={15} className="hidden sm:block" />
           </div>
@@ -161,17 +160,17 @@ function SectionHeading() {
   return (
     <div className="mb-6 sm:mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
-        <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#F97316] sm:text-xs">
-          <span className="h-1 w-1 rounded-full bg-[#F97316]"></span>
+        <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[3px] text-primary sm:text-xs">
+          <span className="h-1 w-1 rounded-full bg-primary"></span>
           Explore Our Categories
         </span>
         <h2
           id="categories-heading"
-          className="mt-2 font-[var(--font-heading)] text-2xl font-semibold text-white sm:mt-3 sm:text-3xl lg:text-4xl"
+          className="mt-2 font-[var(--font-heading)] text-2xl font-semibold text-foreground sm:mt-3 sm:text-3xl lg:text-4xl"
         >
-          Find Your <span className="text-[#F97316]">Flavor.</span>
+          Find Your <span className="text-primary">Flavor.</span>
         </h2>
-        <p className="mt-2 max-w-xl text-xs leading-5 text-stone-400 sm:mt-3 sm:text-sm sm:leading-7">
+        <p className="mt-2 max-w-xl text-xs leading-5 text-muted-foreground sm:mt-3 sm:text-sm sm:leading-7">
           From classic favorites to irresistible specialties, discover the
           perfect taste for every craving.
         </p>
@@ -227,7 +226,7 @@ export default function PizzaCategories() {
   return (
     <section
       aria-labelledby="categories-heading"
-      className="overflow-hidden bg-[#100D0B] py-12 sm:py-16 lg:py-20"
+      className="overflow-hidden bg-background py-12 sm:py-16 lg:py-20"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading />
@@ -253,7 +252,7 @@ export default function PizzaCategories() {
         </div>
 
         {/* Swipe Hint for Mobile only */}
-        <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-stone-500 sm:hidden">
+        <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-muted-foreground sm:hidden">
           <span className="h-px w-8 bg-stone-700"></span>
           Swipe to explore
           <span className="h-px w-8 bg-stone-700"></span>

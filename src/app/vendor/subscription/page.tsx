@@ -74,19 +74,19 @@ export default function VendorSubscriptionPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           Subscription
         </h1>
 
-        <p className="mt-1 text-sm text-[#A8A29E]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage your plan and unlock more features.
         </p>
       </div>
 
       {/* Current Plan */}
-      <div className="flex flex-col gap-4 rounded-xl border border-white/[0.06] bg-[#1C1715] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.05]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
             {isPremium ? (
               <Crown size={20} className="text-orange-400" />
             ) : (
@@ -95,11 +95,11 @@ export default function VendorSubscriptionPage() {
           </div>
 
           <div>
-            <p className="text-xs text-[#A8A29E]">
+            <p className="text-xs text-muted-foreground">
               Current Plan
             </p>
 
-            <h2 className="font-semibold text-white">
+            <h2 className="font-semibold text-foreground">
               {isPremium ? "Premium Plan" : "Free Plan"}
             </h2>
           </div>
@@ -108,16 +108,16 @@ export default function VendorSubscriptionPage() {
         {!isPremium && (
           <div className="flex items-center gap-5">
             <div>
-              <p className="text-xs text-[#A8A29E]">
+              <p className="text-xs text-muted-foreground">
                 Active Menu Items
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-white">
-                2 <span className="text-[#78716C]">/ 3</span>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                2 <span className="text-muted-foreground">/ 3</span>
               </p>
             </div>
 
-            <div className="h-8 w-24 overflow-hidden rounded-full bg-white/[0.05]">
+            <div className="h-8 w-24 overflow-hidden rounded-full bg-muted">
               <div className="h-full w-2/3 rounded-full bg-orange-500" />
             </div>
           </div>
@@ -134,33 +134,33 @@ export default function VendorSubscriptionPage() {
       <div className="grid gap-4 md:grid-cols-2">
 
         {/* Free Plan */}
-        <div className="rounded-xl border border-white/[0.06] bg-[#1C1715] p-5">
+        <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-foreground">
               Free
             </h2>
 
-            <span className="rounded-full bg-white/[0.05] px-3 py-1 text-xs text-[#A8A29E]">
+            <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
               {isPremium ? "Previous Plan" : "Current Plan"}
             </span>
           </div>
 
           <div className="mt-4">
-            <span className="text-3xl font-bold text-white">
+            <span className="text-3xl font-bold text-foreground">
               $0
             </span>
 
-            <span className="text-sm text-[#78716C]">
+            <span className="text-sm text-muted-foreground">
               {" "}
               / forever
             </span>
           </div>
 
-          <p className="mt-2 text-sm text-[#A8A29E]">
+          <p className="mt-2 text-sm text-muted-foreground">
             Get started with your restaurant.
           </p>
 
-          <div className="my-5 h-px bg-white/[0.06]" />
+          <div className="my-5 h-px bg-muted" />
 
           <div className="space-y-3">
             {freeFeatures.map((feature) => (
@@ -170,7 +170,7 @@ export default function VendorSubscriptionPage() {
               >
                 <Check size={15} className="text-green-400" />
 
-                <span className="text-sm text-[#D6D3D1]">
+                <span className="text-sm text-foreground">
                   {feature}
                 </span>
               </div>
@@ -179,14 +179,14 @@ export default function VendorSubscriptionPage() {
 
           <button
             disabled
-            className="mt-6 w-full rounded-lg border border-white/[0.06] bg-white/[0.03] py-2.5 text-sm text-[#78716C]"
+            className="mt-6 w-full rounded-lg border border-border bg-muted/50 py-2.5 text-sm text-muted-foreground"
           >
             {isPremium ? "Previous Plan" : "Your Current Plan"}
           </button>
         </div>
 
         {/* Premium Plan */}
-        <div className="relative rounded-xl border border-orange-500/30 bg-[#1C1715] p-5">
+        <div className="relative rounded-xl border border-orange-500/30 bg-card p-5">
           <div className="absolute right-4 top-4 rounded-full bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-400">
             {isPremium ? "Purchased" : "Recommended"}
           </div>
@@ -194,27 +194,27 @@ export default function VendorSubscriptionPage() {
           <div className="flex items-center gap-2">
             <Crown size={19} className="text-orange-400" />
 
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-foreground">
               Premium
             </h2>
           </div>
 
           <div className="mt-4">
-            <span className="text-3xl font-bold text-white">
+            <span className="text-3xl font-bold text-foreground">
               $19.99
             </span>
 
-            <span className="text-sm text-[#78716C]">
+            <span className="text-sm text-muted-foreground">
               {" "}
               / one-time
             </span>
           </div>
 
-          <p className="mt-2 text-sm text-[#A8A29E]">
+          <p className="mt-2 text-sm text-muted-foreground">
             Pay once and unlock premium features.
           </p>
 
-          <div className="my-5 h-px bg-white/[0.06]" />
+          <div className="my-5 h-px bg-muted" />
 
           <div className="space-y-3">
             {premiumFeatures.map((feature) => (
@@ -224,7 +224,7 @@ export default function VendorSubscriptionPage() {
               >
                 <Check size={15} className="text-orange-400" />
 
-                <span className="text-sm text-[#D6D3D1]">
+                <span className="text-sm text-foreground">
                   {feature}
                 </span>
               </div>
@@ -255,7 +255,7 @@ export default function VendorSubscriptionPage() {
       </div>
 
       {/* Note */}
-      <p className="text-center text-xs text-[#78716C]">
+      <p className="text-center text-xs text-muted-foreground">
         One-time payment of $19.99. Securely processed through Stripe.
       </p>
     </div>

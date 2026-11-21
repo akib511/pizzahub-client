@@ -62,21 +62,29 @@ export default function AdminProfilePage() {
 
   const role = "Super Admin";
 
-  // Load Admin Information
-  useEffect(() => {
-    if (session?.user) {
-      const userInfo = session.user as typeof session.user & {
-        profileImage?: string;
-      };
+  // Load admin information while rendering (instead of copying session data
+  // into state inside an effect).
+  const adminUser = session?.user as
+    | (NonNullable<typeof session>["user"] & { profileImage?: string })
+    | undefined;
 
-      const currentName = userInfo.name || "";
+  const sessionSignature = adminUser
+    ? [adminUser.id, adminUser.name, adminUser.image].join("|")
+    : "";
 
-      setName(currentName);
-      setSavedName(currentName);
-      setEmail(userInfo.email || "");
-      setImage(userInfo.image || userInfo.profileImage || "");
-    }
-  }, [session?.user?.id, session?.user?.name, session?.user?.image]);
+  const [prevSessionSignature, setPrevSessionSignature] = useState("");
+
+  if (adminUser && sessionSignature !== prevSessionSignature) {
+    setPrevSessionSignature(sessionSignature);
+
+    const currentName = adminUser.name || "";
+
+    setName(currentName);
+    setSavedName(currentName);
+    setEmail(adminUser.email || "");
+    setImage(adminUser.image || adminUser.profileImage || "");
+  }
+
   // Load Platform Statistics
   useEffect(() => {
     const loadPlatformStats = async () => {
@@ -269,21 +277,21 @@ export default function AdminProfilePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
           Profile Settings
         </h1>
 
-        <p className="mt-1 text-sm text-stone-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage your admin account and platform preferences.
         </p>
       </div>
 
       {/* Profile Card */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1C1715]">
-        <div className="border-b border-white/[0.06] px-5 py-4">
-          <h2 className="font-semibold text-white">Personal Information</h2>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border px-5 py-4">
+          <h2 className="font-semibold text-foreground">Personal Information</h2>
 
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Update your account information.
           </p>
         </div>
@@ -292,7 +300,7 @@ export default function AdminProfilePage() {
           {/* Avatar */}
           <div className="mb-6 flex items-center gap-4">
             <div className="relative">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-2xl font-bold text-white">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-2xl font-bold text-foreground">
                 {image ? (
                   <img
                     src={image}
@@ -306,7 +314,7 @@ export default function AdminProfilePage() {
 
               <label
                 htmlFor="adminProfileImage"
-                className="absolute -bottom-2 -right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-[#1C1715] bg-orange-500 text-black transition hover:bg-orange-400"
+                className="absolute -bottom-2 -right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-card bg-orange-500 text-black transition hover:bg-orange-400"
                 title="Change profile picture"
               >
                 <Camera size={14} />
@@ -323,7 +331,7 @@ export default function AdminProfilePage() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-white">
+              <h3 className="font-semibold text-foreground">
                 {savedName || "Admin"}
               </h3>
 
@@ -332,7 +340,7 @@ export default function AdminProfilePage() {
                 {role}
               </div>
 
-              <p className="mt-2 text-xs text-stone-500">
+              <p className="mt-2 text-xs text-muted-foreground">
                 {selectedFile
                   ? "New image selected"
                   : "JPG, PNG or WEBP (Max 5MB)"}
@@ -343,42 +351,42 @@ export default function AdminProfilePage() {
           {/* Form */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm text-stone-400">
+              <label className="mb-2 block text-sm text-muted-foreground">
                 Full Name
               </label>
 
               <div className="relative">
                 <User
                   size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
 
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={loading}
-                  className="w-full rounded-lg border border-white/[0.07] bg-[#100D0B] py-2.5 pl-10 pr-3 text-sm text-white outline-none focus:border-orange-500/50"
+                  className="w-full rounded-lg border border-border bg-background py-2.5 pl-10 pr-3 text-sm text-foreground outline-none focus:border-orange-500/50"
                   placeholder="Enter your name"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-sm text-stone-400">
+              <label className="mb-2 block text-sm text-muted-foreground">
                 Email Address
               </label>
 
               <div className="relative">
                 <Mail
                   size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
 
                 <input
                   type="email"
                   value={email}
                   readOnly
-                  className="w-full cursor-not-allowed rounded-lg border border-white/[0.07] bg-[#100D0B] py-2.5 pl-10 pr-3 text-sm text-stone-400 outline-none"
+                  className="w-full cursor-not-allowed rounded-lg border border-border bg-background py-2.5 pl-10 pr-3 text-sm text-muted-foreground outline-none"
                 />
               </div>
             </div>
@@ -403,16 +411,16 @@ export default function AdminProfilePage() {
       </div>
 
       {/* Notification Preferences */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1C1715]">
-        <div className="border-b border-white/[0.06] px-5 py-4">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border px-5 py-4">
           <div className="flex items-center gap-2">
             <Bell size={17} className="text-orange-400" />
-            <h2 className="font-semibold text-white">
+            <h2 className="font-semibold text-foreground">
               Notification Preferences
             </h2>
           </div>
 
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Choose which notifications you want to receive.
           </p>
         </div>
@@ -445,9 +453,9 @@ export default function AdminProfilePage() {
               className="flex items-center justify-between gap-4 px-5 py-4"
             >
               <div>
-                <p className="text-sm font-medium text-white">{item.title}</p>
+                <p className="text-sm font-medium text-foreground">{item.title}</p>
 
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {item.description}
                 </p>
               </div>
@@ -474,11 +482,11 @@ export default function AdminProfilePage() {
       </div>
 
       {/* Platform Information */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1C1715]">
-        <div className="border-b border-white/[0.06] px-5 py-4">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="border-b border-border px-5 py-4">
           <div className="flex items-center gap-2">
             <Settings size={17} className="text-orange-400" />
-            <h2 className="font-semibold text-white">Platform Information</h2>
+            <h2 className="font-semibold text-foreground">Platform Information</h2>
           </div>
         </div>
 
@@ -509,14 +517,14 @@ export default function AdminProfilePage() {
             return (
               <div
                 key={item.label}
-                className="rounded-xl border border-white/[0.06] bg-[#100D0B] p-4"
+                className="rounded-xl border border-border bg-background p-4"
               >
-                <div className="flex items-center gap-2 text-stone-500">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Icon size={15} />
                   <span className="text-xs">{item.label}</span>
                 </div>
 
-                <p className="mt-2 font-semibold text-white">{item.value}</p>
+                <p className="mt-2 font-semibold text-foreground">{item.value}</p>
               </div>
             );
           })}
@@ -528,9 +536,9 @@ export default function AdminProfilePage() {
         <ShieldCheck size={18} className="mt-0.5 shrink-0 text-orange-400" />
 
         <div>
-          <p className="text-sm font-medium text-white">Account Security</p>
+          <p className="text-sm font-medium text-foreground">Account Security</p>
 
-          <p className="mt-1 text-xs leading-5 text-stone-500">
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
             Your admin account has full access to manage users, vendors, menu
             items, orders and transactions. Keep your credentials secure and
             never share your password.

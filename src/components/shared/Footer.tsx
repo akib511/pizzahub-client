@@ -87,7 +87,7 @@ const supportLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#302824] bg-[#0B0908] px-5 pt-16 sm:px-8 lg:px-10">
+    <footer className="border-t border-border bg-background px-5 pt-16 sm:px-8 lg:px-10">
       <div className="mx-auto max-w-7xl">
 
         {/* Footer Main Content */}
@@ -96,16 +96,16 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F97316] text-white">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white">
                 <Pizza size={25} />
               </div>
 
-              <span className="text-2xl font-bold text-white">
-                Pizza<span className="text-[#F97316]">Hub</span>
+              <span className="text-2xl font-bold text-foreground">
+                Pizza<span className="text-primary">Hub</span>
               </span>
             </Link>
 
-            <p className="mt-5 max-w-xs text-sm leading-7 text-[#A8A29E]">
+            <p className="mt-5 max-w-xs text-sm leading-7 text-muted-foreground">
               Bringing people together with delicious pizza, fresh ingredients,
               and unforgettable flavors. Every slice tells a story.
             </p>
@@ -125,7 +125,7 @@ export default function Footer() {
         key={social.label}
         href={social.href}
         aria-label={social.label}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-[#302824] text-[#A8A29E] transition-all duration-300 hover:border-[#F97316] hover:bg-[#F97316] hover:text-white"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all duration-300 hover:border-primary hover:bg-primary hover:text-white"
       >
         <Icon size={18} />
       </Link>
@@ -136,7 +136,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="mb-6 text-lg font-bold text-white">
+            <h3 className="mb-6 text-lg font-bold text-foreground">
               Quick Links
             </h3>
 
@@ -145,7 +145,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-sm text-[#A8A29E] transition-colors hover:text-[#F97316]"
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.name}
                   </Link>
@@ -156,7 +156,7 @@ export default function Footer() {
 
           {/* Customer Support */}
           <div>
-            <h3 className="mb-6 text-lg font-bold text-white">
+            <h3 className="mb-6 text-lg font-bold text-foreground">
               Customer Support
             </h3>
 
@@ -165,7 +165,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-sm text-[#A8A29E] transition-colors hover:text-[#F97316]"
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.name}
                   </Link>
@@ -176,28 +176,28 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="col-span-2 lg:col-span-1">
-            <h3 className="mb-6 text-lg font-bold text-white">
+            <h3 className="mb-6 text-lg font-bold text-foreground">
               Get In Touch
             </h3>
 
             <div className="space-y-5">
               <div className="flex items-start gap-3">
-                <MapPin size={19} className="mt-1 shrink-0 text-[#F97316]" />
-                <p className="text-sm leading-6 text-[#A8A29E]">
+                <MapPin size={19} className="mt-1 shrink-0 text-primary" />
+                <p className="text-sm leading-6 text-muted-foreground">
                   Your City, Your Country
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
-                <Phone size={19} className="shrink-0 text-[#F97316]" />
-                <p className="text-sm text-[#A8A29E]">
+                <Phone size={19} className="shrink-0 text-primary" />
+                <p className="text-sm text-muted-foreground">
                   +880 1234-567890
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
-                <Mail size={19} className="shrink-0 text-[#F97316]" />
-                <p className="break-all text-sm text-[#A8A29E]">
+                <Mail size={19} className="shrink-0 text-primary" />
+                <p className="break-all text-sm text-muted-foreground">
                   support@pizzahub.com
                 </p>
               </div>
@@ -205,7 +205,7 @@ export default function Footer() {
 
             <Link
               href="/contact"
-              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-[#F97316] transition-all hover:gap-3"
+              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-all hover:gap-3"
             >
               Contact Us
               <ArrowRight size={17} />
@@ -214,13 +214,13 @@ export default function Footer() {
         </div>
 
         {/* Bottom Footer */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-[#302824] py-6 text-center sm:flex-row">
-          <p className="text-xs text-[#78716C]">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-border py-6 text-center sm:flex-row">
+          <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} PizzaHub. All rights reserved.
           </p>
 
-          <p className="text-xs text-[#78716C]">
-            Made with <span className="text-[#F97316]">♥</span> for Pizza Lovers
+          <p className="text-xs text-muted-foreground">
+            Made with <span className="text-primary">♥</span> for Pizza Lovers
           </p>
         </div>
       </div>

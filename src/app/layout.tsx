@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
 import Navbar from "@/components/shared/Navbar";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import ThemedToaster from "@/components/theme/themed-toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,17 +24,22 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <Navbar />
-        {children}
-          <Toaster
-    position="top-right"
-    richColors
-    closeButton
-    theme="dark"
-  />
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('pizzahub-theme');if(t==='light'){document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');}}catch(e){document.documentElement.classList.add('dark');}})();`,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        <ThemeProvider>
+          <Navbar />
+          {children}
+          <ThemedToaster />
+        </ThemeProvider>
       </body>
     </html>
   );

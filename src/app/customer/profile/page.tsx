@@ -55,19 +55,34 @@ export default function CustomerProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Load User Information
-  useEffect(() => {
-    if (session?.user) {
-      const userInfo = session.user as typeof session.user & {
+  // Load user information while rendering (instead of copying session data
+  // into state inside an effect).
+  const sessionUser = session?.user as
+    | (NonNullable<typeof session>["user"] & {
         profileImage?: string;
         bio?: string;
-      };
+      })
+    | undefined;
 
-      setName(userInfo.name || "");
-      setImage(userInfo.image || userInfo.profileImage || "");
-      setBio(userInfo.bio || "");
-    }
-  }, [session]);
+  const sessionSignature = sessionUser
+    ? [
+        sessionUser.id,
+        sessionUser.name,
+        sessionUser.image,
+        sessionUser.profileImage,
+        sessionUser.bio,
+      ].join("|")
+    : "";
+
+  const [prevSessionSignature, setPrevSessionSignature] = useState("");
+
+  if (sessionUser && sessionSignature !== prevSessionSignature) {
+    setPrevSessionSignature(sessionSignature);
+
+    setName(sessionUser.name || "");
+    setImage(sessionUser.image || sessionUser.profileImage || "");
+    setBio(sessionUser.bio || "");
+  }
 
  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
@@ -155,14 +170,14 @@ const handleUpdateProfile = async (
 
   if (!session?.user) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-gray-400">
+      <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">
         Please sign in to view your profile.
       </div>
     );
   }
 
   return (
-    <main className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-[#100D0B] px-4 py-10 sm:px-6">
+    <main className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-background px-4 py-10 sm:px-6">
       {/* Background Glow */}
       <div className="pointer-events-none absolute -left-32 -top-20 h-80 w-80 rounded-full bg-orange-500/[0.08] blur-[120px]" />
 
@@ -173,25 +188,25 @@ const handleUpdateProfile = async (
         <div className="mb-8">
          
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
             My Profile<span className="text-orange-500">.</span>
           </h1>
 
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Manage your personal information and customize your account.
           </p>
         </div>
 
         {/* Profile Card */}
-        <div className="overflow-hidden rounded-3xl border border-white/[0.08] bg-[#181310] shadow-2xl shadow-black/30">
+        <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-2xl shadow-black/30">
           {/* Profile Header */}
-          <div className="relative overflow-hidden border-b border-white/[0.07] bg-gradient-to-r from-[#29190F] via-[#21160F] to-[#181310] px-6 py-9 sm:px-10">
+          <div className="relative overflow-hidden border-b border-border bg-gradient-to-r from-card via-card to-card px-6 py-9 sm:px-10">
             <div className="absolute -right-10 -top-20 h-64 w-64 rounded-full bg-orange-500/[0.08] blur-3xl" />
 
             <div className="relative flex flex-col items-center gap-6 sm:flex-row">
               {/* Avatar */}
               <div className="relative shrink-0">
-                <div className="h-28 w-28 overflow-hidden rounded-full border-4 border-[#382319] bg-[#302017] shadow-xl ring-2 ring-orange-500/40">
+                <div className="h-28 w-28 overflow-hidden rounded-full border-4 border-border bg-muted shadow-xl ring-2 ring-orange-500/40">
                   {image ? (
                     <img
                       src={image}
@@ -220,7 +235,7 @@ const handleUpdateProfile = async (
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading || loading}
                   title="Change profile picture"
-                  className="absolute bottom-1 right-1 flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-[#29190F] bg-orange-500 text-white shadow-lg transition hover:scale-110 hover:bg-orange-600 disabled:opacity-60"
+                  className="absolute bottom-1 right-1 flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-card bg-orange-500 text-white shadow-lg transition hover:scale-110 hover:bg-orange-600 disabled:opacity-60"
                 >
                   {uploading ? (
                     <Loader2 size={17} className="animate-spin" />
@@ -232,11 +247,11 @@ const handleUpdateProfile = async (
 
               {/* User Information */}
               <div className="text-center sm:text-left">
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className="text-2xl font-bold text-foreground">
                   {name || "Customer"}
                 </h2>
 
-                <p className="mt-2 flex items-center justify-center gap-2 text-sm text-gray-400 sm:justify-start">
+                <p className="mt-2 flex items-center justify-center gap-2 text-sm text-muted-foreground sm:justify-start">
                   <Mail size={15} />
                   {session.user.email}
                 </p>
@@ -246,7 +261,7 @@ const handleUpdateProfile = async (
                   Customer Account
                 </div>
 
-                <p className="mt-3 text-xs text-gray-500">
+                <p className="mt-3 text-xs text-muted-foreground">
                   Click the camera icon to change your photo.
                 </p>
               </div>
@@ -257,11 +272,11 @@ const handleUpdateProfile = async (
           <form onSubmit={handleUpdateProfile} className="p-6 sm:p-10">
             <div className="mb-8">
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-lg font-bold text-foreground">
                   Personal Information
                 </h3>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Update your account details below.
                 </p>
               </div>
@@ -269,14 +284,14 @@ const handleUpdateProfile = async (
               <div className="grid gap-6 sm:grid-cols-2">
                 {/* Full Name */}
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-300">
+                  <label className="mb-2 block text-sm font-semibold text-muted-foreground">
                     Full Name
                   </label>
 
                   <div className="relative">
                     <User
                       size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
                     />
 
                     <input
@@ -284,32 +299,32 @@ const handleUpdateProfile = async (
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
-                      className="w-full rounded-xl border border-white/10 bg-[#100D0B] py-3.5 pl-12 pr-4 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-orange-500/60 focus:ring-2 focus:ring-orange-500/10"
+                      className="w-full rounded-xl border border-border bg-background py-3.5 pl-12 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-orange-500/60 focus:ring-2 focus:ring-orange-500/10"
                     />
                   </div>
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-300">
+                  <label className="mb-2 block text-sm font-semibold text-muted-foreground">
                     Email Address
                   </label>
 
                   <div className="relative">
                     <Mail
                       size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
                     />
 
                     <input
                       type="email"
                       value={session.user.email}
                       readOnly
-                      className="w-full cursor-not-allowed rounded-xl border border-white/5 bg-[#100D0B]/70 py-3.5 pl-12 pr-4 text-sm text-gray-500 outline-none"
+                      className="w-full cursor-not-allowed rounded-xl border border-border bg-background/70 py-3.5 pl-12 pr-4 text-sm text-muted-foreground outline-none"
                     />
                   </div>
 
-                  <p className="mt-2 text-xs text-gray-600">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Email address cannot be changed.
                   </p>
                 </div>
@@ -317,11 +332,11 @@ const handleUpdateProfile = async (
             </div>
 
             {/* Bio Section */}
-            <div className="border-t border-white/[0.07] pt-8">
+            <div className="border-t border-border pt-8">
               <div className="mb-5">
-                <h3 className="text-lg font-bold text-white">About Me</h3>
+                <h3 className="text-lg font-bold text-foreground">About Me</h3>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Tell others a little about yourself.
                 </p>
               </div>
@@ -329,7 +344,7 @@ const handleUpdateProfile = async (
               <div className="relative">
                 <FileText
                   size={18}
-                  className="absolute left-4 top-4 text-gray-500"
+                  className="absolute left-4 top-4 text-muted-foreground"
                 />
 
                 <textarea
@@ -338,12 +353,12 @@ const handleUpdateProfile = async (
                   placeholder="Write something about yourself..."
                   rows={4}
                   maxLength={300}
-                  className="w-full resize-none rounded-xl border border-white/10 bg-[#100D0B] py-4 pl-12 pr-4 text-sm leading-6 text-white outline-none transition placeholder:text-gray-600 focus:border-orange-500/60 focus:ring-2 focus:ring-orange-500/10"
+                  className="w-full resize-none rounded-xl border border-border bg-background py-4 pl-12 pr-4 text-sm leading-6 text-foreground outline-none transition placeholder:text-muted-foreground focus:border-orange-500/60 focus:ring-2 focus:ring-orange-500/10"
                 />
               </div>
 
               <div className="mt-2 flex justify-end">
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {bio.length}/300 characters
                 </span>
               </div>
@@ -367,15 +382,15 @@ const handleUpdateProfile = async (
             </div>
 
             {/* Save Button */}
-            <div className="mt-8 flex flex-col-reverse justify-between gap-4 border-t border-white/[0.07] pt-6 sm:flex-row sm:items-center">
-              <p className="text-xs text-gray-600">
+            <div className="mt-8 flex flex-col-reverse justify-between gap-4 border-t border-border pt-6 sm:flex-row sm:items-center">
+              <p className="text-xs text-muted-foreground">
                 Make sure to save your changes.
               </p>
 
               <button
                 type="submit"
                 disabled={loading || uploading}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:shadow-orange-500/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:w-auto"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 px-7 py-3.5 text-sm font-bold text-foreground shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:shadow-orange-500/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:w-auto"
               >
                 {loading || uploading ? (
                   <>
@@ -394,7 +409,7 @@ const handleUpdateProfile = async (
         </div>
 
         {/* Footer */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-600">
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <ShieldCheck size={14} />
           Your account information is securely managed.
         </div>

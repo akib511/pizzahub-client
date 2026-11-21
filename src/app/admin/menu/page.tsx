@@ -240,7 +240,7 @@ export default function AdminMenuPage() {
   if (loading) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
-        <p className="text-sm text-[#A8A29E]">
+        <p className="text-sm text-muted-foreground">
           Loading menu items...
         </p>
       </div>
@@ -255,10 +255,10 @@ export default function AdminMenuPage() {
         <div
           className={`fixed right-4 top-4 z-[100] max-w-sm rounded-xl border px-4 py-3 text-sm shadow-xl ${
             toast.type === "success"
-              ? "border-green-500/20 bg-[#14251B] text-green-400"
+              ? "border-green-500/20 bg-green-500/10 text-green-400"
               : toast.type === "warning"
-                ? "border-orange-500/20 bg-[#271C10] text-orange-400"
-                : "border-red-500/20 bg-[#281414] text-red-400"
+                ? "border-orange-500/20 bg-orange-500/10 text-orange-400"
+                : "border-red-500/20 bg-red-500/10 text-red-400"
           }`}
         >
           {toast.message}
@@ -273,11 +273,11 @@ export default function AdminMenuPage() {
             MENU MODERATION
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Menu Management
           </h1>
 
-          <p className="mt-1 text-sm text-[#A8A29E]">
+          <p className="mt-1 text-sm text-muted-foreground">
             Review food listings and manage menu approvals.
           </p>
         </div>
@@ -288,8 +288,8 @@ export default function AdminMenuPage() {
           </div>
 
           <div>
-            <p className="text-xs text-[#A8A29E]">Awaiting Review</p>
-            <p className="text-xl font-bold text-white">
+            <p className="text-xs text-muted-foreground">Awaiting Review</p>
+            <p className="text-xl font-bold text-foreground">
               {pendingCount} Items
             </p>
           </div>
@@ -336,11 +336,11 @@ export default function AdminMenuPage() {
           />
 
           <div>
-            <p className="text-sm font-medium text-white">
+            <p className="text-sm font-medium text-foreground">
               {pendingCount} menu items need your attention
             </p>
 
-            <p className="mt-1 text-xs text-[#A8A29E]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Review the submitted items and approve or reject them.
               Approved items become eligible to appear on the customer menu.
             </p>
@@ -349,29 +349,29 @@ export default function AdminMenuPage() {
       )}
 
       {/* Filters */}
-      <div className="rounded-2xl border border-white/[0.07] bg-[#15110F]">
-        <div className="flex flex-col gap-4 border-b border-white/[0.06] p-4 sm:p-5">
+      <div className="rounded-2xl border border-border bg-card">
+        <div className="flex flex-col gap-4 border-b border-border p-4 sm:p-5">
           <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
             <div>
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Menu Items
               </h2>
 
-              <p className="mt-1 text-xs text-[#78716C]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {filteredItems.length} items found
               </p>
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row">
               {/* Search */}
-              <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-[#0D0A09] px-3 py-2.5 sm:w-64">
-                <Search size={16} className="text-[#78716C]" />
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 sm:w-64">
+                <Search size={16} className="text-muted-foreground" />
 
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search item or vendor..."
-                  className="w-full bg-transparent text-sm text-white outline-none placeholder:text-[#57534E]"
+                  className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -379,7 +379,7 @@ export default function AdminMenuPage() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="rounded-xl border border-white/[0.07] bg-[#0D0A09] px-3 py-2.5 text-sm text-white outline-none"
+                className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none"
               >
                 <option value="All">All Categories</option>
                 <option value="Classic Pizzas">Classic Pizzas</option>
@@ -407,13 +407,13 @@ export default function AdminMenuPage() {
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   statusFilter === status
                     ? "bg-orange-500 text-white"
-                    : "border border-white/[0.07] bg-white/[0.02] text-[#A8A29E] hover:bg-white/[0.05]"
+                    : "border border-border bg-muted/40 text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {status}
 
                 {status === "Pending" && pendingCount > 0 && (
-                  <span className="ml-2 rounded-full bg-white/15 px-1.5 py-0.5">
+                  <span className="ml-2 rounded-full bg-muted px-1.5 py-0.5">
                     {pendingCount}
                   </span>
                 )}
@@ -427,7 +427,7 @@ export default function AdminMenuPage() {
           {filteredItems.map((item) => (
             <div
               key={item.id}
-              className="group overflow-hidden rounded-xl border border-white/[0.06] bg-[#0D0A09] transition hover:border-orange-500/20"
+              className="group overflow-hidden rounded-xl border border-border bg-background transition hover:border-orange-500/20"
             >
               {/* Image */}
               <div className="relative h-44 overflow-hidden">
@@ -449,23 +449,23 @@ export default function AdminMenuPage() {
                     className={`absolute left-3 top-12 rounded-md px-2 py-1 text-[10px] font-medium ${
                       item.available
                         ? "bg-green-500/15 text-green-400"
-                        : "bg-white/10 text-white/70"
+                        : "bg-muted text-foreground/70"
                     }`}
                   >
                     {item.available ? "Active" : "Inactive"}
                   </span>
                 )}
 
-                <div className="absolute right-3 top-3 rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-xs font-medium text-white backdrop-blur-md">
+                <div className="absolute right-3 top-3 rounded-lg border border-border bg-black/40 px-2 py-1 text-xs font-medium text-white backdrop-blur-md">
                   ৳{item.price.toFixed(2)}
                 </div>
 
                 <div className="absolute bottom-3 left-3 right-3">
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold text-foreground">
                     {item.name}
                   </h3>
 
-                  <p className="mt-1 text-xs text-white/60">
+                  <p className="mt-1 text-xs text-foreground/60">
                     {item.category}
                   </p>
                 </div>
@@ -480,24 +480,24 @@ export default function AdminMenuPage() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-white">
+                    <p className="truncate text-xs font-medium text-foreground">
                       {item.vendor}
                     </p>
 
-                    <p className="truncate text-[10px] text-[#78716C]">
+                    <p className="truncate text-[10px] text-muted-foreground">
                       Vendor
                     </p>
                   </div>
                 </div>
 
                 {/* Location */}
-                <div className="mt-3 flex items-center gap-1.5 text-xs text-[#78716C]">
+                <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <MapPin size={13} />
                   {item.location}
                 </div>
 
                 {/* Submitted */}
-                <div className="mt-2 flex items-center gap-1.5 text-xs text-[#78716C]">
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <CalendarDays size={13} />
                   Submitted {item.submitted}
                 </div>
@@ -506,7 +506,7 @@ export default function AdminMenuPage() {
                 <div className="mt-4 flex gap-2">
                   <button
                     onClick={() => setSelectedItem(item)}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] py-2.5 text-xs font-medium text-[#A8A29E] transition hover:bg-white/[0.06] hover:text-white"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-muted/50 py-2.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
                   >
                     <Eye size={14} />
                     View Details
@@ -543,7 +543,7 @@ export default function AdminMenuPage() {
       {/* Details Modal */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/[0.08] bg-[#181310] shadow-2xl">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl">
 
             {/* Image */}
             <div className="relative h-52">
@@ -553,7 +553,7 @@ export default function AdminMenuPage() {
                 className="h-full w-full object-cover"
               />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-[#181310] to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
 
               <button
                 onClick={() => setSelectedItem(null)}
@@ -572,7 +572,7 @@ export default function AdminMenuPage() {
                       className={`inline-flex rounded-lg border px-2.5 py-1 text-[10px] font-medium ${
                         selectedItem.available
                           ? "border-green-500/15 bg-green-500/10 text-green-400"
-                          : "border-white/10 bg-white/5 text-white/60"
+                          : "border-border bg-muted text-foreground/60"
                       }`}
                     >
                       {selectedItem.available ? "Active" : "Inactive"}
@@ -580,11 +580,11 @@ export default function AdminMenuPage() {
                   )}
                 </div>
 
-                <h2 className="mt-2 text-2xl font-bold text-white">
+                <h2 className="mt-2 text-2xl font-bold text-foreground">
                   {selectedItem.name}
                 </h2>
 
-                <p className="mt-1 text-sm text-white/70">
+                <p className="mt-1 text-sm text-foreground/70">
                   {selectedItem.category}
                 </p>
               </div>
@@ -592,12 +592,12 @@ export default function AdminMenuPage() {
 
             {/* Details */}
             <div className="space-y-4 p-5">
-              <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4">
-                <p className="text-xs text-[#78716C]">
+              <div className="rounded-xl border border-border bg-muted/40 p-4">
+                <p className="text-xs text-muted-foreground">
                   Description
                 </p>
 
-                <p className="mt-2 text-sm leading-6 text-[#D6D3D1]">
+                <p className="mt-2 text-sm leading-6 text-foreground">
                   {selectedItem.description}
                 </p>
               </div>
@@ -629,20 +629,20 @@ export default function AdminMenuPage() {
               </div>
 
               {/* Vendor Info */}
-              <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                <p className="text-xs text-[#78716C]">
+              <div className="rounded-xl border border-border bg-muted/40 p-3">
+                <p className="text-xs text-muted-foreground">
                   Submitted By
                 </p>
 
-                <p className="mt-1 text-sm font-medium text-white">
+                <p className="mt-1 text-sm font-medium text-foreground">
                   {selectedItem.vendor}
                 </p>
 
-                <p className="mt-1 text-xs text-[#A8A29E]">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {selectedItem.vendorEmail}
                 </p>
 
-                <p className="mt-2 text-xs text-[#78716C]">
+                <p className="mt-2 text-xs text-muted-foreground">
                   Submitted on {selectedItem.submitted}
                 </p>
               </div>
@@ -708,18 +708,18 @@ function StatCard({
   };
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#15110F] p-4 transition hover:border-white/[0.1] sm:p-5">
+    <div className="rounded-2xl border border-border bg-card p-4 transition hover:border-border sm:p-5">
       <div
         className={`flex h-10 w-10 items-center justify-center rounded-xl ${styles[color]}`}
       >
         <Icon size={19} />
       </div>
 
-      <p className="mt-4 text-xs text-[#A8A29E]">
+      <p className="mt-4 text-xs text-muted-foreground">
         {title}
       </p>
 
-      <h3 className="mt-1 text-2xl font-bold text-white">
+      <h3 className="mt-1 text-2xl font-bold text-foreground">
         {value.toLocaleString()}
       </h3>
     </div>
@@ -746,15 +746,15 @@ function MenuStatus({ status }: { status: MenuItem["status"] }) {
 // Detail Item
 function DetailItem({ icon: Icon, label, value }: DetailItemProps) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-3">
       <Icon size={16} className="shrink-0 text-orange-400" />
 
       <div className="min-w-0">
-        <p className="text-[10px] text-[#78716C]">
+        <p className="text-[10px] text-muted-foreground">
           {label}
         </p>
 
-        <p className="mt-1 truncate text-xs font-medium text-white">
+        <p className="mt-1 truncate text-xs font-medium text-foreground">
           {value}
         </p>
       </div>
@@ -766,15 +766,15 @@ function DetailItem({ icon: Icon, label, value }: DetailItemProps) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-14">
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.03]">
-        <Search size={20} className="text-[#78716C]" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
+        <Search size={20} className="text-muted-foreground" />
       </div>
 
-      <p className="mt-3 text-sm font-medium text-white">
+      <p className="mt-3 text-sm font-medium text-foreground">
         No menu items found
       </p>
 
-      <p className="mt-1 text-xs text-[#78716C]">
+      <p className="mt-1 text-xs text-muted-foreground">
         Try changing your search or filters.
       </p>
     </div>

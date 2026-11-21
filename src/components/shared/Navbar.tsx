@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
+import ThemeToggle from "@/components/theme/theme-toggle";
 
 type Notification = {
   _id: string;
@@ -44,8 +45,8 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [storedNotifications, setStoredNotifications] = useState<Notification[]>([]);
+  const [storedUnreadCount, setStoredUnreadCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   const navbarRef = useRef<HTMLElement>(null);
@@ -65,6 +66,12 @@ export default function Navbar() {
     | undefined;
 
   const role = userInfo?.role?.toLowerCase();
+
+  // Only signed-in admins receive notifications — derive what is displayed
+  // instead of clearing state inside an effect.
+  const canLoadNotifications = role === "admin" && !!user?.email;
+  const notifications = canLoadNotifications ? storedNotifications : [];
+  const unreadCount = canLoadNotifications ? storedUnreadCount : 0;
 
   const dashboardPath =
     role === "vendor"
@@ -118,8 +125,6 @@ export default function Navbar() {
   // Fetch Admin Notifications
   useEffect(() => {
     if (role !== "admin" || !user?.email) {
-      setNotifications([]);
-      setUnreadCount(0);
       return;
     }
 
@@ -135,8 +140,8 @@ export default function Navbar() {
 
         const data = await response.json();
 
-        setNotifications(data.notifications || []);
-        setUnreadCount(data.unreadCount || 0);
+        setStoredNotifications(data.notifications || []);
+        setStoredUnreadCount(data.unreadCount || 0);
       } catch (error) {
         console.error("Notification fetch failed:", error);
       }
@@ -185,7 +190,7 @@ export default function Navbar() {
         throw new Error("Failed to mark notification as read");
       }
 
-      setNotifications((prev) =>
+      setStoredNotifications((prev) =>
         prev.map((notification) =>
           notification._id === notificationId
             ? { ...notification, isRead: true }
@@ -193,7 +198,7 @@ export default function Navbar() {
         )
       );
 
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      setStoredUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Mark as read failed:", error);
     }
@@ -219,7 +224,7 @@ export default function Navbar() {
         throw new Error("Failed to mark notification as unread");
       }
 
-      setNotifications((prev) =>
+      setStoredNotifications((prev) =>
         prev.map((notification) =>
           notification._id === notificationId
             ? { ...notification, isRead: false }
@@ -227,7 +232,7 @@ export default function Navbar() {
         )
       );
 
-      setUnreadCount((prev) => prev + 1);
+      setStoredUnreadCount((prev) => prev + 1);
     } catch (error) {
       console.error("Mark as unread failed:", error);
     }
@@ -253,12 +258,12 @@ export default function Navbar() {
         throw new Error("Failed to delete notification");
       }
 
-      setNotifications((prev) =>
+      setStoredNotifications((prev) =>
         prev.filter((notification) => notification._id !== notificationId)
       );
 
       if (!selectedNotification.isRead) {
-        setUnreadCount((prev) => Math.max(0, prev - 1));
+        setStoredUnreadCount((prev) => Math.max(0, prev - 1));
       }
     } catch (error) {
       console.error("Delete notification failed:", error);
@@ -267,10 +272,10 @@ export default function Navbar() {
 
   // Notification Dropdown
   const notificationContent = () => (
-    <div className="absolute right-0 top-14 z-[100] w-[min(90vw,390px)] overflow-hidden rounded-2xl border border-white/10 bg-[#1B1511] shadow-[0_20px_70px_rgba(0,0,0,0.6)]">
+    <div className="absolute right-0 top-14 z-[100] w-[min(90vw,390px)] overflow-hidden rounded-2xl border border-border bg-popover shadow-[0_20px_70px_rgba(0,0,0,0.25)]">
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.02] px-5 py-4">
+      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 py-4">
 
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
@@ -278,11 +283,11 @@ export default function Navbar() {
           </div>
 
           <div>
-            <h3 className="text-sm font-bold text-white">
+            <h3 className="text-sm font-bold text-foreground">
               Notifications
             </h3>
 
-            <p className="mt-0.5 text-[11px] text-stone-500">
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
               Stay updated with PizzaHub
             </p>
           </div>
@@ -300,16 +305,16 @@ export default function Navbar() {
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-5 py-12 text-center">
 
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5 text-stone-500">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <Bell size={27} />
             </div>
 
-            <h4 className="text-sm font-semibold text-white">
+            <h4 className="text-sm font-semibold text-foreground">
               All caught up!
             </h4>
 
-            <p className="mt-2 max-w-[220px] text-xs leading-5 text-stone-500">
-              You don't have any notifications right now.
+            <p className="mt-2 max-w-[220px] text-xs leading-5 text-muted-foreground">
+              You don&apos;t have any notifications right now.
             </p>
 
           </div>
@@ -318,7 +323,7 @@ export default function Navbar() {
             <div
               key={notification._id}
               onClick={() => markNotificationAsRead(notification._id)}
-              className={`group relative border-b border-white/[0.06] px-5 py-4 transition duration-200 hover:bg-white/[0.04] ${
+              className={`group relative border-b border-border px-5 py-4 transition duration-200 hover:bg-muted/60 ${
                 !notification.isRead ? "bg-orange-500/[0.045]" : ""
               }`}
             >
@@ -328,7 +333,7 @@ export default function Navbar() {
                   className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                     !notification.isRead
                       ? "bg-orange-500/10 text-orange-400"
-                      : "bg-white/5 text-stone-400"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {notification.type === "approval" ? (
@@ -343,7 +348,7 @@ export default function Navbar() {
                 <div className="min-w-0 flex-1">
 
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-sm font-semibold leading-5 text-white">
+                    <h4 className="text-sm font-semibold leading-5 text-foreground">
                       {notification.title}
                     </h4>
 
@@ -352,13 +357,13 @@ export default function Navbar() {
                     )}
                   </div>
 
-                  <p className="mt-1.5 text-xs leading-5 text-stone-400">
+                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
                     {notification.message}
                   </p>
 
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
 
-                    <span className="flex items-center gap-1.5 text-[10px] text-stone-500">
+                    <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                       <Clock size={12} />
                       {new Date(notification.createdAt).toLocaleString()}
                     </span>
@@ -404,9 +409,9 @@ export default function Navbar() {
 
       {/* Footer */}
       {notifications.length > 0 && (
-        <div className="border-t border-white/10 bg-white/[0.02] px-5 py-3">
-          <p className="text-center text-[11px] text-stone-500">
-            You're viewing your latest notifications
+        <div className="border-t border-border bg-muted/40 px-5 py-3">
+          <p className="text-center text-[11px] text-muted-foreground">
+            You&apos;re viewing your latest notifications
           </p>
         </div>
       )}
@@ -425,7 +430,7 @@ export default function Navbar() {
       className={`relative flex h-10 w-10 items-center justify-center rounded-xl border transition duration-200 ${
         notificationOpen
           ? "border-orange-500/30 bg-orange-500/10 text-orange-400"
-          : "border-white/10 bg-white/5 text-stone-300 hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
+          : "border-border bg-secondary text-muted-foreground hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
       }`}
       aria-label="Notifications"
       aria-expanded={notificationOpen}
@@ -433,7 +438,7 @@ export default function Navbar() {
       <Bell size={20} />
 
       {unreadCount > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#100D0B] bg-red-500 px-1 text-[9px] font-bold text-white">
+        <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-background bg-red-500 px-1 text-[9px] font-bold text-white">
           {unreadCount > 99 ? "99+" : unreadCount}
         </span>
       )}
@@ -443,7 +448,7 @@ export default function Navbar() {
   return (
     <header
       ref={navbarRef}
-      className="sticky top-0 z-50 border-b border-white/10 bg-[#100D0B]/95 backdrop-blur-xl"
+      className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl"
     >
 
       <nav className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
@@ -459,11 +464,11 @@ export default function Navbar() {
           </div>
 
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-white">
+            <h1 className="text-xl font-extrabold tracking-tight text-foreground">
               Pizza<span className="text-orange-500">Hub</span>
             </h1>
 
-            <p className="text-[9px] font-semibold uppercase tracking-[2px] text-stone-500">
+            <p className="text-[9px] font-semibold uppercase tracking-[2px] text-muted-foreground">
               Taste The Happiness
             </p>
           </div>
@@ -479,7 +484,7 @@ export default function Navbar() {
               className={`text-sm font-medium transition-colors duration-300 ${
                 isActive(link.href)
                   ? "text-orange-400"
-                  : "text-stone-400 hover:text-orange-400"
+                  : "text-muted-foreground hover:text-orange-400"
               }`}
             >
               {link.name}
@@ -492,7 +497,7 @@ export default function Navbar() {
               className={`text-sm font-medium transition-colors duration-300 ${
                 pathname.startsWith(dashboardPath)
                   ? "text-orange-400"
-                  : "text-stone-400 hover:text-orange-400"
+                  : "text-muted-foreground hover:text-orange-400"
               }`}
             >
               Dashboard
@@ -503,6 +508,7 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-5 md:flex">
+          <ThemeToggle />
 
           {/* Desktop Notification */}
           {!isPending && role === "admin" && (
@@ -517,7 +523,7 @@ export default function Navbar() {
             <>
               <Link
                 href="/sign-in"
-                className="text-sm font-semibold text-stone-300 transition hover:text-white"
+                className="text-sm font-semibold text-muted-foreground transition hover:text-foreground"
               >
                 Sign In
               </Link>
@@ -540,7 +546,7 @@ export default function Navbar() {
                   setProfileOpen(!profileOpen);
                   setNotificationOpen(false);
                 }}
-                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 py-1.5 pl-2 pr-3 transition hover:bg-white/10"
+                className="flex items-center gap-2 rounded-full border border-border bg-secondary py-1.5 pl-2 pr-3 transition hover:bg-muted"
               >
                 {profileImage ? (
                   <Image
@@ -557,27 +563,27 @@ export default function Navbar() {
                   </div>
                 )}
 
-                <span className="max-w-28 truncate text-sm font-semibold text-white">
+                <span className="max-w-28 truncate text-sm font-semibold text-foreground">
                   {user.name}
                 </span>
 
                 <ChevronDown
                   size={16}
-                  className={`text-stone-400 transition ${
+                  className={`text-muted-foreground transition ${
                     profileOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 top-14 w-60 overflow-hidden rounded-xl border border-white/10 bg-[#1B1511] p-2 shadow-2xl">
+                <div className="absolute right-0 top-14 w-60 overflow-hidden rounded-xl border border-border bg-popover p-2 shadow-2xl">
 
-                  <div className="border-b border-white/10 px-3 py-3">
-                    <p className="truncate text-sm font-bold text-white">
+                  <div className="border-b border-border px-3 py-3">
+                    <p className="truncate text-sm font-bold text-foreground">
                       {user.name}
                     </p>
 
-                    <p className="truncate text-xs text-stone-500">
+                    <p className="truncate text-xs text-muted-foreground">
                       {user.email}
                     </p>
                   </div>
@@ -585,7 +591,7 @@ export default function Navbar() {
                   <Link
                     href={dashboardPath}
                     onClick={closeMenus}
-                    className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-stone-300 transition hover:bg-white/5 hover:text-orange-400"
+                    className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-orange-400"
                   >
                     <LayoutDashboard size={17} />
                     Dashboard
@@ -594,7 +600,7 @@ export default function Navbar() {
                   <Link
                     href={profilePath}
                     onClick={closeMenus}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-stone-300 transition hover:bg-white/5 hover:text-orange-400"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-orange-400"
                   >
                     <Settings size={17} />
                     Profile Settings
@@ -618,6 +624,7 @@ export default function Navbar() {
 
         {/* Mobile Actions */}
         <div className="flex items-center gap-3 md:hidden">
+          <ThemeToggle />
 
           {/* Mobile Notification */}
           {!isPending && role === "admin" && (
@@ -637,7 +644,7 @@ export default function Navbar() {
             className={`flex h-10 w-10 items-center justify-center rounded-xl border transition ${
               isOpen
                 ? "border-orange-500/30 bg-orange-500/10 text-orange-400"
-                : "border-white/10 text-white hover:bg-white/5"
+                : "border-border text-foreground hover:bg-muted"
             }`}
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
@@ -651,7 +658,7 @@ export default function Navbar() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="animate-in slide-in-from-top-2 duration-200 border-t border-white/10 bg-[#100D0B] px-4 py-5 md:hidden">
+        <div className="animate-in slide-in-from-top-2 duration-200 border-t border-border bg-background px-4 py-5 md:hidden">
 
           <div className="mx-auto max-w-7xl space-y-5">
 
@@ -677,11 +684,11 @@ export default function Navbar() {
                   )}
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-white">
+                    <p className="truncate text-sm font-bold text-foreground">
                       {user.name}
                     </p>
 
-                    <p className="truncate text-xs text-stone-400">
+                    <p className="truncate text-xs text-muted-foreground">
                       {user.email}
                     </p>
 
@@ -697,7 +704,7 @@ export default function Navbar() {
             {/* Navigation Links */}
             <div className="space-y-1">
 
-              <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[2px] text-stone-500">
+              <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[2px] text-muted-foreground">
                 Navigation
               </p>
 
@@ -709,7 +716,7 @@ export default function Navbar() {
                   className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-semibold transition ${
                     isActive(link.href)
                       ? "bg-orange-500/10 text-orange-400"
-                      : "text-stone-300 hover:bg-white/5 hover:text-orange-400"
+                      : "text-muted-foreground hover:bg-muted hover:text-orange-400"
                   }`}
                 >
                   {link.name}
@@ -727,7 +734,7 @@ export default function Navbar() {
                   className={`flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold transition ${
                     pathname.startsWith(dashboardPath)
                       ? "bg-orange-500/10 text-orange-400"
-                      : "text-stone-300 hover:bg-white/5 hover:text-orange-400"
+                      : "text-muted-foreground hover:bg-muted hover:text-orange-400"
                   }`}
                 >
                   <LayoutDashboard size={18} />
@@ -739,16 +746,16 @@ export default function Navbar() {
 
             {/* Account Settings */}
             {!isPending && user && (
-              <div className="border-t border-white/10 pt-4">
+              <div className="border-t border-border pt-4">
 
-                <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[2px] text-stone-500">
+                <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[2px] text-muted-foreground">
                   Account
                 </p>
 
                 <Link
                   href={profilePath}
                   onClick={closeMenus}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-stone-300 transition hover:bg-white/5 hover:text-orange-400"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-orange-400"
                 >
                   <Settings size={18} />
                   Profile Settings
@@ -767,12 +774,12 @@ export default function Navbar() {
 
             {/* Authentication */}
             {!isPending && !user && (
-              <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-5">
+              <div className="grid grid-cols-2 gap-3 border-t border-border pt-5">
 
                 <Link
                   href="/sign-in"
                   onClick={closeMenus}
-                  className="flex items-center justify-center rounded-xl border border-white/10 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
+                  className="flex items-center justify-center rounded-xl border border-border py-3 text-sm font-semibold text-foreground transition hover:bg-muted"
                 >
                   Sign In
                 </Link>

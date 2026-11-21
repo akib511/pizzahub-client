@@ -6,7 +6,7 @@ const PIZZA_IMAGE =
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-[440px] items-center overflow-hidden bg-[#100D0B] sm:min-h-[500px] md:min-h-[550px]">
+    <section className="relative flex min-h-[440px] items-center overflow-hidden bg-black sm:min-h-[500px] md:min-h-[550px]">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat md:bg-[center_55%]"
@@ -14,13 +14,13 @@ export default function Hero() {
       />
 
       {/* Desktop Overlay */}
-      <div className="absolute inset-0 hidden bg-gradient-to-r from-[#100D0B]/95 via-[#100D0B]/65 to-[#100D0B]/10 md:block" />
+      <div className="absolute inset-0 hidden bg-gradient-to-r from-black/95 via-black/65 to-black/10 md:block" />
 
       {/* Mobile Overlay — slightly stronger for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#100D0B]/75 via-[#100D0B]/60 to-[#100D0B]/95 md:hidden" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-black/95 md:hidden" />
 
       {/* Desktop Bottom Overlay */}
-      <div className="absolute inset-0 hidden bg-gradient-to-t from-[#100D0B]/70 via-transparent to-transparent md:block" />
+      <div className="absolute inset-0 hidden bg-gradient-to-t from-black/70 via-transparent to-transparent md:block" />
 
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-12 md:px-10 lg:px-10">

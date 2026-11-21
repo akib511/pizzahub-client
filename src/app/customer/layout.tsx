@@ -52,10 +52,15 @@ export default function CustomerLayout({
   const userName = session?.user?.name || "Customer";
   const initial = userName.charAt(0).toUpperCase();
 
-  // Load Profile Image
-  useEffect(() => {
-    setProfileImage(session?.user?.image || "");
-  }, [session?.user?.image]);
+  // Keep the avatar in sync with the session while rendering (instead of
+  // copying it into state inside an effect).
+  const sessionImage = session?.user?.image || "";
+  const [prevSessionImage, setPrevSessionImage] = useState("");
+
+  if (sessionImage !== prevSessionImage) {
+    setPrevSessionImage(sessionImage);
+    setProfileImage(sessionImage);
+  }
 
   // Listen for Profile Updates
   useEffect(() => {
@@ -82,13 +87,13 @@ export default function CustomerLayout({
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0907] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
 
         {/* Sidebar */}
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/[0.06] bg-[#0F0C0A] p-5 lg:flex">
+        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-5 lg:flex">
 
-          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-600">
+          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
             Customer Menu
           </p>
 
@@ -104,7 +109,7 @@ export default function CustomerLayout({
                   className={`relative flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition ${
                     active
                       ? "bg-orange-500/10 text-orange-400"
-                      : "text-gray-400 hover:bg-white/[0.04] hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   {active && (
@@ -119,10 +124,10 @@ export default function CustomerLayout({
           </nav>
 
           {/* Bottom Navigation */}
-          <div className="mt-auto space-y-2 border-t border-white/[0.06] pt-4">
+          <div className="mt-auto space-y-2 border-t border-border pt-4">
             <Link
               href="/"
-              className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm text-gray-400 transition hover:bg-white/[0.04] hover:text-white"
+              className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
             >
               <Settings size={18} />
               Back to Website
@@ -130,7 +135,7 @@ export default function CustomerLayout({
 
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm text-gray-400 transition hover:bg-red-500/10 hover:text-red-400"
+              className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm text-muted-foreground transition hover:bg-red-500/10 hover:text-red-400"
             >
               <LogOut size={18} />
               Sign Out
@@ -147,7 +152,7 @@ export default function CustomerLayout({
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-[#0F0C0A]/95 backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-sidebar-border bg-sidebar/95 backdrop-blur-xl lg:hidden">
         <div className="mx-auto grid max-w-md grid-cols-5 px-1 py-2">
 
           {/* Home */}
@@ -156,7 +161,7 @@ export default function CustomerLayout({
             className={`flex flex-col items-center gap-1 rounded-xl py-2 transition ${
               pathname === "/"
                 ? "bg-orange-500/10 text-orange-400"
-                : "text-gray-500 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Home size={20} />
@@ -175,7 +180,7 @@ export default function CustomerLayout({
                 className={`flex flex-col items-center gap-1 rounded-xl py-2 transition ${
                   active
                     ? "bg-orange-500/10 text-orange-400"
-                    : "text-gray-500 hover:text-white"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Icon size={20} />

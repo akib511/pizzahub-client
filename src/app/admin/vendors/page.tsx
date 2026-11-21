@@ -42,30 +42,35 @@ export default function AdminVendorsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchVendors = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  // Bumped by the "Refresh" buttons to re-run the load effect below.
+  const [reloadKey, setReloadKey] = useState(0);
 
-      const response = await fetch(`${API_URL}/admin/vendors`);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch vendors");
-      }
-
-      const data: Vendor[] = await response.json();
-      setVendors(data);
-    } catch (error) {
-      console.error("Failed to fetch vendors:", error);
-      setError("Unable to load vendors. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const refreshVendors = () => setReloadKey((key) => key + 1);
 
   useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_URL}/admin/vendors`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch vendors");
+        }
+
+        const data: Vendor[] = await response.json();
+        setVendors(data);
+      } catch (error) {
+        console.error("Failed to fetch vendors:", error);
+        setError("Unable to load vendors. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchVendors();
-  }, []);
+  }, [reloadKey]);
 
   // Lock body scroll when modal open
   useEffect(() => {
@@ -147,22 +152,22 @@ export default function AdminVendorsPage() {
             VENDOR MANAGEMENT
           </div>
 
-          <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl md:text-3xl">
+          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
             Manage Vendors
           </h1>
 
-          <p className="mt-1 text-xs text-[#A8A29E] sm:text-sm">
+          <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
             View restaurants, vendor profiles and subscription details.
           </p>
         </div>
 
         {/* Mobile: compact inline stat — Desktop: card */}
         <div className="flex items-center justify-between gap-3 rounded-xl border border-orange-500/10 bg-orange-500/[0.04] px-3.5 py-2.5 sm:block sm:px-4 sm:py-3">
-          <p className="text-[11px] text-[#A8A29E] sm:text-xs">Total Vendors</p>
+          <p className="text-[11px] text-muted-foreground sm:text-xs">Total Vendors</p>
 
           <div className="mt-0 flex items-center gap-1.5 sm:mt-1 sm:gap-2">
             <Store size={15} className="text-orange-400 sm:size-[17px]" />
-            <span className="text-lg font-bold text-white sm:text-xl">
+            <span className="text-lg font-bold text-foreground sm:text-xl">
               {vendors.length}
             </span>
             <span className="hidden text-xs text-orange-400 sm:inline">
@@ -200,7 +205,7 @@ export default function AdminVendorsPage() {
       {/* Mobile: 2 cols compact — Desktop: 2 lg cards */}
       <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-2">
         {/* Vendor Overview */}
-        <div className="relative overflow-hidden rounded-xl border border-orange-500/10 bg-[#17110E] p-3.5 sm:rounded-2xl sm:p-5">
+        <div className="relative overflow-hidden rounded-xl border border-orange-500/10 bg-card p-3.5 sm:rounded-2xl sm:p-5">
           <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-orange-500/[0.05] blur-3xl sm:h-40 sm:w-40" />
 
           <div className="relative flex items-start justify-between gap-2">
@@ -209,11 +214,11 @@ export default function AdminVendorsPage() {
                 Restaurant Network
               </p>
 
-              <h2 className="mt-1 truncate text-sm font-bold text-white sm:mt-2 sm:text-xl">
+              <h2 className="mt-1 truncate text-sm font-bold text-foreground sm:mt-2 sm:text-xl">
                 Vendor Directory
               </h2>
 
-              <p className="mt-0.5 hidden text-sm text-[#A8A29E] sm:mt-1 sm:block">
+              <p className="mt-0.5 hidden text-sm text-muted-foreground sm:mt-1 sm:block">
                 All registered restaurant partners.
               </p>
             </div>
@@ -224,18 +229,18 @@ export default function AdminVendorsPage() {
           </div>
 
           <div className="relative mt-2.5 sm:mt-5">
-            <span className="text-2xl font-bold text-white sm:text-4xl">
+            <span className="text-2xl font-bold text-foreground sm:text-4xl">
               {vendors.length}
             </span>
 
-            <span className="ml-1 text-[10px] text-[#78716C] sm:ml-2 sm:text-sm">
+            <span className="ml-1 text-[10px] text-muted-foreground sm:ml-2 sm:text-sm">
               vendors
             </span>
           </div>
         </div>
 
         {/* Premium Overview */}
-        <div className="relative overflow-hidden rounded-xl border border-purple-500/10 bg-[#17110E] p-3.5 sm:rounded-2xl sm:p-5">
+        <div className="relative overflow-hidden rounded-xl border border-purple-500/10 bg-card p-3.5 sm:rounded-2xl sm:p-5">
           <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-purple-500/[0.05] blur-3xl sm:h-40 sm:w-40" />
 
           <div className="relative flex items-start justify-between gap-2">
@@ -244,11 +249,11 @@ export default function AdminVendorsPage() {
                 Subscription
               </p>
 
-              <h2 className="mt-1 truncate text-sm font-bold text-white sm:mt-2 sm:text-xl">
+              <h2 className="mt-1 truncate text-sm font-bold text-foreground sm:mt-2 sm:text-xl">
                 Premium Partners
               </h2>
 
-              <p className="mt-0.5 hidden text-sm text-[#A8A29E] sm:mt-1 sm:block">
+              <p className="mt-0.5 hidden text-sm text-muted-foreground sm:mt-1 sm:block">
                 Vendors with premium subscriptions.
               </p>
             </div>
@@ -259,11 +264,11 @@ export default function AdminVendorsPage() {
           </div>
 
           <div className="relative mt-2.5 sm:mt-5">
-            <span className="text-2xl font-bold text-white sm:text-4xl">
+            <span className="text-2xl font-bold text-foreground sm:text-4xl">
               {premiumCount}
             </span>
 
-            <span className="ml-1 text-[10px] text-[#78716C] sm:ml-2 sm:text-sm">
+            <span className="ml-1 text-[10px] text-muted-foreground sm:ml-2 sm:text-sm">
               premium
             </span>
           </div>
@@ -271,16 +276,16 @@ export default function AdminVendorsPage() {
       </div>
 
       {/*  VENDOR DIRECTORY  */}
-      <div className="rounded-xl border border-white/[0.07] bg-[#15110F] sm:rounded-2xl">
+      <div className="rounded-xl border border-border bg-card sm:rounded-2xl">
         {/* Toolbar */}
-        <div className="border-b border-white/[0.06] p-3.5 sm:p-5">
+        <div className="border-b border-border p-3.5 sm:p-5">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <h2 className="text-base font-semibold text-white sm:text-lg">
+              <h2 className="text-base font-semibold text-foreground sm:text-lg">
                 Vendor Directory
               </h2>
 
-              <p className="mt-0.5 text-[11px] text-[#78716C] sm:mt-1 sm:text-xs">
+              <p className="mt-0.5 text-[11px] text-muted-foreground sm:mt-1 sm:text-xs">
                 {filteredVendors.length}{" "}
                 {filteredVendors.length === 1 ? "restaurant" : "restaurants"}{" "}
                 found
@@ -289,10 +294,10 @@ export default function AdminVendorsPage() {
 
             {/* Refresh — icon only on mobile */}
             <button
-              onClick={fetchVendors}
+              onClick={refreshVendors}
               disabled={loading}
               aria-label="Refresh vendors"
-              className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-white/[0.07] bg-[#0D0A09] text-[#A8A29E] transition hover:bg-white/[0.05] hover:text-white active:scale-95 disabled:opacity-50 sm:hidden"
+              className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-95 disabled:opacity-50 sm:hidden"
             >
               <RefreshCw
                 size={16}
@@ -302,9 +307,9 @@ export default function AdminVendorsPage() {
 
             {/* Desktop refresh with label */}
             <button
-              onClick={fetchVendors}
+              onClick={refreshVendors}
               disabled={loading}
-              className="hidden items-center justify-center gap-2 rounded-xl border border-white/[0.07] bg-[#0D0A09] px-4 py-2.5 text-sm text-[#A8A29E] transition hover:bg-white/[0.05] hover:text-white disabled:opacity-50 sm:flex"
+              className="hidden items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-50 sm:flex"
             >
               <RefreshCw
                 size={15}
@@ -315,22 +320,22 @@ export default function AdminVendorsPage() {
           </div>
 
           {/* Search — full width on mobile */}
-          <div className="mt-3 flex h-11 w-full items-center gap-2 rounded-lg border border-white/[0.07] bg-[#0D0A09] px-3 transition-colors focus-within:border-orange-500/40 sm:mt-4 sm:h-10 sm:max-w-sm sm:rounded-xl sm:px-3.5">
-            <Search size={15} className="shrink-0 text-[#78716C] sm:size-4" />
+          <div className="mt-3 flex h-11 w-full items-center gap-2 rounded-lg border border-border bg-background px-3 transition-colors focus-within:border-orange-500/40 sm:mt-4 sm:h-10 sm:max-w-sm sm:rounded-xl sm:px-3.5">
+            <Search size={15} className="shrink-0 text-muted-foreground sm:size-4" />
 
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search vendors..."
               aria-label="Search vendors"
-              className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-[#57534E]"
+              className="w-full min-w-0 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
 
             {search && (
               <button
                 onClick={() => setSearch("")}
                 aria-label="Clear search"
-                className="flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#A8A29E] transition hover:bg-white/20 hover:text-white"
+                className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition hover:bg-muted hover:text-foreground"
               >
                 <X size={12} />
               </button>
@@ -343,7 +348,7 @@ export default function AdminVendorsPage() {
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 size={28} className="animate-spin text-orange-400" />
 
-            <p className="mt-3 text-sm text-[#A8A29E]">Loading...</p>
+            <p className="mt-3 text-sm text-muted-foreground">Loading...</p>
           </div>
         )}
 
@@ -353,7 +358,7 @@ export default function AdminVendorsPage() {
             <p className="text-sm text-red-400">{error}</p>
 
             <button
-              onClick={fetchVendors}
+              onClick={refreshVendors}
               className="mt-4 h-11 rounded-lg bg-orange-500/10 px-5 text-xs font-medium text-orange-400 transition hover:bg-orange-500/20 active:scale-95"
             >
               Try Again
@@ -372,7 +377,7 @@ export default function AdminVendorsPage() {
                 return (
                   <div
                     key={vendor._id}
-                    className="group overflow-hidden rounded-xl border border-white/[0.06] bg-[#0D0A09] transition hover:border-orange-500/20"
+                    className="group overflow-hidden rounded-xl border border-border bg-background transition hover:border-orange-500/20"
                   >
                     {/* Restaurant Image */}
                     <div className="relative aspect-[4/3] overflow-hidden sm:aspect-auto sm:h-36">
@@ -384,7 +389,7 @@ export default function AdminVendorsPage() {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-[#211914]">
+                        <div className="flex h-full w-full items-center justify-center bg-muted">
                           <Store
                             size={32}
                             className="text-orange-400/40 sm:size-[35px]"
@@ -402,7 +407,7 @@ export default function AdminVendorsPage() {
                             Premium
                           </span>
                         ) : (
-                          <span className="rounded-md border border-white/10 bg-black/50 px-2 py-0.5 text-[10px] text-white/70 backdrop-blur-md sm:rounded-lg sm:py-1">
+                          <span className="rounded-md border border-border bg-black/50 px-2 py-0.5 text-[10px] text-white/70 backdrop-blur-md sm:rounded-lg sm:py-1">
                             Free
                           </span>
                         )}
@@ -410,11 +415,11 @@ export default function AdminVendorsPage() {
 
                       {/* Restaurant Name */}
                       <div className="absolute inset-x-2.5 bottom-2.5 sm:inset-x-3 sm:bottom-3">
-                        <h3 className="line-clamp-1 text-base font-bold text-white sm:text-lg">
+                        <h3 className="line-clamp-1 text-base font-bold text-foreground sm:text-lg">
                           {getRestaurantName(vendor)}
                         </h3>
 
-                        <div className="mt-0.5 flex items-center gap-1 text-[11px] text-white/60 sm:mt-1 sm:text-xs">
+                        <div className="mt-0.5 flex items-center gap-1 text-[11px] text-foreground/60 sm:mt-1 sm:text-xs">
                           <MapPin size={11} className="shrink-0" />
                           <span className="truncate">Location not available</span>
                         </div>
@@ -438,11 +443,11 @@ export default function AdminVendorsPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13px] font-medium text-white sm:text-sm">
+                          <p className="truncate text-[13px] font-medium text-foreground sm:text-sm">
                             {getVendorName(vendor)}
                           </p>
 
-                          <p className="truncate text-[11px] text-[#78716C] sm:text-xs">
+                          <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
                             {vendor.email}
                           </p>
                         </div>
@@ -450,28 +455,28 @@ export default function AdminVendorsPage() {
 
                       {/* Stats */}
                       <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4">
-                        <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-2.5 sm:p-3">
-                          <div className="flex items-center gap-1 text-[#78716C] sm:gap-1.5">
+                        <div className="rounded-lg border border-border bg-muted/40 p-2.5 sm:p-3">
+                          <div className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
                             <UtensilsCrossed size={11} className="sm:size-[13px]" />
                             <span className="text-[9px] uppercase tracking-wider sm:text-[10px]">
                               Menu
                             </span>
                           </div>
 
-                          <p className="mt-0.5 text-base font-bold text-white sm:mt-1 sm:text-lg">
+                          <p className="mt-0.5 text-base font-bold text-foreground sm:mt-1 sm:text-lg">
                             {vendor.menuItems}
                           </p>
                         </div>
 
-                        <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-2.5 sm:p-3">
-                          <div className="flex items-center gap-1 text-[#78716C] sm:gap-1.5">
+                        <div className="rounded-lg border border-border bg-muted/40 p-2.5 sm:p-3">
+                          <div className="flex items-center gap-1 text-muted-foreground sm:gap-1.5">
                             <Store size={11} className="sm:size-[13px]" />
                             <span className="text-[9px] uppercase tracking-wider sm:text-[10px]">
                               Orders
                             </span>
                           </div>
 
-                          <p className="mt-0.5 text-base font-bold text-white sm:mt-1 sm:text-lg">
+                          <p className="mt-0.5 text-base font-bold text-foreground sm:mt-1 sm:text-lg">
                             {vendor.orders}
                           </p>
                         </div>
@@ -481,7 +486,7 @@ export default function AdminVendorsPage() {
                       <div className="mt-3 sm:mt-4">
                         <button
                           onClick={() => setSelectedVendor(vendor)}
-                          className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-white/[0.07] bg-white/[0.03] text-xs font-medium text-[#A8A29E] transition hover:bg-white/[0.06] hover:text-white active:scale-[0.98] sm:min-h-0 sm:gap-2 sm:py-2.5"
+                          className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-muted/50 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-[0.98] sm:min-h-0 sm:gap-2 sm:py-2.5"
                         >
                           <Eye size={13} className="sm:size-[14px]" />
                           View Details
@@ -508,11 +513,11 @@ export default function AdminVendorsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border-t border-white/[0.08] bg-[#181310] shadow-2xl sm:max-h-[90vh] sm:max-w-lg sm:rounded-2xl sm:border"
+            className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border-t border-border bg-card shadow-2xl sm:max-h-[90vh] sm:max-w-lg sm:rounded-2xl sm:border"
           >
             {/* Mobile drag handle */}
             <div className="sticky top-0 z-10 flex justify-center pt-2 sm:hidden">
-              <div className="h-1 w-10 rounded-full bg-white/20" />
+              <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
             </div>
 
             {/* Cover */}
@@ -524,12 +529,12 @@ export default function AdminVendorsPage() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full items-center justify-center bg-[#211914]">
+                <div className="flex h-full items-center justify-center bg-muted">
                   <Store size={40} className="text-orange-400/40" />
                 </div>
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-[#181310] to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
 
               <button
                 onClick={() => setSelectedVendor(null)}
@@ -540,7 +545,7 @@ export default function AdminVendorsPage() {
               </button>
 
               <div className="absolute inset-x-4 bottom-3">
-                <h2 className="line-clamp-1 text-lg font-bold text-white sm:text-xl">
+                <h2 className="line-clamp-1 text-lg font-bold text-foreground sm:text-xl">
                   {getRestaurantName(selectedVendor)}
                 </h2>
               </div>
@@ -563,11 +568,11 @@ export default function AdminVendorsPage() {
                 </div>
 
                 <div className="min-w-0">
-                  <h3 className="truncate text-sm font-semibold text-white sm:text-base">
+                  <h3 className="truncate text-sm font-semibold text-foreground sm:text-base">
                     {getVendorName(selectedVendor)}
                   </h3>
 
-                  <p className="text-[11px] text-[#78716C] sm:text-xs">
+                  <p className="text-[11px] text-muted-foreground sm:text-xs">
                     Vendor Account
                   </p>
                 </div>
@@ -618,7 +623,7 @@ export default function AdminVendorsPage() {
                       Subscription Expires
                     </p>
 
-                    <p className="mt-1 text-sm font-semibold text-white">
+                    <p className="mt-1 text-sm font-semibold text-foreground">
                       {formatDate(
                         selectedVendor.subscriptionExpiresAt,
                       )}
@@ -630,7 +635,7 @@ export default function AdminVendorsPage() {
                 className={`flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm sm:rounded-xl sm:py-3 ${
                   getPlan(selectedVendor) === "Premium"
                     ? "border-purple-500/10 bg-purple-500/[0.04] text-purple-400"
-                    : "border-white/[0.06] bg-white/[0.02] text-[#A8A29E]"
+                    : "border-border bg-muted/40 text-muted-foreground"
                 }`}
               >
                 <Crown size={14} className="sm:size-4" />
@@ -660,18 +665,18 @@ function StatCard({ title, value, icon: Icon, color }: StatCardProps) {
   };
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#15110F] p-3 transition hover:border-white/[0.1] sm:rounded-2xl sm:p-4 md:p-5">
+    <div className="rounded-xl border border-border bg-card p-3 transition hover:border-border sm:rounded-2xl sm:p-4 md:p-5">
       <div
         className={`flex size-8 items-center justify-center rounded-lg sm:size-10 sm:rounded-xl ${styles[color]}`}
       >
         <Icon size={15} className="sm:size-[19px]" />
       </div>
 
-      <p className="mt-2.5 truncate text-[10px] uppercase tracking-wider text-[#A8A29E] sm:mt-4 sm:text-xs sm:normal-case sm:tracking-normal">
+      <p className="mt-2.5 truncate text-[10px] uppercase tracking-wider text-muted-foreground sm:mt-4 sm:text-xs sm:normal-case sm:tracking-normal">
         {title}
       </p>
 
-      <h3 className="mt-0.5 text-lg font-bold text-white sm:mt-1 sm:text-2xl">
+      <h3 className="mt-0.5 text-lg font-bold text-foreground sm:mt-1 sm:text-2xl">
         {value.toLocaleString()}
       </h3>
     </div>
@@ -687,15 +692,15 @@ type DetailItemProps = {
 
 function DetailItem({ icon: Icon, label, value }: DetailItemProps) {
   return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-white/[0.05] bg-white/[0.02] p-2.5 sm:gap-3 sm:rounded-xl sm:p-3">
+    <div className="flex items-center gap-2.5 rounded-lg border border-border bg-muted/40 p-2.5 sm:gap-3 sm:rounded-xl sm:p-3">
       <Icon size={14} className="shrink-0 text-orange-400 sm:size-4" />
 
       <div className="min-w-0">
-        <p className="text-[9px] uppercase tracking-wider text-[#78716C] sm:text-[10px] sm:normal-case sm:tracking-normal">
+        <p className="text-[9px] uppercase tracking-wider text-muted-foreground sm:text-[10px] sm:normal-case sm:tracking-normal">
           {label}
         </p>
 
-        <p className="mt-0.5 truncate text-xs font-medium text-white sm:mt-1">
+        <p className="mt-0.5 truncate text-xs font-medium text-foreground sm:mt-1">
           {value}
         </p>
       </div>
@@ -711,12 +716,12 @@ type MiniStatProps = {
 
 function MiniStat({ label, value }: MiniStatProps) {
   return (
-    <div className="rounded-lg border border-white/[0.05] bg-white/[0.02] p-2.5 sm:rounded-xl sm:p-3">
-      <p className="text-[9px] uppercase tracking-wider text-[#78716C] sm:text-[10px] sm:normal-case sm:tracking-normal">
+    <div className="rounded-lg border border-border bg-muted/40 p-2.5 sm:rounded-xl sm:p-3">
+      <p className="text-[9px] uppercase tracking-wider text-muted-foreground sm:text-[10px] sm:normal-case sm:tracking-normal">
         {label}
       </p>
 
-      <p className="mt-0.5 truncate text-sm font-bold text-white sm:mt-1">
+      <p className="mt-0.5 truncate text-sm font-bold text-foreground sm:mt-1">
         {value}
       </p>
     </div>
@@ -733,15 +738,15 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center px-4 py-14 sm:py-16">
-      <div className="flex size-12 items-center justify-center rounded-xl bg-white/[0.03] sm:size-14">
-        <Search size={20} className="text-[#78716C] sm:size-6" />
+      <div className="flex size-12 items-center justify-center rounded-xl bg-muted/50 sm:size-14">
+        <Search size={20} className="text-muted-foreground sm:size-6" />
       </div>
 
-      <p className="mt-3 text-sm font-medium text-white sm:text-base">
+      <p className="mt-3 text-sm font-medium text-foreground sm:text-base">
         No vendors found
       </p>
 
-      <p className="mt-1 max-w-xs px-2 text-center text-xs text-[#78716C] sm:text-sm">
+      <p className="mt-1 max-w-xs px-2 text-center text-xs text-muted-foreground sm:text-sm">
         {hasSearch
           ? "Try changing your search term."
           : "No vendors have registered yet."}

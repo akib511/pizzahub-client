@@ -83,14 +83,14 @@ export default function VendorOverviewPage() {
 
   const vendorEmail = session?.user?.email;
 
+  // Derived: still loading while the session resolves, or while fetching.
+  const isLoading = isPending || (loading && !!vendorEmail);
+
   // Fetch Overview Data
   useEffect(() => {
     if (isPending) return;
 
-    if (!vendorEmail) {
-      setLoading(false);
-      return;
-    }
+    if (!vendorEmail) return;
 
     const fetchOverviewData = async () => {
       try {
@@ -247,12 +247,12 @@ export default function VendorOverviewPage() {
     : Math.min((activeMenuItems / freePlanLimit) * 100, 100);
 
   // Loading State
-  if (isPending || loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <RefreshCw className="animate-spin text-orange-500" size={35} />
 
-        <p className="text-sm text-[#A8A29E]">Loading your dashboard...</p>
+        <p className="text-sm text-muted-foreground">Loading your dashboard...</p>
       </div>
     );
   }
@@ -265,7 +265,7 @@ export default function VendorOverviewPage() {
 
         <h2 className="mt-4 text-xl font-bold">Please Login</h2>
 
-        <p className="mt-2 text-sm text-[#A8A29E]">
+        <p className="mt-2 text-sm text-muted-foreground">
           Login to access your vendor dashboard.
         </p>
       </div>
@@ -289,7 +289,7 @@ export default function VendorOverviewPage() {
   }
 
   return (
-    <div className="space-y-7 text-white">
+    <div className="space-y-7 text-foreground">
       {/* Welcome Section */}
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
         <div>
@@ -299,8 +299,8 @@ export default function VendorOverviewPage() {
             Vendor Overview
           </h1>
 
-          <p className="mt-2 text-sm text-[#A8A29E]">
-            Here's what's happening with your restaurant today.
+          <p className="mt-2 text-sm text-muted-foreground">
+            Here&apos;s what&apos;s happening with your restaurant today.
           </p>
         </div>
 
@@ -323,8 +323,8 @@ export default function VendorOverviewPage() {
       <section
         className={`relative overflow-hidden rounded-2xl border p-4 sm:p-6 ${
           isPremiumActive
-            ? "border-yellow-500/30 bg-gradient-to-r from-yellow-500/15 via-[#211C12] to-[#1C1715]"
-            : "border-orange-500/20 bg-gradient-to-r from-orange-500/15 via-[#24160F] to-[#1C1715]"
+            ? "border-yellow-500/30 bg-gradient-to-r from-yellow-500/15 via-muted to-card"
+            : "border-orange-500/20 bg-gradient-to-r from-orange-500/15 via-muted to-card"
         }`}
       >
         <div className="relative z-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -356,7 +356,7 @@ export default function VendorOverviewPage() {
                 </span>
               </div>
 
-              <p className="mt-1 text-xs leading-relaxed text-[#A8A29E] sm:text-sm">
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                 {isPremiumActive
                   ? "Enjoy unlimited active menu items and all Premium benefits."
                   : `You are using ${activeMenuItems} of ${freePlanLimit} active menu item slots.`}
@@ -368,7 +368,7 @@ export default function VendorOverviewPage() {
                 </p>
               ) : (
                 <>
-                  <div className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-white/10">
+                  <div className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-muted">
                     <div
                       style={{ width: `${planUsage}%` }}
                       className={`h-full rounded-full transition-all ${
@@ -408,23 +408,23 @@ export default function VendorOverviewPage() {
           return (
             <div
               key={stat.title}
-              className="rounded-xl border border-[#302824] bg-[#1C1715] p-3.5 transition hover:border-orange-500/30 sm:rounded-2xl sm:p-5"
+              className="rounded-xl border border-border bg-card p-3.5 transition hover:border-orange-500/30 sm:rounded-2xl sm:p-5"
             >
               <div className="flex items-center justify-between">
                 <div className={`rounded-xl p-3 ${stat.bg} ${stat.color}`}>
                   <Icon size={19} className="sm:h-[22px] sm:w-[22px]" />
                 </div>
 
-                <MoreHorizontal size={21} className="text-[#78716C]" />
+                <MoreHorizontal size={21} className="text-muted-foreground" />
               </div>
 
-              <p className="mt-5 text-sm text-[#A8A29E]">{stat.title}</p>
+              <p className="mt-5 text-sm text-muted-foreground">{stat.title}</p>
 
               <h3 className="mt-1 text-2xl font-bold sm:text-3xl">
                 {stat.value}
               </h3>
 
-              <p className="mt-2 text-xs text-[#78716C]">{stat.change}</p>
+              <p className="mt-2 text-xs text-muted-foreground">{stat.change}</p>
             </div>
           );
         })}
@@ -433,17 +433,17 @@ export default function VendorOverviewPage() {
       {/* Charts and Summary */}
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Monthly Orders Chart */}
-        <div className="rounded-2xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6 xl:col-span-2">
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 xl:col-span-2">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-lg font-bold">Orders Overview</h2>
 
-              <p className="mt-1 text-xs text-[#78716C]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Monthly order performance - {currentYear}
               </p>
             </div>
 
-            <span className="w-fit rounded-lg border border-[#302824] bg-[#100D0B] px-3 py-2 text-xs text-[#A8A29E]">
+            <span className="w-fit rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
               This Year
             </span>
           </div>
@@ -466,16 +466,16 @@ export default function VendorOverviewPage() {
                   />
                 </div>
 
-                <span className="text-[9px] text-[#78716C] sm:text-xs">
+                <span className="text-[9px] text-muted-foreground sm:text-xs">
                   {item.month}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#302824] pt-5">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
             <div>
-              <p className="text-xs text-[#78716C]">Total Orders</p>
+              <p className="text-xs text-muted-foreground">Total Orders</p>
 
               <h3 className="mt-1 text-2xl font-bold">{totalOrders}</h3>
             </div>
@@ -488,10 +488,10 @@ export default function VendorOverviewPage() {
         </div>
 
         {/* Restaurant Summary */}
-        <div className="rounded-2xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6">
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
           <h2 className="text-lg font-bold">Restaurant Summary</h2>
 
-          <p className="mt-1 text-xs text-[#78716C]">
+          <p className="mt-1 text-xs text-muted-foreground">
             Your restaurant performance
           </p>
 
@@ -499,14 +499,14 @@ export default function VendorOverviewPage() {
             {/* Active Items */}
             <div>
               <div className="flex justify-between gap-2 text-sm">
-                <span className="text-[#A8A29E]">Active Items</span>
+                <span className="text-muted-foreground">Active Items</span>
 
                 <span className="font-semibold">
                   {activeMenuItems} / {totalMenuItems}
                 </span>
               </div>
 
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
                 <div
                   style={{
                     width: `${
@@ -523,12 +523,12 @@ export default function VendorOverviewPage() {
             {/* Pending Orders */}
             <div>
               <div className="flex justify-between gap-2 text-sm">
-                <span className="text-[#A8A29E]">Pending Orders</span>
+                <span className="text-muted-foreground">Pending Orders</span>
 
                 <span className="font-semibold">{pendingOrders}</span>
               </div>
 
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
                 <div
                   style={{
                     width: `${
@@ -543,12 +543,12 @@ export default function VendorOverviewPage() {
             {/* Accepted Orders */}
             <div>
               <div className="flex justify-between gap-2 text-sm">
-                <span className="text-[#A8A29E]">Accepted Orders</span>
+                <span className="text-muted-foreground">Accepted Orders</span>
 
                 <span className="font-semibold">{acceptedOrders}</span>
               </div>
 
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
                 <div
                   style={{
                     width: `${
@@ -563,7 +563,7 @@ export default function VendorOverviewPage() {
 
           <Link
             href="/vendor/orders"
-            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-[#302824] py-3 text-sm font-medium transition hover:border-orange-500 hover:text-orange-400"
+            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-border py-3 text-sm font-medium transition hover:border-orange-500 hover:text-orange-400"
           >
             Manage Orders
             <ArrowUpRight size={17} />
@@ -572,12 +572,12 @@ export default function VendorOverviewPage() {
       </section>
 
       {/* Recent Orders */}
-      <section className="overflow-hidden rounded-2xl border border-[#302824] bg-[#1C1715]">
-        <div className="flex flex-col justify-between gap-3 border-b border-[#302824] p-5 sm:flex-row sm:items-center sm:p-6">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="flex flex-col justify-between gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:p-6">
           <div>
             <h2 className="text-lg font-bold">Recent Customer Orders</h2>
 
-            <p className="mt-1 text-xs text-[#78716C]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Keep track of your latest orders
             </p>
           </div>
@@ -593,11 +593,11 @@ export default function VendorOverviewPage() {
 
         {recentOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-5 py-12 text-center">
-            <ShoppingBag size={35} className="text-[#57534E]" />
+            <ShoppingBag size={35} className="text-muted-foreground" />
 
             <h3 className="mt-3 font-semibold">No Orders Yet</h3>
 
-            <p className="mt-1 text-sm text-[#78716C]">
+            <p className="mt-1 text-sm text-muted-foreground">
               Your customer orders will appear here.
             </p>
           </div>
@@ -606,7 +606,7 @@ export default function VendorOverviewPage() {
             {/* Desktop Table */}
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full text-left text-sm">
-                <thead className="bg-[#100D0B] text-xs text-[#78716C]">
+                <thead className="bg-background text-xs text-muted-foreground">
                   <tr>
                     <th className="px-6 py-4 font-medium">Order ID</th>
 
@@ -622,11 +622,11 @@ export default function VendorOverviewPage() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-[#302824]">
+                <tbody className="divide-y divide-border">
                   {recentOrders.map((order) => (
                     <tr
                       key={order._id}
-                      className="transition hover:bg-white/[0.02]"
+                      className="transition hover:bg-muted/40"
                     >
                       <td className="px-6 py-4 font-medium text-orange-400">
                         #{order._id.slice(-6).toUpperCase()}
@@ -634,7 +634,7 @@ export default function VendorOverviewPage() {
 
                       <td className="px-6 py-4">{order.customerName}</td>
 
-                      <td className="px-6 py-4 text-[#A8A29E]">
+                      <td className="px-6 py-4 text-muted-foreground">
                         {order.itemName}
                       </td>
 
@@ -651,14 +651,14 @@ export default function VendorOverviewPage() {
                                 ? "bg-green-500/10 text-green-400"
                                 : order.status === "rejected"
                                   ? "bg-red-500/10 text-red-400"
-                                  : "bg-gray-500/10 text-gray-400"
+                                  : "bg-gray-500/10 text-muted-foreground"
                           }`}
                         >
                           {order.status}
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 text-xs text-[#78716C]">
+                      <td className="px-6 py-4 text-xs text-muted-foreground">
                         {formatTime(order.createdAt)}
                       </td>
                     </tr>
@@ -672,7 +672,7 @@ export default function VendorOverviewPage() {
               {recentOrders.map((order) => (
                 <div
                   key={order._id}
-                  className="rounded-xl border border-[#302824] bg-[#100D0B] p-4"
+                  className="rounded-xl border border-border bg-background p-4"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-orange-400">
@@ -687,7 +687,7 @@ export default function VendorOverviewPage() {
                             ? "bg-green-500/10 text-green-400"
                             : order.status === "rejected"
                               ? "bg-red-500/10 text-red-400"
-                              : "bg-gray-500/10 text-gray-400"
+                              : "bg-gray-500/10 text-muted-foreground"
                       }`}
                     >
                       {order.status}
@@ -698,12 +698,12 @@ export default function VendorOverviewPage() {
                     {order.itemName}
                   </h3>
 
-                  <p className="mt-1 text-xs text-[#78716C]">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {order.customerName}
                   </p>
 
-                  <div className="mt-4 flex items-center justify-between border-t border-[#302824] pt-3">
-                    <span className="text-xs text-[#78716C]">
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                    <span className="text-xs text-muted-foreground">
                       {formatTime(order.createdAt)}
                     </span>
 
@@ -719,12 +719,12 @@ export default function VendorOverviewPage() {
       </section>
 
       {/* Popular Items */}
-      <section className="rounded-2xl border border-[#302824] bg-[#1C1715] p-5 sm:p-6">
+      <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold">Popular Menu Items</h2>
 
-            <p className="mt-1 text-xs text-[#78716C]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Your best-selling food items
             </p>
           </div>
@@ -739,9 +739,9 @@ export default function VendorOverviewPage() {
 
         {popularItems.length === 0 ? (
           <div className="py-10 text-center">
-            <UtensilsCrossed size={35} className="mx-auto text-[#57534E]" />
+            <UtensilsCrossed size={35} className="mx-auto text-muted-foreground" />
 
-            <p className="mt-3 text-sm text-[#78716C]">
+            <p className="mt-3 text-sm text-muted-foreground">
               No menu items available yet.
             </p>
           </div>
@@ -750,9 +750,9 @@ export default function VendorOverviewPage() {
             {popularItems.map((item, index) => (
               <div
                 key={item._id}
-                className="flex items-center gap-4 rounded-xl border border-[#302824] bg-[#100D0B] p-3 transition hover:border-orange-500/30"
+                className="flex items-center gap-4 rounded-xl border border-border bg-background p-3 transition hover:border-orange-500/30"
               >
-                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#302824]">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-border">
                   {item.image ? (
                     <img
                       src={item.image}
@@ -761,7 +761,7 @@ export default function VendorOverviewPage() {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <UtensilsCrossed size={22} className="text-[#78716C]" />
+                      <UtensilsCrossed size={22} className="text-muted-foreground" />
                     </div>
                   )}
                 </div>
@@ -771,7 +771,7 @@ export default function VendorOverviewPage() {
                     {item.name}
                   </h3>
 
-                  <p className="mt-1 text-xs text-[#78716C]">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {item.category || "Menu Item"}
                   </p>
 
@@ -780,7 +780,7 @@ export default function VendorOverviewPage() {
                       ${item.price.toFixed(2)}
                     </span>
 
-                    <span className="text-xs text-[#A8A29E]">
+                    <span className="text-xs text-muted-foreground">
                       {item.orders} orders
                     </span>
                   </div>
@@ -804,18 +804,18 @@ export default function VendorOverviewPage() {
           onClick={() => setShowLimitDialog(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-orange-500/20 bg-[#1C1715] p-5 shadow-2xl sm:p-7"
+            className="w-full max-w-md rounded-2xl border border-orange-500/20 bg-card p-5 shadow-2xl sm:p-7"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-400">
               <Crown size={30} />
             </div>
 
-            <h2 className="mt-5 text-center text-xl font-bold text-white">
+            <h2 className="mt-5 text-center text-xl font-bold text-foreground">
               Free Plan Limit Reached!
             </h2>
 
-            <p className="mt-3 text-center text-sm leading-relaxed text-[#A8A29E]">
+            <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
               You have already used all {freePlanLimit} active menu item slots
               in your Free Plan. Upgrade to Premium to publish unlimited menu
               items.
@@ -833,7 +833,7 @@ export default function VendorOverviewPage() {
 
               <button
                 onClick={() => setShowLimitDialog(false)}
-                className="rounded-xl border border-[#302824] px-5 py-3 text-sm font-medium text-[#A8A29E] transition hover:bg-white/5 hover:text-white"
+                className="rounded-xl border border-border px-5 py-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
               >
                 Maybe Later
               </button>

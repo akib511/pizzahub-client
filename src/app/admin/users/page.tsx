@@ -147,23 +147,23 @@ export default function AdminUsersPage() {
             USER MANAGEMENT
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Manage Users
           </h1>
 
-          <p className="mt-1 text-sm text-[#A8A29E]">
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage accounts, permissions and user activity.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-[#1C1715] px-4 py-3">
+        <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/10">
             <Users size={18} className="text-orange-400" />
           </div>
 
           <div>
-            <p className="text-xs text-[#A8A29E]">Total registered</p>
-            <p className="text-lg font-bold text-white">
+            <p className="text-xs text-muted-foreground">Total registered</p>
+            <p className="text-lg font-bold text-foreground">
               {users.length.toLocaleString()}
             </p>
           </div>
@@ -206,56 +206,56 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Main section */}
-      <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#15110F]">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
         {/* Filters */}
-        <div className="space-y-4 border-b border-white/[0.06] p-4 sm:p-5">
+        <div className="space-y-4 border-b border-border p-4 sm:p-5">
           <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
             <div>
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 All Users
               </h2>
 
-              <p className="mt-1 text-xs text-[#78716C]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {filteredUsers.length} users found
               </p>
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row">
               {/* Search */}
-              <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-[#0D0A09] px-3 py-2.5 sm:w-64">
-                <Search size={16} className="text-[#78716C]" />
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 sm:w-64">
+                <Search size={16} className="text-muted-foreground" />
 
                 <input
                   type="text"
                   placeholder="Search name or email..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-transparent text-sm text-white outline-none placeholder:text-[#57534E]"
+                  className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
 
               {/* Role filter */}
-              <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-[#0D0A09] px-3">
-                <Filter size={15} className="text-[#78716C]" />
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3">
+                <Filter size={15} className="text-muted-foreground" />
 
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="bg-transparent py-2.5 text-sm text-white outline-none"
+                  className="bg-transparent py-2.5 text-sm text-foreground outline-none"
                 >
-                  <option value="All" className="bg-[#15110F]">
+                  <option value="All" className="bg-card">
                     All Roles
                   </option>
 
-                  <option value="customer" className="bg-[#15110F]">
+                  <option value="customer" className="bg-card">
                     Customer
                   </option>
 
-                  <option value="vendor" className="bg-[#15110F]">
+                  <option value="vendor" className="bg-card">
                     Vendor
                   </option>
 
-                  <option value="admin" className="bg-[#15110F]">
+                  <option value="admin" className="bg-card">
                     Admin
                   </option>
                 </select>
@@ -284,24 +284,24 @@ export default function AdminUsersPage() {
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                    <th className="px-5 py-3 text-xs font-medium text-[#78716C]">
+                  <tr className="border-b border-border bg-muted/40">
+                    <th className="px-5 py-3 text-xs font-medium text-muted-foreground">
                       USER
                     </th>
 
-                    <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
+                    <th className="px-4 py-3 text-xs font-medium text-muted-foreground">
                       ROLE
                     </th>
 
-                    <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
+                    <th className="px-4 py-3 text-xs font-medium text-muted-foreground">
                       JOINED
                     </th>
 
-                    <th className="px-4 py-3 text-xs font-medium text-[#78716C]">
+                    <th className="px-4 py-3 text-xs font-medium text-muted-foreground">
                       ORDERS
                     </th>
 
-                    <th className="px-4 py-3 text-xs font-medium text-[#78716C] text-right">
+                    <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-right">
                       ACTION
                     </th>
                   </tr>
@@ -311,7 +311,7 @@ export default function AdminUsersPage() {
                   {filteredUsers.map((user) => (
                     <tr
                       key={user._id}
-                      className="border-b border-white/[0.04] transition hover:bg-white/[0.025]"
+                      className="border-b border-border transition hover:bg-muted"
                     >
                       {/* User */}
                       <td className="px-5 py-4">
@@ -319,11 +319,11 @@ export default function AdminUsersPage() {
                           <UserAvatar user={user} />
 
                           <div>
-                            <p className="text-sm font-medium text-white">
+                            <p className="text-sm font-medium text-foreground">
                               {getUserName(user)}
                             </p>
 
-                            <p className="mt-0.5 text-xs text-[#78716C]">
+                            <p className="mt-0.5 text-xs text-muted-foreground">
                               {user.email}
                             </p>
                           </div>
@@ -336,13 +336,13 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Joined */}
-                      <td className="px-4 py-4 text-xs text-[#A8A29E]">
+                      <td className="px-4 py-4 text-xs text-muted-foreground">
                         {formatDate(user.createdAt)}
                       </td>
 
                       {/* Orders */}
                       <td className="px-4 py-4">
-                        <span className="text-sm font-medium text-white">
+                        <span className="text-sm font-medium text-foreground">
                           {user.orders}
                         </span>
                       </td>
@@ -352,7 +352,7 @@ export default function AdminUsersPage() {
                         <div className="flex justify-end">
                           <button
                             onClick={() => setSelectedUser(user)}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.07] text-[#A8A29E] transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
                           >
                             <MoreHorizontal size={17} />
                           </button>
@@ -371,18 +371,18 @@ export default function AdminUsersPage() {
               {filteredUsers.map((user) => (
                 <div
                   key={user._id}
-                  className="rounded-xl border border-white/[0.06] bg-[#0D0A09] p-4"
+                  className="rounded-xl border border-border bg-background p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <UserAvatar user={user} />
 
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-white">
+                        <p className="text-sm font-semibold text-foreground">
                           {getUserName(user)}
                         </p>
 
-                        <p className="mt-1 truncate text-xs text-[#78716C]">
+                        <p className="mt-1 truncate text-xs text-muted-foreground">
                           {user.email}
                         </p>
                       </div>
@@ -390,7 +390,7 @@ export default function AdminUsersPage() {
 
                     <button
                       onClick={() => setSelectedUser(user)}
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.07] text-[#A8A29E]"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground"
                     >
                       <MoreHorizontal size={17} />
                     </button>
@@ -400,7 +400,7 @@ export default function AdminUsersPage() {
                     <RoleBadge role={user.role} />
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3 text-xs text-[#78716C]">
+                  <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
                     <span>
                       Joined {formatDate(user.createdAt)}
                     </span>
@@ -424,13 +424,13 @@ export default function AdminUsersPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="my-auto w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-[#181310] shadow-2xl"
+            className="my-auto w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
           >
             {/* Modal Header */}
-            <div className="relative border-b border-white/[0.06] p-5">
+            <div className="relative border-b border-border p-5">
               <button
                 onClick={() => setSelectedUser(null)}
-                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-[#A8A29E] hover:bg-white/[0.05] hover:text-white"
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <X size={17} />
               </button>
@@ -439,11 +439,11 @@ export default function AdminUsersPage() {
                 <UserAvatar user={selectedUser} large />
 
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold text-foreground">
                     {getUserName(selectedUser)}
                   </h3>
 
-                  <p className="mt-1 break-all text-xs text-[#78716C]">
+                  <p className="mt-1 break-all text-xs text-muted-foreground">
                     User ID: {selectedUser._id}
                   </p>
                 </div>
@@ -452,60 +452,60 @@ export default function AdminUsersPage() {
 
             {/* Details */}
             <div className="space-y-4 p-5">
-              <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-3">
                 <Mail size={17} className="shrink-0 text-orange-400" />
 
                 <div className="min-w-0">
-                  <p className="text-[10px] text-[#78716C]">
+                  <p className="text-[10px] text-muted-foreground">
                     EMAIL ADDRESS
                   </p>
 
-                  <p className="mt-1 break-all text-sm text-white">
+                  <p className="mt-1 break-all text-sm text-foreground">
                     {selectedUser.email}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-3">
                 <CalendarDays
                   size={17}
                   className="shrink-0 text-orange-400"
                 />
 
                 <div>
-                  <p className="text-[10px] text-[#78716C]">
+                  <p className="text-[10px] text-muted-foreground">
                     JOINED DATE
                   </p>
 
-                  <p className="mt-1 text-sm text-white">
+                  <p className="mt-1 text-sm text-foreground">
                     {formatDate(selectedUser.createdAt)}
                   </p>
                 </div>
               </div>
 
               {selectedUser.role === "vendor" && (
-                <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                  <p className="text-xs text-[#78716C]">
+                <div className="rounded-xl border border-border bg-muted/40 p-3">
+                  <p className="text-xs text-muted-foreground">
                     RESTAURANT NAME
                   </p>
 
-                  <p className="mt-1 text-sm text-white">
+                  <p className="mt-1 text-sm text-foreground">
                     {selectedUser.restaurantName || "Not provided"}
                   </p>
 
-                  <p className="mt-3 text-xs text-[#78716C]">
+                  <p className="mt-3 text-xs text-muted-foreground">
                     SUBSCRIPTION PLAN
                   </p>
 
-                  <p className="mt-1 text-sm capitalize text-white">
+                  <p className="mt-1 text-sm capitalize text-foreground">
                     {selectedUser.subscriptionPlan || "Free"}
                   </p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                  <p className="text-xs text-[#78716C]">
+                <div className="rounded-xl border border-border bg-muted/40 p-3">
+                  <p className="text-xs text-muted-foreground">
                     Account Role
                   </p>
 
@@ -514,22 +514,22 @@ export default function AdminUsersPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                  <p className="text-xs text-[#78716C]">
+                <div className="rounded-xl border border-border bg-muted/40 p-3">
+                  <p className="text-xs text-muted-foreground">
                     Total Orders
                   </p>
 
-                  <p className="mt-2 text-xl font-bold text-white">
+                  <p className="mt-2 text-xl font-bold text-foreground">
                     {selectedUser.orders}
                   </p>
                 </div>
               </div>
 
               {selectedUser.phone && (
-                <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                  <p className="text-xs text-[#78716C]">Phone Number</p>
+                <div className="rounded-xl border border-border bg-muted/40 p-3">
+                  <p className="text-xs text-muted-foreground">Phone Number</p>
 
-                  <p className="mt-1 text-sm text-white">
+                  <p className="mt-1 text-sm text-foreground">
                     {selectedUser.phone}
                   </p>
                 </div>
@@ -608,7 +608,7 @@ function StatCard({
   };
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#15110F] p-4 transition hover:border-white/[0.1] sm:p-5">
+    <div className="rounded-2xl border border-border bg-card p-4 transition hover:border-border sm:p-5">
       <div className="flex items-center justify-between">
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors[color]}`}
@@ -616,15 +616,15 @@ function StatCard({
           <Icon size={19} />
         </div>
 
-        <span className="text-[10px] text-[#78716C] sm:text-xs">
+        <span className="text-[10px] text-muted-foreground sm:text-xs">
           {percentage}
         </span>
       </div>
 
       <div className="mt-4">
-        <p className="text-xs text-[#A8A29E]">{title}</p>
+        <p className="text-xs text-muted-foreground">{title}</p>
 
-        <h3 className="mt-1 text-2xl font-bold text-white">
+        <h3 className="mt-1 text-2xl font-bold text-foreground">
           {value.toLocaleString()}
         </h3>
       </div>
@@ -640,7 +640,7 @@ function RoleBadge({ role }: { role?: string }) {
     customer: "bg-purple-500/10 text-purple-400 border-purple-500/10",
     vendor: "bg-blue-500/10 text-blue-400 border-blue-500/10",
     admin: "bg-orange-500/10 text-orange-400 border-orange-500/10",
-    unknown: "bg-gray-500/10 text-gray-400 border-gray-500/10",
+    unknown: "bg-gray-500/10 text-muted-foreground border-gray-500/10",
   };
 
   return (
@@ -658,15 +658,15 @@ function RoleBadge({ role }: { role?: string }) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-12">
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.03]">
-        <Search size={20} className="text-[#78716C]" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
+        <Search size={20} className="text-muted-foreground" />
       </div>
 
-      <p className="mt-3 text-sm font-medium text-white">
+      <p className="mt-3 text-sm font-medium text-foreground">
         No users found
       </p>
 
-      <p className="mt-1 text-xs text-[#78716C]">
+      <p className="mt-1 text-xs text-muted-foreground">
         Try changing your search or filters.
       </p>
     </div>

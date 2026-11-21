@@ -80,16 +80,29 @@ function MenuContent() {
   const { data: session } = authClient.useSession();
   const email = session?.user?.email;
 
-  // Category from URL
-  useEffect(() => {
-    const categoryFromUrl = searchParams.get("category");
+  // Category from the URL — applied while rendering rather than in an effect.
+  const categoryFromUrl = searchParams.get("category");
+  const urlCategory = categoryFromUrl
+    ? getCategory(categoryFromUrl)
+    : "All Pizzas";
 
-    if (categoryFromUrl) {
-      setActiveCategory(getCategory(categoryFromUrl));
-    } else {
-      setActiveCategory("All Pizzas");
+  const [prevUrlCategory, setPrevUrlCategory] = useState<string | null>(null);
+
+  if (urlCategory !== prevUrlCategory) {
+    setPrevUrlCategory(urlCategory);
+    setActiveCategory(urlCategory);
+  }
+
+  // Clear stored favorites when nobody is signed in.
+  const [prevEmail, setPrevEmail] = useState<string | undefined | null>(null);
+
+  if (email !== prevEmail) {
+    setPrevEmail(email);
+
+    if (!email) {
+      setFavoriteIds([]);
     }
-  }, [searchParams]);
+  }
 
   // Fetch Menu
   useEffect(() => {
@@ -127,10 +140,7 @@ function MenuContent() {
 
   // Fetch Favorites
   useEffect(() => {
-    if (!email) {
-      setFavoriteIds([]);
-      return;
-    }
+    if (!email) return;
 
     const fetchFavorites = async () => {
       try {
@@ -234,36 +244,36 @@ function MenuContent() {
     (sort !== "featured" ? 1 : 0);
 
   return (
-    <section className="min-h-screen overflow-hidden bg-[#0F0D0C] px-3 py-9 text-[#F5F3EF] min-[420px]:px-4 sm:px-6 sm:py-14 md:px-8 lg:py-20">
+    <section className="min-h-screen overflow-hidden bg-background px-3 py-9 text-foreground min-[420px]:px-4 sm:px-6 sm:py-14 md:px-8 lg:py-20">
       <div className="mx-auto max-w-7xl">
 
         {/* Heading */}
         <div className="flex flex-col gap-4 sm:gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#F97316] sm:text-xs">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-primary sm:text-xs">
               Made fresh. Made different.
             </span>
 
             <h2 className="mt-2 text-3xl font-semibold leading-tight sm:mt-3 sm:text-4xl md:text-5xl lg:text-6xl">
-              Find Your <span className="text-[#F97316]">Flavor.</span>
+              Find Your <span className="text-primary">Flavor.</span>
             </h2>
 
-            <p className="mt-3 max-w-md text-xs leading-6 text-[#A8A29E] sm:text-sm sm:leading-7">
+            <p className="mt-3 max-w-md text-xs leading-6 text-muted-foreground sm:text-sm sm:leading-7">
               Your next favorite pizza is waiting. Explore handcrafted flavors
               made with the finest ingredients.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-[#A8A29E] sm:text-sm">
-            <Flame size={17} className="shrink-0 text-[#F97316]" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground sm:text-sm">
+            <Flame size={17} className="shrink-0 text-primary" />
             Fresh from the oven
           </div>
         </div>
 
         {/* Search */}
         <div className="mt-7 flex items-center gap-2 sm:mt-10 lg:block">
-          <div className="flex h-12 flex-1 items-center gap-3 rounded-xl border border-[#2E2925] bg-[#1A1716] px-4 transition-colors focus-within:border-[#F97316] sm:h-12 sm:max-w-md sm:rounded-lg">
-            <Search size={18} className="shrink-0 text-[#F97316]" />
+          <div className="flex h-12 flex-1 items-center gap-3 rounded-xl border border-border bg-card px-4 transition-colors focus-within:border-primary sm:h-12 sm:max-w-md sm:rounded-lg">
+            <Search size={18} className="shrink-0 text-primary" />
 
             <input
               type="text"
@@ -271,14 +281,14 @@ function MenuContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search pizza..."
-              className="w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-[#78716C] sm:text-sm"
+              className="w-full min-w-0 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground sm:text-sm"
             />
 
             {search && (
               <button
                 onClick={() => setSearch("")}
                 aria-label="Clear search"
-                className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[#A8A29E] transition hover:bg-white/20 hover:text-white sm:size-8 sm:bg-transparent"
+                className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition hover:bg-muted hover:text-foreground sm:size-8 sm:bg-transparent"
               >
                 <X size={14} />
               </button>
@@ -288,12 +298,12 @@ function MenuContent() {
           <button
             onClick={() => setShowMobileFilters(true)}
             aria-label="Open filters"
-            className="relative flex size-12 shrink-0 items-center justify-center rounded-xl border border-[#2E2925] bg-[#1A1716] text-[#F5F3EF] transition hover:border-[#F97316]/50 active:scale-95 lg:hidden"
+            className="relative flex size-12 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-foreground transition hover:border-primary/50 active:scale-95 lg:hidden"
           >
             <SlidersHorizontal size={18} />
 
             {activeFilterCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-[#F97316] text-[10px] font-bold text-[#0F0D0C]">
+              <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-background">
                 {activeFilterCount}
               </span>
             )}
@@ -305,7 +315,7 @@ function MenuContent() {
 
           {/* Desktop Sidebar */}
           <aside className="hidden min-w-0 lg:sticky lg:top-6 lg:block lg:self-start">
-            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-[#78716C]">
+            <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Something for everyone
             </h3>
 
@@ -327,8 +337,8 @@ function MenuContent() {
                     aria-pressed={active}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-all ${
                       active
-                        ? "bg-[#F97316] text-[#0F0D0C] shadow-lg shadow-orange-500/10"
-                        : "text-[#A8A29E] hover:bg-[#25201D] hover:text-white"
+                        ? "bg-primary text-background shadow-lg shadow-orange-500/10"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
                     <Icon size={17} className="shrink-0" />
@@ -342,12 +352,12 @@ function MenuContent() {
               })}
             </div>
 
-            <div className="mt-8 border-t border-[#2E2925] px-3 pt-6">
-              <ChefHat size={26} className="text-[#F97316]" />
+            <div className="mt-8 border-t border-border px-3 pt-6">
+              <ChefHat size={26} className="text-primary" />
 
               <h4 className="mt-3 font-medium">Made with love.</h4>
 
-              <p className="mt-2 text-xs leading-6 text-[#A8A29E]">
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">
                 Every pizza is prepared fresh using carefully selected
                 ingredients.
               </p>
@@ -359,15 +369,15 @@ function MenuContent() {
 
             {/* Desktop Toolbar */}
             <div className="mb-5 hidden flex-wrap items-center justify-between gap-3 lg:flex">
-              <p className="text-xs text-[#A8A29E]" aria-live="polite">
+              <p className="text-xs text-muted-foreground" aria-live="polite">
                 Showing{" "}
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-foreground">
                   {filteredPizzas.length}
                 </span>{" "}
                 delicious options
               </p>
 
-              <label className="flex shrink-0 items-center gap-2 text-xs text-[#A8A29E]">
+              <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
                 <ArrowDownUp size={14} className="shrink-0" />
 
                 <span>Sort by</span>
@@ -376,7 +386,7 @@ function MenuContent() {
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
                   aria-label="Sort pizzas"
-                  className="h-10 max-w-none cursor-pointer rounded-lg border border-[#2E2925] bg-[#1A1716] px-3 text-sm text-white outline-none transition focus:border-[#F97316]"
+                  className="h-10 max-w-none cursor-pointer rounded-lg border border-border bg-card px-3 text-sm text-foreground outline-none transition focus:border-primary"
                 >
                   {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -389,11 +399,11 @@ function MenuContent() {
 
             {/* Mobile Result Count */}
             <p
-              className="mb-3 text-xs text-[#A8A29E] lg:hidden"
+              className="mb-3 text-xs text-muted-foreground lg:hidden"
               aria-live="polite"
             >
               Showing{" "}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-foreground">
                 {filteredPizzas.length}
               </span>{" "}
               {filteredPizzas.length === 1 ? "option" : "options"}
@@ -405,15 +415,15 @@ function MenuContent() {
                 {[1, 2, 3, 4, 5, 6].map((item) => (
                   <div
                     key={item}
-                    className="overflow-hidden rounded-xl border border-[#2E2925] bg-[#1A1716]"
+                    className="overflow-hidden rounded-xl border border-border bg-card"
                   >
-                    <div className="aspect-[1.4] animate-pulse bg-white/[0.05]" />
+                    <div className="aspect-[1.4] animate-pulse bg-muted" />
 
                     <div className="space-y-3 p-4">
-                      <div className="h-3 w-20 animate-pulse rounded bg-white/[0.07]" />
-                      <div className="h-5 w-3/4 animate-pulse rounded bg-white/[0.07]" />
-                      <div className="h-3 w-full animate-pulse rounded bg-white/[0.07]" />
-                      <div className="h-3 w-2/3 animate-pulse rounded bg-white/[0.07]" />
+                      <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+                      <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
+                      <div className="h-3 w-full animate-pulse rounded bg-muted" />
+                      <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
                     </div>
                   </div>
                 ))}
@@ -427,7 +437,7 @@ function MenuContent() {
                   Unable to load menu
                 </p>
 
-                <p className="mt-2 text-xs text-[#A8A29E]">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {error}
                 </p>
               </div>
@@ -446,7 +456,7 @@ function MenuContent() {
                     return (
                       <div
                         key={pizza._id}
-                        className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-[#2E2925] bg-[#1A1716] transition-all duration-300 hover:border-[#F97316]/60 hover:shadow-xl hover:shadow-black/30 md:hover:-translate-y-1"
+                        className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:border-primary/60 hover:shadow-xl hover:shadow-black/30 md:hover:-translate-y-1"
                       >
                         {/* Image */}
                         <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[1.4]">
@@ -487,7 +497,7 @@ function MenuContent() {
                               className={
                                 isFavorite
                                   ? "fill-red-500 text-red-500"
-                                  : "text-white"
+                                  : "text-foreground"
                               }
                             />
                           </button>
@@ -495,7 +505,7 @@ function MenuContent() {
 
                         {/* Content */}
                         <div className="flex flex-1 flex-col px-4 pb-0 pt-4">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#F97316] sm:text-[10px]">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-primary sm:text-[10px]">
                             {getCategory(pizza.category)}
                           </p>
 
@@ -504,20 +514,20 @@ function MenuContent() {
                               {pizza.name}
                             </h3>
 
-                            <span className="shrink-0 whitespace-nowrap rounded-full bg-[#F97316]/10 px-2.5 py-0.5 text-sm font-bold text-[#F97316] sm:bg-transparent sm:px-0 sm:py-0 sm:text-base sm:font-semibold">
+                            <span className="shrink-0 whitespace-nowrap rounded-full bg-primary/10 px-2.5 py-0.5 text-sm font-bold text-primary sm:bg-transparent sm:px-0 sm:py-0 sm:text-base sm:font-semibold">
                               ৳{pizza.price}
                             </span>
                           </div>
 
-                          <p className="mt-1.5 line-clamp-2 text-[13px] leading-5 text-[#A8A29E] sm:mt-2 sm:min-h-11 sm:text-xs sm:leading-6">
+                          <p className="mt-1.5 line-clamp-2 text-[13px] leading-5 text-muted-foreground sm:mt-2 sm:min-h-11 sm:text-xs sm:leading-6">
                             {pizza.description}
                           </p>
 
                           {/* Footer */}
-                          <div className="mt-auto mt-3 flex items-center justify-between border-t border-[#2E2925] pt-3 sm:mt-4">
+                          <div className="mt-auto mt-3 flex items-center justify-between border-t border-border pt-3 sm:mt-4">
                             <Link
                               href={`/menu/${pizza._id}`}
-                              className="flex min-h-10 items-center gap-1 text-[13px] font-medium text-[#F5F3EF] transition-colors hover:text-[#F97316] sm:min-h-9 sm:text-xs"
+                              className="flex min-h-10 items-center gap-1 text-[13px] font-medium text-foreground transition-colors hover:text-primary sm:min-h-9 sm:text-xs"
                             >
                               View details
 
@@ -530,7 +540,7 @@ function MenuContent() {
                             {getCategory(pizza.category) === "Vegetarian" && (
                               <Leaf
                                 size={15}
-                                className="text-[#7BC47F] sm:size-[14px]"
+                                className="text-green-500 sm:size-[14px]"
                               />
                             )}
                           </div>
@@ -542,23 +552,23 @@ function MenuContent() {
 
                 {/* Empty State */}
                 {filteredPizzas.length === 0 && (
-                  <div className="rounded-xl border border-[#2E2925] bg-[#1A1716] px-4 py-14 text-center sm:px-5 sm:py-20">
+                  <div className="rounded-xl border border-border bg-card px-4 py-14 text-center sm:px-5 sm:py-20">
                     <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-orange-500/10">
-                      <Search className="text-[#F97316]" size={24} />
+                      <Search className="text-primary" size={24} />
                     </div>
 
                     <h3 className="mt-4 text-base font-semibold sm:text-lg">
                       No pizza found
                     </h3>
 
-                    <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#A8A29E]">
+                    <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
                       We couldn&apos;t find anything matching your search. Try
                       another name or category.
                     </p>
 
                     <button
                       onClick={clearFilters}
-                      className="mt-5 w-full rounded-xl border border-[#F97316]/30 bg-[#F97316]/5 px-5 py-3 text-sm font-medium text-[#F97316] transition hover:bg-[#F97316]/10 active:scale-[0.98] sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm"
+                      className="mt-5 w-full rounded-xl border border-primary/30 bg-primary/5 px-5 py-3 text-sm font-medium text-primary transition hover:bg-primary/10 active:scale-[0.98] sm:w-auto sm:px-5 sm:py-2.5 sm:text-sm"
                     >
                       Clear filters
                     </button>
@@ -584,8 +594,8 @@ function MenuContent() {
           />
 
           {/* Sheet */}
-          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-[#2E2925] bg-[#151210] px-5 pb-6 pt-4">
-            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20" />
+          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-border bg-card px-5 pb-6 pt-4">
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted-foreground/30" />
 
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Filters</h3>
@@ -593,7 +603,7 @@ function MenuContent() {
               <button
                 onClick={() => setShowMobileFilters(false)}
                 aria-label="Close filters"
-                className="flex size-10 items-center justify-center rounded-full bg-white/5 text-[#A8A29E] transition hover:bg-white/10 hover:text-white active:scale-95"
+                className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition hover:bg-muted hover:text-foreground active:scale-95"
               >
                 <X size={18} />
               </button>
@@ -601,7 +611,7 @@ function MenuContent() {
 
             {/* Categories */}
             <div className="mt-5">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#78716C]">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Category
               </p>
 
@@ -616,8 +626,8 @@ function MenuContent() {
                       aria-pressed={active}
                       className={`flex min-h-11 items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all active:scale-[0.98] ${
                         active
-                          ? "bg-[#F97316] text-[#0F0D0C]"
-                          : "bg-[#1A1716] text-[#A8A29E]"
+                          ? "bg-primary text-background"
+                          : "bg-card text-muted-foreground"
                       }`}
                     >
                       <Icon size={16} className="shrink-0" />
@@ -630,7 +640,7 @@ function MenuContent() {
 
             {/* Sort */}
             <div className="mt-5">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#78716C]">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Sort by
               </p>
 
@@ -645,14 +655,14 @@ function MenuContent() {
                       aria-pressed={active}
                       className={`flex min-h-11 items-center justify-between rounded-xl px-4 py-2.5 text-left text-sm transition active:scale-[0.98] ${
                         active
-                          ? "bg-[#F97316]/10 text-[#F97316] ring-1 ring-[#F97316]/40"
-                          : "bg-[#1A1716] text-[#A8A29E]"
+                          ? "bg-primary/10 text-primary ring-1 ring-primary/40"
+                          : "bg-card text-muted-foreground"
                       }`}
                     >
                       <span>{option.label}</span>
 
                       {active && (
-                        <span className="size-2 rounded-full bg-[#F97316]" />
+                        <span className="size-2 rounded-full bg-primary" />
                       )}
                     </button>
                   );
@@ -664,14 +674,14 @@ function MenuContent() {
             <div className="mt-6 flex gap-3">
               <button
                 onClick={clearFilters}
-                className="h-12 flex-1 rounded-xl border border-[#2E2925] text-sm font-medium text-[#A8A29E] transition hover:text-white active:scale-[0.98]"
+                className="h-12 flex-1 rounded-xl border border-border text-sm font-medium text-muted-foreground transition hover:text-foreground active:scale-[0.98]"
               >
                 Reset
               </button>
 
               <button
                 onClick={() => setShowMobileFilters(false)}
-                className="h-12 flex-[1.5] rounded-xl bg-[#F97316] text-sm font-semibold text-[#0F0D0C] transition hover:bg-[#ea6a0f] active:scale-[0.98]"
+                className="h-12 flex-[1.5] rounded-xl bg-primary text-sm font-semibold text-background transition hover:bg-primary active:scale-[0.98]"
               >
                 Show {filteredPizzas.length} results
               </button>
@@ -687,7 +697,7 @@ export default function MenuPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#0F0D0C] text-[#F97316]">
+        <div className="flex min-h-screen items-center justify-center bg-background text-primary">
           Loading menu...
         </div>
       }

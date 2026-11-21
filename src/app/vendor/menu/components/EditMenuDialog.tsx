@@ -204,10 +204,10 @@ export default function EditMenuDialog({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/80 p-3 backdrop-blur-sm sm:p-5">
-      <div className="my-auto w-full max-w-3xl rounded-2xl border border-[#302824] bg-[#1C1715] shadow-2xl">
+      <div className="my-auto w-full max-w-3xl rounded-2xl border border-border bg-card shadow-2xl">
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-[#302824] p-5 sm:p-6">
+        <div className="flex items-center justify-between border-b border-border p-5 sm:p-6">
           <div>
             <p className="text-sm text-orange-400">Menu Management</p>
 
@@ -215,7 +215,7 @@ export default function EditMenuDialog({
               Edit Menu Item
             </h2>
 
-            <p className="mt-1 text-xs text-[#A8A29E]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Update your food item information.
             </p>
           </div>
@@ -224,7 +224,7 @@ export default function EditMenuDialog({
             type="button"
             disabled={updating}
             onClick={onClose}
-            className="rounded-lg p-2 text-[#A8A29E] transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+            className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X size={21} />
           </button>
@@ -252,7 +252,7 @@ export default function EditMenuDialog({
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 required
-                className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-orange-500"
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-orange-500"
               />
             </div>
 
@@ -267,7 +267,7 @@ export default function EditMenuDialog({
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 required
-                className="w-full resize-none rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-orange-500"
+                className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-orange-500"
               />
             </div>
 
@@ -281,7 +281,7 @@ export default function EditMenuDialog({
                 value={editCategory}
                 onChange={(e) => setEditCategory(e.target.value)}
                 required
-                className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-orange-500"
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-orange-500"
               >
                 <option value="">Select category</option>
                 <option value="Classic Pizzas">Classic Pizzas</option>
@@ -306,7 +306,7 @@ export default function EditMenuDialog({
               <div className="relative">
                 <MapPin
                   size={17}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8A29E]"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
 
                 <input
@@ -314,7 +314,7 @@ export default function EditMenuDialog({
                   value={editLocation}
                   onChange={(e) => setEditLocation(e.target.value)}
                   required
-                  className="w-full rounded-xl border border-[#302824] bg-[#100D0B] py-3 pl-11 pr-4 text-sm outline-none focus:border-orange-500"
+                  className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none focus:border-orange-500"
                 />
               </div>
             </div>
@@ -332,7 +332,7 @@ export default function EditMenuDialog({
                   value={editPrice}
                   onChange={(e) => setEditPrice(e.target.value)}
                   required
-                  className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-orange-500"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-orange-500"
                 />
               </div>
 
@@ -344,7 +344,7 @@ export default function EditMenuDialog({
                 <div className="relative">
                   <Clock
                     size={17}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8A29E]"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
                   />
 
                   <input
@@ -355,20 +355,20 @@ export default function EditMenuDialog({
                       setEditPreparationTime(e.target.value)
                     }
                     required
-                    className="w-full rounded-xl border border-[#302824] bg-[#100D0B] py-3 pl-11 pr-4 text-sm outline-none focus:border-orange-500"
+                    className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none focus:border-orange-500"
                   />
                 </div>
               </div>
             </div>
 
             {/* Availability */}
-            <div className="flex items-center justify-between rounded-xl border border-[#302824] bg-[#100D0B] p-4">
+            <div className="flex items-center justify-between rounded-xl border border-border bg-background p-4">
               <div>
                 <p className="text-sm font-medium">
                   Available for orders
                 </p>
 
-                <p className="mt-1 text-xs text-[#A8A29E]">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Turn off when this item is unavailable.
                 </p>
               </div>
@@ -377,7 +377,7 @@ export default function EditMenuDialog({
                 type="button"
                 onClick={() => setEditAvailable(!editAvailable)}
                 className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-                  editAvailable ? "bg-orange-500" : "bg-[#514943]"
+                  editAvailable ? "bg-orange-500" : "bg-muted"
                 }`}
               >
                 <span
@@ -394,7 +394,7 @@ export default function EditMenuDialog({
                 Food Image
               </label>
 
-              <div className="rounded-xl border border-[#302824] bg-[#100D0B] p-3">
+              <div className="rounded-xl border border-border bg-background p-3">
                 {editImage ? (
                   <div className="relative">
                     <img
@@ -416,14 +416,14 @@ export default function EditMenuDialog({
                     </label>
                   </div>
                 ) : (
-                  <label className="flex h-40 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#514943] transition hover:border-orange-500">
+                  <label className="flex h-40 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border transition hover:border-orange-500">
                     <ImagePlus size={30} className="text-orange-500" />
 
                     <span className="mt-3 text-sm font-medium">
                       Upload Food Image
                     </span>
 
-                    <span className="mt-1 text-xs text-[#A8A29E]">
+                    <span className="mt-1 text-xs text-muted-foreground">
                       JPG, PNG or WEBP (Max 5MB)
                     </span>
 
@@ -436,7 +436,7 @@ export default function EditMenuDialog({
                   </label>
                 )}
 
-                <p className="mt-3 text-xs text-[#A8A29E]">
+                <p className="mt-3 text-xs text-muted-foreground">
                   {editImageFile
                     ? "New image selected. It will be uploaded to ImgBB when you update."
                     : "Your current image is being used. Select a new image to replace it."}
@@ -446,12 +446,12 @@ export default function EditMenuDialog({
           </div>
 
           {/* Modal Footer */}
-          <div className="flex flex-col-reverse gap-3 border-t border-[#302824] p-5 sm:flex-row sm:justify-end sm:p-6">
+          <div className="flex flex-col-reverse gap-3 border-t border-border p-5 sm:flex-row sm:justify-end sm:p-6">
             <button
               type="button"
               disabled={updating}
               onClick={onClose}
-              className="rounded-xl border border-[#302824] px-5 py-3 text-sm font-semibold text-[#A8A29E] transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+              className="rounded-xl border border-border px-5 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-50"
             >
               Cancel
             </button>

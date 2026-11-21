@@ -32,7 +32,7 @@ export default function AddMenuPage() {
   const { data: session } = authClient.useSession();
 
   // Demo subscription data
-  const subscriptionPlan = "free";
+  const subscriptionPlan: string = "free";
   const activeMenuItems = 2;
 
   const isPremium = subscriptionPlan === "premium";
@@ -199,12 +199,12 @@ export default function AddMenuPage() {
   };
 
   return (
-    <div className="space-y-7 text-white">
+    <div className="space-y-7 text-foreground">
       {/* Header */}
       <div>
         <Link
           href="/vendor/menu"
-          className="mb-5 inline-flex items-center gap-2 text-sm text-[#A8A29E] transition hover:text-white"
+          className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
         >
           <ArrowLeft size={16} />
           Back to My Menu
@@ -214,16 +214,16 @@ export default function AddMenuPage() {
           Add Menu Item
         </h1>
 
-        <p className="mt-2 text-sm text-[#A8A29E]">
+        <p className="mt-2 text-sm text-muted-foreground">
           Add a delicious new item to your restaurant menu.
         </p>
       </div>
 
       {/* Subscription Status */}
-      <div className="rounded-2xl border border-[#F97316]/20 bg-[#F97316]/5 p-4 sm:p-5">
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-[#F97316]/10 p-3 text-[#F97316]">
+            <div className="rounded-xl bg-primary/10 p-3 text-primary">
               <Crown size={22} />
             </div>
 
@@ -232,16 +232,16 @@ export default function AddMenuPage() {
                 {isPremium ? "Premium Plan" : "Free Plan"}
               </h3>
 
-              <p className="mt-1 text-sm text-[#A8A29E]">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {isPremium
                   ? "You can add unlimited menu items."
                   : `${activeMenuItems} of ${activeItemLimit} active menu items used.`}
               </p>
 
               {!isPremium && (
-                <div className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-[#302824]">
+                <div className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-border">
                   <div
-                    className="h-full rounded-full bg-[#F97316]"
+                    className="h-full rounded-full bg-primary"
                     style={{
                       width: `${(activeMenuItems / activeItemLimit) * 100}%`,
                     }}
@@ -254,7 +254,7 @@ export default function AddMenuPage() {
           {!isPremium && (
             <Link
               href="/vendor/subscription"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F97316] px-4 py-2.5 text-sm font-semibold transition hover:bg-[#EA580C]"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold transition hover:bg-primary"
             >
               <Crown size={16} />
               Upgrade to Premium
@@ -300,13 +300,13 @@ export default function AddMenuPage() {
           {/* Form Section */}
           <div className="space-y-6 lg:col-span-2">
             {/* Basic Information */}
-            <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-6">
+            <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
               <div className="mb-6">
                 <h2 className="text-lg font-semibold">
                   Basic Information
                 </h2>
 
-                <p className="mt-1 text-sm text-[#A8A29E]">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Enter your food item details.
                 </p>
               </div>
@@ -323,7 +323,7 @@ export default function AddMenuPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Pepperoni Pizza"
-                    className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none transition placeholder:text-[#716963] focus:border-[#F97316]"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary"
                   />
                 </div>
 
@@ -338,7 +338,7 @@ export default function AddMenuPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe your delicious food item..."
-                    className="w-full resize-none rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none transition placeholder:text-[#716963] focus:border-[#F97316]"
+                    className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary"
                   />
                 </div>
 
@@ -351,7 +351,7 @@ export default function AddMenuPage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-[#F97316]"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
                   >
                     <option value="">Select category</option>
                     <option value="Classic Pizzas">Classic Pizzas</option>
@@ -378,7 +378,7 @@ export default function AddMenuPage() {
                   <div className="relative">
                     <MapPin
                       size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8A29E]"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
                     />
 
                     <input
@@ -386,7 +386,7 @@ export default function AddMenuPage() {
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="Area / City (e.g. Dhanmondi, Dhaka)"
-                      className="w-full rounded-xl border border-[#302824] bg-[#100D0B] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#F97316]"
+                      className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none focus:border-primary"
                     />
                   </div>
                 </div>
@@ -394,7 +394,7 @@ export default function AddMenuPage() {
             </div>
 
             {/* Price & Preparation */}
-            <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-6">
+            <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
               <h2 className="mb-6 text-lg font-semibold">
                 Pricing & Preparation
               </h2>
@@ -412,7 +412,7 @@ export default function AddMenuPage() {
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     placeholder="299"
-                    className="w-full rounded-xl border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none focus:border-[#F97316]"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
                   />
                 </div>
 
@@ -425,7 +425,7 @@ export default function AddMenuPage() {
                   <div className="relative">
                     <Clock
                       size={17}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A8A29E]"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
                     />
 
                     <input
@@ -434,7 +434,7 @@ export default function AddMenuPage() {
                       value={preparationTime}
                       onChange={(e) => setPreparationTime(e.target.value)}
                       placeholder="25"
-                      className="w-full rounded-xl border border-[#302824] bg-[#100D0B] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#F97316]"
+                      className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none focus:border-primary"
                     />
                   </div>
                 </div>
@@ -442,7 +442,7 @@ export default function AddMenuPage() {
             </div>
 
             {/* Availability */}
-            <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-6">
+            <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">
                 Availability
               </h2>
@@ -453,7 +453,7 @@ export default function AddMenuPage() {
                     Available for orders
                   </p>
 
-                  <p className="mt-1 text-xs text-[#A8A29E]">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Customers can order this item when it is active.
                   </p>
                 </div>
@@ -462,7 +462,7 @@ export default function AddMenuPage() {
                   type="button"
                   onClick={() => setAvailable(!available)}
                   className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-                    available ? "bg-[#F97316]" : "bg-[#514943]"
+                    available ? "bg-primary" : "bg-muted"
                   }`}
                 >
                   <span
@@ -475,7 +475,7 @@ export default function AddMenuPage() {
 
               <p
                 className={`mt-3 text-xs ${
-                  available ? "text-green-400" : "text-[#A8A29E]"
+                  available ? "text-green-400" : "text-muted-foreground"
                 }`}
               >
                 {available ? "Currently Active" : "Currently Inactive"}
@@ -486,12 +486,12 @@ export default function AddMenuPage() {
           {/* Image & Preview */}
           <div className="space-y-6">
             {/* Image Upload */}
-            <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5 sm:p-6">
+            <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
               <h2 className="mb-2 text-lg font-semibold">
                 Food Image
               </h2>
 
-              <p className="mb-5 text-sm text-[#A8A29E]">
+              <p className="mb-5 text-sm text-muted-foreground">
                 Upload a high-quality image of your food.
               </p>
 
@@ -512,8 +512,8 @@ export default function AddMenuPage() {
                   </button>
                 </div>
               ) : (
-                <label className="flex h-52 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#514943] bg-[#100D0B] transition hover:border-[#F97316]">
-                  <div className="mb-3 rounded-xl bg-[#F97316]/10 p-4 text-[#F97316]">
+                <label className="flex h-52 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background transition hover:border-primary">
+                  <div className="mb-3 rounded-xl bg-primary/10 p-4 text-primary">
                     <ImagePlus size={28} />
                   </div>
 
@@ -521,11 +521,11 @@ export default function AddMenuPage() {
                     Upload Food Image
                   </p>
 
-                  <p className="mt-2 text-xs text-[#A8A29E]">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     JPG, PNG or WEBP
                   </p>
 
-                  <p className="mt-1 text-xs text-[#A8A29E]">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Maximum 5MB
                   </p>
 
@@ -538,19 +538,19 @@ export default function AddMenuPage() {
                 </label>
               )}
 
-              <div className="mt-4 flex items-center gap-2 text-xs text-[#A8A29E]">
+              <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
                 <Upload size={14} />
                 Recommended ratio: 4:3
               </div>
             </div>
 
             {/* Preview */}
-            <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-5">
+            <div className="rounded-2xl border border-border bg-card p-5">
               <h2 className="mb-4 font-semibold">
                 Item Preview
               </h2>
 
-              <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#100D0B]">
+              <div className="overflow-hidden rounded-xl border border-border bg-background">
                 {image ? (
                   <img
                     src={image}
@@ -558,7 +558,7 @@ export default function AddMenuPage() {
                     className="h-36 w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-36 items-center justify-center bg-[#241D19] text-[#716963]">
+                  <div className="flex h-36 items-center justify-center bg-muted text-muted-foreground">
                     <Pizza size={42} />
                   </div>
                 )}
@@ -569,29 +569,29 @@ export default function AddMenuPage() {
                       {name || "Food Name"}
                     </h3>
 
-                    <span className="shrink-0 text-sm font-bold text-[#F97316]">
+                    <span className="shrink-0 text-sm font-bold text-primary">
                       ৳{price || "0"}
                     </span>
                   </div>
 
-                  <p className="line-clamp-2 text-xs text-[#A8A29E]">
+                  <p className="line-clamp-2 text-xs text-muted-foreground">
                     {description || "Food description will appear here."}
                   </p>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-[#A8A29E]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
                     <span>{category || "Category"}</span>
 
                     <span>{preparationTime || "0"} min</span>
                   </div>
 
                   {location && (
-                    <div className="flex items-center gap-1 text-xs text-[#A8A29E]">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin size={13} />
                       {location}
                     </div>
                   )}
 
-                  <div className="border-t border-white/[0.06] pt-3">
+                  <div className="border-t border-border pt-3">
                     <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs text-yellow-400">
                       Pending Approval
                     </span>
@@ -604,7 +604,7 @@ export default function AddMenuPage() {
             <button
               type="submit"
               disabled={loading || (limitReached && available)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F97316] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#EA580C] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -619,7 +619,7 @@ export default function AddMenuPage() {
               )}
             </button>
 
-            <p className="text-center text-xs text-[#A8A29E]">
+            <p className="text-center text-xs text-muted-foreground">
               Your item will be submitted for admin approval.
             </p>
           </div>

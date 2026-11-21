@@ -230,7 +230,7 @@ export default function VendorOrdersPage() {
         <div className="text-center">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-orange-500/20 border-t-orange-500" />
 
-          <p className="text-sm text-[#A8A29E]">
+          <p className="text-sm text-muted-foreground">
             Loading customer orders...
           </p>
         </div>
@@ -243,11 +243,11 @@ export default function VendorOrdersPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
             Customer Orders
           </h1>
 
-          <p className="mt-2 text-sm text-[#A8A29E]">
+          <p className="mt-2 text-sm text-muted-foreground">
             Manage and track all your customer orders.
           </p>
         </div>
@@ -263,20 +263,20 @@ export default function VendorOrdersPage() {
 
       {/* Statistics */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#A8A29E]">Total Orders</p>
+            <p className="text-sm text-muted-foreground">Total Orders</p>
             <ShoppingBag size={18} className="text-orange-400" />
           </div>
 
-          <h2 className="mt-3 text-2xl font-bold text-white">
+          <h2 className="mt-3 text-2xl font-bold text-foreground">
             {orders.length}
           </h2>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#A8A29E]">Pending</p>
+            <p className="text-sm text-muted-foreground">Pending</p>
             <Clock size={18} className="text-orange-400" />
           </div>
 
@@ -285,9 +285,9 @@ export default function VendorOrdersPage() {
           </h2>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#A8A29E]">Accepted</p>
+            <p className="text-sm text-muted-foreground">Accepted</p>
             <CheckCircle2 size={18} className="text-green-400" />
           </div>
 
@@ -296,9 +296,9 @@ export default function VendorOrdersPage() {
           </h2>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#A8A29E]">Rejected</p>
+            <p className="text-sm text-muted-foreground">Rejected</p>
             <XCircle size={18} className="text-red-400" />
           </div>
 
@@ -309,12 +309,12 @@ export default function VendorOrdersPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] p-4 sm:p-5">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative w-full lg:max-w-sm">
             <Search
               size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#78716C]"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
 
             <input
@@ -322,7 +322,7 @@ export default function VendorOrdersPage() {
               placeholder="Search customer, order or item..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-white/[0.08] bg-[#100D0B] py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-[#78716C] focus:border-orange-500/50"
+              className="w-full rounded-xl border border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-orange-500/50"
             />
           </div>
 
@@ -339,7 +339,7 @@ export default function VendorOrdersPage() {
                 className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
                   activeFilter === filter.value
                     ? "bg-orange-500 text-white"
-                    : "border border-white/[0.06] bg-[#100D0B] text-[#A8A29E] hover:text-white"
+                    : "border border-border bg-background text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {filter.label}
@@ -355,21 +355,21 @@ export default function VendorOrdersPage() {
           filteredOrders.map((order) => (
             <div
               key={order.id}
-              className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1C1715] transition hover:border-orange-500/20"
+              className="overflow-hidden rounded-2xl border border-border bg-card transition hover:border-orange-500/20"
             >
               {/* Order Header */}
-              <div className="flex flex-col gap-3 border-b border-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10">
                     <ShoppingBag size={20} className="text-orange-400" />
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white">
+                    <h3 className="font-semibold text-foreground">
                       {order.id}
                     </h3>
 
-                    <p className="mt-1 text-xs text-[#78716C]">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Ordered {order.orderDate}
                     </p>
                   </div>
@@ -389,25 +389,25 @@ export default function VendorOrdersPage() {
               <div className="grid gap-5 p-4 sm:p-5 lg:grid-cols-2">
                 {/* Customer */}
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#78716C]">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Customer Information
                   </p>
 
                   <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.05]">
-                      <User size={18} className="text-[#A8A29E]" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                      <User size={18} className="text-muted-foreground" />
                     </div>
 
                     <div className="min-w-0">
-                      <p className="font-medium text-white">
+                      <p className="font-medium text-foreground">
                         {order.customerName}
                       </p>
 
-                      <p className="mt-1 break-all text-sm text-[#A8A29E]">
+                      <p className="mt-1 break-all text-sm text-muted-foreground">
                         {order.customerEmail}
                       </p>
 
-                      <p className="mt-1 flex items-center gap-1.5 text-sm text-[#A8A29E]">
+                      <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
                         <Phone size={13} />
                         {order.customerPhone}
                       </p>
@@ -417,17 +417,17 @@ export default function VendorOrdersPage() {
 
                 {/* Item */}
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#78716C]">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Ordered Item
                   </p>
 
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h4 className="font-medium text-white">
+                      <h4 className="font-medium text-foreground">
                         {order.itemName}
                       </h4>
 
-                      <p className="mt-1 text-sm text-[#A8A29E]">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         Quantity: {order.quantity}
                       </p>
                     </div>
@@ -437,7 +437,7 @@ export default function VendorOrdersPage() {
                         ৳{order.price}
                       </p>
 
-                      <p className="text-xs text-[#78716C]">
+                      <p className="text-xs text-muted-foreground">
                         Total price
                       </p>
                     </div>
@@ -446,12 +446,12 @@ export default function VendorOrdersPage() {
 
                 {/* Delivery */}
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#78716C]">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Delivery Information
                   </p>
 
                   <div className="space-y-2">
-                    <p className="flex items-start gap-2 text-sm text-[#D6D3D1]">
+                    <p className="flex items-start gap-2 text-sm text-foreground">
                       <CalendarDays
                         size={15}
                         className="mt-0.5 shrink-0 text-orange-400"
@@ -462,7 +462,7 @@ export default function VendorOrdersPage() {
                       </span>
                     </p>
 
-                    <p className="flex items-start gap-2 text-sm text-[#D6D3D1]">
+                    <p className="flex items-start gap-2 text-sm text-foreground">
                       <MapPin
                         size={15}
                         className="mt-0.5 shrink-0 text-orange-400"
@@ -475,17 +475,17 @@ export default function VendorOrdersPage() {
 
                 {/* Message */}
                 <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#78716C]">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Customer Message
                   </p>
 
-                  <div className="flex items-start gap-2 rounded-xl bg-[#100D0B] p-3">
+                  <div className="flex items-start gap-2 rounded-xl bg-background p-3">
                     <MessageSquare
                       size={15}
                       className="mt-0.5 shrink-0 text-orange-400"
                     />
 
-                    <p className="text-sm text-[#A8A29E]">
+                    <p className="text-sm text-muted-foreground">
                       {order.message || "No special instructions."}
                     </p>
                   </div>
@@ -493,10 +493,10 @@ export default function VendorOrdersPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col gap-3 border-t border-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="flex flex-col gap-3 border-t border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                 <button
                   onClick={() => setSelectedOrder(order)}
-                  className="flex items-center justify-center gap-2 text-sm font-medium text-[#A8A29E] transition hover:text-white"
+                  className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
                 >
                   View Order Details
                   <ArrowRight size={15} />
@@ -527,7 +527,7 @@ export default function VendorOrdersPage() {
                     </button>
                   </div>
                 ) : (
-                  <p className="text-xs text-[#78716C]">
+                  <p className="text-xs text-muted-foreground">
                     This order has already been {order.status}.
                   </p>
                 )}
@@ -535,16 +535,16 @@ export default function VendorOrdersPage() {
             </div>
           ))
         ) : (
-          <div className="rounded-2xl border border-white/[0.06] bg-[#1C1715] px-5 py-16 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.04]">
-              <Package size={28} className="text-[#78716C]" />
+          <div className="rounded-2xl border border-border bg-card px-5 py-16 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+              <Package size={28} className="text-muted-foreground" />
             </div>
 
-            <h3 className="mt-4 text-lg font-semibold text-white">
+            <h3 className="mt-4 text-lg font-semibold text-foreground">
               No Orders Found
             </h3>
 
-            <p className="mt-2 text-sm text-[#A8A29E]">
+            <p className="mt-2 text-sm text-muted-foreground">
               No orders match your search or selected filter.
             </p>
           </div>
@@ -558,53 +558,53 @@ export default function VendorOrdersPage() {
           onClick={() => setSelectedOrder(null)}
         >
           <div
-            className="w-full max-w-lg rounded-2xl border border-white/[0.08] bg-[#1C1715] p-5 sm:p-6"
+            className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-bold text-foreground">
                 Order Details
               </h2>
 
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="rounded-lg p-2 text-[#A8A29E] transition hover:bg-white/[0.05] hover:text-white"
+                className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
               >
                 <XCircle size={20} />
               </button>
             </div>
 
             <div className="mt-5 space-y-4">
-              <div className="rounded-xl bg-[#100D0B] p-4">
-                <p className="text-xs text-[#78716C]">Order ID</p>
+              <div className="rounded-xl bg-background p-4">
+                <p className="text-xs text-muted-foreground">Order ID</p>
 
-                <p className="mt-1 break-all font-semibold text-white">
+                <p className="mt-1 break-all font-semibold text-foreground">
                   {selectedOrder.id}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-[#78716C]">Customer</p>
+                <p className="text-sm text-muted-foreground">Customer</p>
 
-                <p className="mt-1 font-medium text-white">
+                <p className="mt-1 font-medium text-foreground">
                   {selectedOrder.customerName}
                 </p>
 
-                <p className="mt-1 break-all text-sm text-[#A8A29E]">
+                <p className="mt-1 break-all text-sm text-muted-foreground">
                   {selectedOrder.customerEmail}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-[#78716C]">Item</p>
+                <p className="text-sm text-muted-foreground">Item</p>
 
-                <p className="mt-1 font-medium text-white">
+                <p className="mt-1 font-medium text-foreground">
                   {selectedOrder.itemName} × {selectedOrder.quantity}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-[#78716C]">Total</p>
+                <p className="text-sm text-muted-foreground">Total</p>
 
                 <p className="mt-1 text-xl font-bold text-orange-400">
                   ৳{selectedOrder.price}
@@ -612,27 +612,27 @@ export default function VendorOrdersPage() {
               </div>
 
               <div>
-                <p className="text-sm text-[#78716C]">
+                <p className="text-sm text-muted-foreground">
                   Delivery Address
                 </p>
 
-                <p className="mt-1 text-sm text-white">
+                <p className="mt-1 text-sm text-foreground">
                   {selectedOrder.deliveryAddress}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-[#78716C]">
+                <p className="text-sm text-muted-foreground">
                   Customer Message
                 </p>
 
-                <p className="mt-1 text-sm text-white">
+                <p className="mt-1 text-sm text-foreground">
                   {selectedOrder.message || "No message"}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-[#78716C]">Status</p>
+                <p className="text-sm text-muted-foreground">Status</p>
 
                 <span
                   className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium capitalize ${statusStyle(

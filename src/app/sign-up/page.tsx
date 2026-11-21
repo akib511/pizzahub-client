@@ -57,7 +57,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#100D0B] px-4 py-8 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground">
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="mb-8 flex justify-center">
@@ -71,12 +71,12 @@ export default function SignUpPage() {
         </Link>
 
         {/* Sign Up Card */}
-        <div className="rounded-2xl border border-[#302824] bg-[#1C1715] p-6 sm:p-8">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
           {/* Heading */}
           <div className="text-center">
             <h2 className="text-2xl font-bold">Create Account</h2>
 
-            <p className="mt-2 text-sm text-[#A8A29E]">
+            <p className="mt-2 text-sm text-muted-foreground">
               Join PizzaHub and discover your favorite flavors.
             </p>
           </div>
@@ -84,7 +84,7 @@ export default function SignUpPage() {
           {/* Google Sign Up */}
           <button
             type="button"
-            className="mt-7 flex w-full items-center justify-center gap-3 rounded-lg border border-[#302824] bg-[#100D0B] py-3 text-sm transition hover:bg-[#25201D]"
+            className="mt-7 flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background py-3 text-sm transition hover:bg-muted"
           >
             <svg viewBox="0 0 48 48" className="h-5 w-5">
               <path
@@ -109,11 +109,11 @@ export default function SignUpPage() {
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#302824]" />
+            <div className="h-px flex-1 bg-border" />
 
-            <span className="text-xs text-[#78716C]">OR</span>
+            <span className="text-xs text-muted-foreground">OR</span>
 
-            <div className="h-px flex-1 bg-[#302824]" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           {/* Role Selection */}
@@ -130,19 +130,19 @@ export default function SignUpPage() {
                 className={`rounded-xl border p-4 text-center transition ${
                   role === "customer"
                     ? "border-orange-500 bg-orange-500/10"
-                    : "border-[#302824] bg-[#100D0B] hover:border-[#57443A]"
+                    : "border-border bg-background hover:border-border"
                 }`}
               >
                 <ShoppingBag
                   size={24}
                   className={`mx-auto mb-2 ${
-                    role === "customer" ? "text-orange-500" : "text-[#A8A29E]"
+                    role === "customer" ? "text-orange-500" : "text-muted-foreground"
                   }`}
                 />
 
                 <p className="text-sm font-semibold">Customer</p>
 
-                <p className="mt-1 text-xs text-[#A8A29E]">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Order delicious pizza
                 </p>
               </button>
@@ -154,19 +154,19 @@ export default function SignUpPage() {
                 className={`rounded-xl border p-4 text-center transition ${
                   role === "vendor"
                     ? "border-orange-500 bg-orange-500/10"
-                    : "border-[#302824] bg-[#100D0B] hover:border-[#57443A]"
+                    : "border-border bg-background hover:border-border"
                 }`}
               >
                 <Store
                   size={24}
                   className={`mx-auto mb-2 ${
-                    role === "vendor" ? "text-orange-500" : "text-[#A8A29E]"
+                    role === "vendor" ? "text-orange-500" : "text-muted-foreground"
                   }`}
                 />
 
                 <p className="text-sm font-semibold">Vendor</p>
 
-                <p className="mt-1 text-xs text-[#A8A29E]">Sell your pizzas</p>
+                <p className="mt-1 text-xs text-muted-foreground">Sell your pizzas</p>
               </button>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function SignUpPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full rounded-lg border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none transition placeholder:text-[#78716C] focus:border-orange-500"
+                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-orange-500"
               />
             </div>
 
@@ -201,7 +201,7 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-lg border border-[#302824] bg-[#100D0B] px-4 py-3 text-sm outline-none transition placeholder:text-[#78716C] focus:border-orange-500"
+                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-orange-500"
               />
             </div>
 
@@ -209,20 +209,20 @@ export default function SignUpPage() {
             <div>
               <label className="mb-2 block text-sm font-medium">Password</label>
 
-              <div className="flex items-center rounded-lg border border-[#302824] bg-[#100D0B] px-4 focus-within:border-orange-500">
+              <div className="flex items-center rounded-lg border border-border bg-background px-4 focus-within:border-orange-500">
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full py-3 text-sm outline-none placeholder:text-[#78716C]"
+                  className="w-full py-3 text-sm outline-none placeholder:text-muted-foreground"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-[#78716C] transition hover:text-white"
+                  className="text-muted-foreground transition hover:text-foreground"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -235,20 +235,20 @@ export default function SignUpPage() {
                 Confirm Password
               </label>
 
-              <div className="flex items-center rounded-lg border border-[#302824] bg-[#100D0B] px-4 focus-within:border-orange-500">
+              <div className="flex items-center rounded-lg border border-border bg-background px-4 focus-within:border-orange-500">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full py-3 text-sm outline-none placeholder:text-[#78716C]"
+                  className="w-full py-3 text-sm outline-none placeholder:text-muted-foreground"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="text-[#78716C] transition hover:text-white"
+                  className="text-muted-foreground transition hover:text-foreground"
                 >
                   {showConfirmPassword ? (
                     <EyeOff size={18} />
@@ -260,7 +260,7 @@ export default function SignUpPage() {
             </div>
 
             {/* Selected Role Info */}
-            <p className="text-xs text-[#A8A29E]">
+            <p className="text-xs text-muted-foreground">
               Registering as:{" "}
               <span className="font-medium text-orange-500">
                 {role === "customer" ? "Customer" : "Vendor"}
@@ -285,7 +285,7 @@ export default function SignUpPage() {
           </form>
 
           {/* Sign In */}
-          <p className="mt-6 text-center text-sm text-[#A8A29E]">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
               href="/sign-in"
@@ -299,7 +299,7 @@ export default function SignUpPage() {
         {/* Back Home */}
         <Link
           href="/"
-          className="mt-6 block text-center text-sm text-[#78716C] transition hover:text-white"
+          className="mt-6 block text-center text-sm text-muted-foreground transition hover:text-foreground"
         >
           ← Back to Home
         </Link>

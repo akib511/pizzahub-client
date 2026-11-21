@@ -112,7 +112,7 @@ export default function AdminLayout({
 
       {/* Sidebar Navigation */}
       <div className="flex-1 overflow-y-auto px-3 py-5">
-        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-[#78716C]">
+        <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-muted-foreground">
           Management
         </p>
 
@@ -128,7 +128,7 @@ export default function AdminLayout({
                 className={`flex items-center justify-between rounded-xl px-3 py-3 transition ${
                   isActive
                     ? "bg-orange-500 text-white"
-                    : "text-[#A8A29E] hover:bg-white/[0.04] hover:text-white"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -155,17 +155,17 @@ export default function AdminLayout({
             </span>
           </div>
 
-          <p className="mt-2 text-xs leading-5 text-[#78716C]">
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">
             Manage users, restaurants, orders and platform activities.
           </p>
         </div>
       </div>
 
       {/* Sign Out */}
-      <div className="border-t border-white/[0.06] p-3">
+      <div className="border-t border-border p-3">
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-[#A8A29E] transition hover:bg-red-500/10 hover:text-red-400"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-muted-foreground transition hover:bg-red-500/10 hover:text-red-400"
         >
           <LogOut size={18} />
           Sign Out
@@ -175,10 +175,10 @@ export default function AdminLayout({
   );
 
   return (
-    <div className="min-h-screen bg-[#100D0B]">
+    <div className="min-h-screen bg-background">
 
       {/* Desktop Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/[0.06] bg-[#0B0907] lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar pt-20 lg:flex">
         {sidebarContent}
       </aside>
 
@@ -194,7 +194,7 @@ export default function AdminLayout({
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-white/[0.07] bg-[#100D0B]/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.3)] backdrop-blur-2xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-sidebar-border bg-sidebar/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.3)] backdrop-blur-2xl lg:hidden">
 
         <div className="mx-auto grid max-w-lg grid-cols-5 px-2 py-2">
 
@@ -212,7 +212,7 @@ export default function AdminLayout({
                   className={`flex h-9 w-12 items-center justify-center rounded-xl transition-all duration-200 ${
                     isActive
                       ? "bg-orange-500/15 text-orange-400"
-                      : "text-stone-500 hover:text-stone-300"
+                      : "text-muted-foreground hover:text-muted-foreground"
                   }`}
                 >
                   <Icon
@@ -223,7 +223,7 @@ export default function AdminLayout({
 
                 <span
                   className={`text-[10px] font-medium transition ${
-                    isActive ? "text-orange-400" : "text-stone-500"
+                    isActive ? "text-orange-400" : "text-muted-foreground"
                   }`}
                 >
                   {item.shortName}
@@ -241,7 +241,7 @@ export default function AdminLayout({
               className={`flex h-9 w-12 items-center justify-center rounded-xl transition-all duration-200 ${
                 moreOpen || isMoreActive
                   ? "bg-orange-500/15 text-orange-400"
-                  : "text-stone-500 hover:text-stone-300"
+                  : "text-muted-foreground hover:text-muted-foreground"
               }`}
             >
               <Grid2X2 size={21} />
@@ -251,7 +251,7 @@ export default function AdminLayout({
               className={`text-[10px] font-medium ${
                 moreOpen || isMoreActive
                   ? "text-orange-400"
-                  : "text-stone-500"
+                  : "text-muted-foreground"
               }`}
             >
               More
@@ -271,26 +271,26 @@ export default function AdminLayout({
           />
 
           {/* Bottom Sheet */}
-          <div className="absolute inset-x-0 bottom-0 rounded-t-[28px] border-t border-white/[0.08] bg-[#17120F] p-5 pb-[calc(24px+env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="absolute inset-x-0 bottom-0 rounded-t-[28px] border-t border-border bg-card p-5 pb-[calc(24px+env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom duration-300">
 
             {/* Handle */}
-            <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-white/20" />
+            <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-muted-foreground/30" />
 
             {/* Header */}
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-lg font-bold text-foreground">
                   More Options
                 </h2>
 
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Manage other admin sections
                 </p>
               </div>
 
               <button
                 onClick={() => setMoreOpen(false)}
-                className="rounded-xl bg-white/[0.05] p-2 text-stone-400 transition hover:bg-white/10 hover:text-white"
+                className="rounded-xl bg-muted p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
               >
                 <X size={19} />
               </button>
@@ -310,14 +310,14 @@ export default function AdminLayout({
                     className={`flex items-center gap-3 rounded-2xl border p-4 transition-all ${
                       isActive
                         ? "border-orange-500/30 bg-orange-500/10"
-                        : "border-white/[0.06] bg-[#100D0B] hover:border-white/15"
+                        : "border-border bg-background hover:border-border"
                     }`}
                   >
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                         isActive
                           ? "bg-orange-500 text-white"
-                          : "bg-white/[0.05] text-stone-400"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
                       <Icon size={19} />
@@ -326,13 +326,13 @@ export default function AdminLayout({
                     <div className="min-w-0">
                       <p
                         className={`truncate text-xs font-semibold ${
-                          isActive ? "text-orange-400" : "text-white"
+                          isActive ? "text-orange-400" : "text-foreground"
                         }`}
                       >
                         {item.name}
                       </p>
 
-                      <p className="mt-1 text-[10px] text-stone-500">
+                      <p className="mt-1 text-[10px] text-muted-foreground">
                         Open section
                       </p>
                     </div>

@@ -201,23 +201,23 @@ const cancelOrder = async () => {
 
   if (loading || isPending) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#100D0B] text-white">
+    <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
       <div className="text-center">
         <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-orange-500/20 border-t-orange-500" />
-        <p className="text-sm text-[#A8A29E]">Loading your orders...</p>
+        <p className="text-sm text-muted-foreground">Loading your orders...</p>
       </div>
     </main>
   );
 }
 
   return (
-    <main className="min-h-screen bg-[#100D0B] text-white">
+    <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
 
         {/* Header */}
         <Link
           href="/customer/dashboard"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-[#A8A29E] hover:text-white"
+          className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft size={16} />
           Back to Dashboard
@@ -233,7 +233,7 @@ const cancelOrder = async () => {
               My Orders<span className="text-orange-500">.</span>
             </h1>
 
-            <p className="mt-2 text-sm text-[#A8A29E]">
+            <p className="mt-2 text-sm text-muted-foreground">
               Manage your orders and keep track of your deliveries.
             </p>
           </div>
@@ -249,47 +249,47 @@ const cancelOrder = async () => {
 
         {/* Order Overview */}
         <div className="mb-8 flex flex-wrap gap-3">
-          <div className="flex min-w-32 flex-1 items-center gap-3 rounded-xl border border-white/[0.07] bg-[#1C1715] p-4">
+          <div className="flex min-w-32 flex-1 items-center gap-3 rounded-xl border border-border bg-card p-4">
             <ShoppingBag className="text-orange-500" size={21} />
             <div>
               <p className="text-xl font-bold">{orders.length}</p>
-              <p className="text-xs text-[#A8A29E]">Total Orders</p>
+              <p className="text-xs text-muted-foreground">Total Orders</p>
             </div>
           </div>
 
-          <div className="flex min-w-32 flex-1 items-center gap-3 rounded-xl border border-white/[0.07] bg-[#1C1715] p-4">
+          <div className="flex min-w-32 flex-1 items-center gap-3 rounded-xl border border-border bg-card p-4">
             <Clock3 className="text-orange-400" size={21} />
             <div>
               <p className="text-xl font-bold">{getCount("Pending")}</p>
-              <p className="text-xs text-[#A8A29E]">Pending</p>
+              <p className="text-xs text-muted-foreground">Pending</p>
             </div>
           </div>
 
-          <div className="flex min-w-32 flex-1 items-center gap-3 rounded-xl border border-white/[0.07] bg-[#1C1715] p-4">
+          <div className="flex min-w-32 flex-1 items-center gap-3 rounded-xl border border-border bg-card p-4">
             <Package className="text-blue-400" size={21} />
             <div>
               <p className="text-xl font-bold">{getCount("Processing")}</p>
-              <p className="text-xs text-[#A8A29E]">Processing</p>
+              <p className="text-xs text-muted-foreground">Processing</p>
             </div>
           </div>
 
-          <div className="flex min-w-32 flex-1 items-center gap-3 rounded-xl border border-white/[0.07] bg-[#1C1715] p-4">
+          <div className="flex min-w-32 flex-1 items-center gap-3 rounded-xl border border-border bg-card p-4">
             <CheckCircle2 className="text-green-400" size={21} />
             <div>
               <p className="text-xl font-bold">{getCount("Delivered")}</p>
-              <p className="text-xs text-[#A8A29E]">Delivered</p>
+              <p className="text-xs text-muted-foreground">Delivered</p>
             </div>
           </div>
         </div>
 
         {/* Orders Workspace */}
-        <section className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#171310]">
+        <section className="overflow-hidden rounded-2xl border border-border bg-card">
 
           {/* Filter Header */}
-          <div className="border-b border-white/[0.07] p-5 sm:p-6">
+          <div className="border-b border-border p-5 sm:p-6">
             <div className="mb-5">
               <h2 className="text-lg font-semibold">Order Management</h2>
-              <p className="mt-1 text-xs text-[#A8A29E]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 View, track and manage your pizza orders.
               </p>
             </div>
@@ -303,15 +303,15 @@ const cancelOrder = async () => {
                   className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-medium transition ${
                     activeFilter === filter
                       ? "bg-orange-500 text-white"
-                      : "bg-white/[0.04] text-[#A8A29E] hover:bg-white/[0.08] hover:text-white"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   {filter}
                   <span
                     className={`rounded-md px-1.5 py-0.5 text-[10px] ${
                       activeFilter === filter
-                        ? "bg-white/20"
-                        : "bg-white/[0.07]"
+                        ? "bg-muted-foreground/30"
+                        : "bg-muted"
                     }`}
                   >
                     {getCount(filter)}
@@ -322,24 +322,24 @@ const cancelOrder = async () => {
           </div>
 
           {/* Search */}
-          <div className="flex flex-col justify-between gap-3 border-b border-white/[0.07] p-5 sm:flex-row sm:items-center sm:px-6">
+          <div className="flex flex-col justify-between gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:px-6">
             <div className="relative w-full sm:max-w-sm">
               <Search
                 size={17}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#78716C]"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search order ID or pizza..."
-                className="w-full rounded-xl border border-white/[0.08] bg-[#100D0B] py-3 pl-11 pr-4 text-sm outline-none placeholder:text-[#78716C] focus:border-orange-500"
+                className="w-full rounded-xl border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none placeholder:text-muted-foreground focus:border-orange-500"
               />
             </div>
 
-            <p className="text-xs text-[#A8A29E]">
+            <p className="text-xs text-muted-foreground">
               Showing{" "}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-foreground">
                 {filteredOrders.length}
               </span>{" "}
               of {orders.length} orders
@@ -353,12 +353,12 @@ const cancelOrder = async () => {
                 {filteredOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="overflow-hidden rounded-xl border border-white/[0.07] bg-[#1C1715] transition hover:border-orange-500/30"
+                    className="overflow-hidden rounded-xl border border-border bg-card transition hover:border-orange-500/30"
                   >
                     {/* Order Top */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-4 sm:px-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4 sm:px-5">
                       <div>
-                        <p className="text-[10px] font-medium text-[#78716C]">
+                        <p className="text-[10px] font-medium text-muted-foreground">
                           ORDER NUMBER
                         </p>
                         <p className="mt-1 text-sm font-semibold">
@@ -382,11 +382,11 @@ const cancelOrder = async () => {
                           {order.name}
                         </h3>
 
-                        <p className="mt-1 text-xs text-[#A8A29E]">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           {order.description}
                         </p>
 
-                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[#A8A29E]">
+                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1.5">
                             <CalendarDays size={13} />
                             {order.date}
@@ -404,9 +404,9 @@ const cancelOrder = async () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 sm:block sm:border-0 sm:pt-0 sm:text-right">
+                      <div className="flex items-center justify-between border-t border-border pt-4 sm:block sm:border-0 sm:pt-0 sm:text-right">
                         <div>
-                          <p className="text-xs text-[#78716C]">
+                          <p className="text-xs text-muted-foreground">
                             Total Amount
                           </p>
                           <p className="mt-1 text-xl font-bold text-orange-500">
@@ -414,15 +414,15 @@ const cancelOrder = async () => {
                           </p>
                         </div>
 
-                        <p className="mt-2 text-xs text-[#78716C]">
+                        <p className="mt-2 text-xs text-muted-foreground">
                           {order.quantity} item(s)
                         </p>
                       </div>
                     </div>
 
                     {/* Order Actions */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] bg-white/[0.015] px-4 py-3 sm:px-5">
-                      <p className="text-xs text-[#78716C]">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/30 px-4 py-3 sm:px-5">
+                      <p className="text-xs text-muted-foreground">
                         {order.status === "Pending"
                           ? "Your order is waiting for vendor confirmation."
                           : order.status === "Processing"
@@ -471,13 +471,13 @@ const cancelOrder = async () => {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.05]">
-                  <ShoppingBag size={28} className="text-[#78716C]" />
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+                  <ShoppingBag size={28} className="text-muted-foreground" />
                 </div>
 
                 <h3 className="text-lg font-semibold">No Orders Found</h3>
 
-                <p className="mt-2 max-w-xs text-sm text-[#A8A29E]">
+                <p className="mt-2 max-w-xs text-sm text-muted-foreground">
                   {search
                     ? "No orders match your search. Try another keyword."
                     : "You don't have any orders in this category yet."}
@@ -496,10 +496,10 @@ const cancelOrder = async () => {
         </section>
 
         {/* Support */}
-        <div className="mt-6 flex flex-col justify-between gap-3 rounded-xl border border-white/[0.07] bg-[#1C1715] p-5 sm:flex-row sm:items-center">
+        <div className="mt-6 flex flex-col justify-between gap-3 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center">
           <div>
             <h3 className="text-sm font-semibold">Need help with an order?</h3>
-            <p className="mt-1 text-xs text-[#A8A29E]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Contact our support team if you need any assistance.
             </p>
           </div>
@@ -516,7 +516,7 @@ const cancelOrder = async () => {
       {/* Cancel Confirmation Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#1C1715] p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10">
                 <AlertTriangle size={24} className="text-red-400" />
@@ -524,7 +524,7 @@ const cancelOrder = async () => {
 
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="rounded-lg p-2 text-[#A8A29E] hover:bg-white/[0.06] hover:text-white"
+                className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
                 aria-label="Close confirmation"
               >
                 <X size={20} />
@@ -533,9 +533,9 @@ const cancelOrder = async () => {
 
             <h2 className="text-xl font-bold">Cancel This Order?</h2>
 
-            <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Are you sure you want to cancel order{" "}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-foreground">
                 {selectedOrder}
               </span>
               ? This action will change your order status to Cancelled.
@@ -544,7 +544,7 @@ const cancelOrder = async () => {
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-[#A8A29E] hover:bg-white/[0.05] hover:text-white"
+                className="rounded-xl border border-border px-5 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 Keep Order
               </button>

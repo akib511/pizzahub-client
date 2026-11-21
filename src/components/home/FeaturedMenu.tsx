@@ -7,7 +7,9 @@ import {
   ArrowUpRight,
   Flame,
   LoaderCircle,
-  Plus,
+  MapPin,
+  Store,
+  Eye,
 } from "lucide-react";
 
 interface Pizza {
@@ -17,6 +19,8 @@ interface Pizza {
   description: string;
   price: number;
   image: string;
+  location?: string;
+  vendorEmail?: string;
   isPremium?: boolean;
   createdAt?: string;
 }
@@ -65,31 +69,37 @@ export default function FeaturedMenu() {
 
   const activePizza = pizzas[activeIndex];
 
+  // Helper to get vendor name from email
+  const getVendorName = (email?: string) => {
+    if (!email) return "Unknown Vendor";
+    const name = email.split("@")[0];
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  };
+
   return (
-   
-    <section className="relative overflow-hidden bg-[#100D0B] py-8 sm:py-8">
-      <div className="pointer-events-none absolute -right-40 -top-40 size-[400px] rounded-full bg-[#F97316]/[0.05] blur-[100px]" />
-      <div className="pointer-events-none absolute -left-40 bottom-0 size-[400px] rounded-full bg-[#F97316]/[0.03] blur-[100px]" />
+    <section className="relative overflow-hidden bg-background py-8 sm:py-8">
+      <div className="pointer-events-none absolute -right-40 -top-40 size-[400px] rounded-full bg-primary/[0.05] blur-[100px]" />
+      <div className="pointer-events-none absolute -left-40 bottom-0 size-[400px] rounded-full bg-primary/[0.03] blur-[100px]" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        
         {/* HEADER */}
         <div className="mb-5 flex items-end justify-between gap-3 sm:mb-6">
           <div className="min-w-0">
             <div className="mb-1.5 flex items-center gap-2">
-              <span className="inline-flex size-1.5 rounded-full bg-[#F97316]" />
-              <span className="text-[10px] font-bold uppercase tracking-[3px] text-[#F97316]">
-                Chef's Selection
+              <span className="inline-flex size-1.5 rounded-full bg-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-[3px] text-primary">
+                Chef&apos;s Selection
               </span>
             </div>
-
-            <h2 className="text-2xl font-bold leading-tight text-white sm:text-3xl lg:text-4xl">
-              Signature <span className="text-[#F97316]">Plates</span>
+            <h2 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl lg:text-4xl">
+              Signature <span className="text-primary">Plates</span>
             </h2>
           </div>
 
           <Link
             href="/menu"
-            className="group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.02] px-3 text-[11px] font-medium text-stone-300 transition hover:border-[#F97316]/50 hover:text-[#F97316] active:scale-95 sm:h-10 sm:px-5 sm:text-xs"
+            className="group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 text-[11px] font-medium text-muted-foreground transition hover:border-primary/50 hover:text-primary active:scale-95 sm:h-10 sm:px-5 sm:text-xs"
           >
             View all
             <ArrowRight
@@ -99,10 +109,11 @@ export default function FeaturedMenu() {
           </Link>
         </div>
 
+        {/* LOADING & ERROR STATES */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-12">
-            <LoaderCircle size={24} className="animate-spin text-[#F97316]" />
-            <p className="mt-2 text-xs text-stone-500">Loading menu...</p>
+            <LoaderCircle size={24} className="animate-spin text-primary" />
+            <p className="mt-2 text-xs text-muted-foreground">Loading menu...</p>
           </div>
         )}
 
@@ -111,7 +122,7 @@ export default function FeaturedMenu() {
         )}
 
         {!loading && !error && pizzas.length === 0 && (
-          <p className="py-8 text-center text-xs text-stone-500">
+          <p className="py-8 text-center text-xs text-muted-foreground">
             No featured pizzas available right now.
           </p>
         )}
@@ -119,9 +130,10 @@ export default function FeaturedMenu() {
         {/* SPLIT LAYOUT */}
         {!loading && !error && pizzas.length > 0 && activePizza && (
           <div className="grid gap-4 lg:grid-cols-12 lg:gap-6">
-            {/* LEFT: HERO */}
+            
+            {/* LEFT: HERO CARD (Featured) */}
             <div className="lg:col-span-7">
-              <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1A1716]">
+              <div className="group relative overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="relative aspect-[16/10] sm:aspect-[16/9]">
                   <img
                     key={activePizza._id}
@@ -130,12 +142,12 @@ export default function FeaturedMenu() {
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#100D0B] via-[#100D0B]/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
 
                   {activePizza.isPremium && (
-                    <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-[#F97316]/30 bg-black/60 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[#F97316] backdrop-blur-md">
+                    <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-primary/30 bg-black/60 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-primary backdrop-blur-md">
                       <Flame size={10} />
-                      Chef's pick
+                      Chef&apos;s pick
                     </div>
                   )}
 
@@ -144,30 +156,38 @@ export default function FeaturedMenu() {
                   </span>
 
                   <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                    <h3 className="text-lg font-bold leading-tight text-white sm:text-xl">
+                    <h3 className="text-lg font-bold leading-tight text-white sm:text-2xl">
                       {activePizza.name}
                     </h3>
-
-                    <p className="mt-1 line-clamp-1 text-xs leading-5 text-stone-400 sm:text-sm">
+                    
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/80 sm:text-sm">
                       {activePizza.description}
                     </p>
 
+                    {/* Vendor & Location Info */}
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] sm:text-xs text-white/80">
+                      <span className="flex items-center gap-1">
+                        <Store size={12} className="text-primary" />
+                        {getVendorName(activePizza.vendorEmail)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin size={12} className="text-primary" />
+                        {activePizza.location || "Location unavailable"}
+                      </span>
+                    </div>
+
                     <div className="mt-3 flex items-center justify-between gap-3">
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-[10px] uppercase tracking-wider text-stone-400">
-                          from
-                        </span>
-                        <span className="text-xl font-black text-white sm:text-2xl">
-                          ${activePizza.price}
-                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-white/70">from</span>
+                        <span className="text-xl font-black text-white sm:text-2xl">${activePizza.price}</span>
                       </div>
 
                       <Link
                         href={`/menu/${activePizza._id}`}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#F97316] px-4 text-xs font-bold text-white transition hover:bg-[#ea6a0f] active:scale-[0.97] sm:h-10 sm:px-5"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-bold text-white transition hover:bg-primary active:scale-[0.97] sm:h-10 sm:px-5"
                       >
-                        <Plus size={14} strokeWidth={3} />
-                        Add to order
+                        <Eye size={14} strokeWidth={2.5} />
+                        View Details
                       </Link>
                     </div>
                   </div>
@@ -175,7 +195,7 @@ export default function FeaturedMenu() {
               </div>
             </div>
 
-            {/* RIGHT: LIST */}
+            {/* RIGHT: LIST CARDS */}
             <div className="lg:col-span-5">
               <div className="space-y-2">
                 {pizzas.map((pizza, index) => {
@@ -185,8 +205,9 @@ export default function FeaturedMenu() {
                     <button
                       key={pizza._id}
                       onClick={() => setActiveIndex(index)}
-                      className="group flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2 text-left transition-all hover:border-[#F97316]/40 hover:bg-white/[0.04] active:scale-[0.99] sm:p-2.5"
+                      className="group flex w-full items-center gap-3 rounded-xl border border-border bg-muted/40 p-2 text-left transition-all hover:border-primary/40 hover:bg-muted active:scale-[0.99] sm:p-2.5"
                     >
+                      {/* Image */}
                       <div className="relative size-14 shrink-0 overflow-hidden rounded-lg sm:size-16">
                         <img
                           src={pizza.image}
@@ -196,41 +217,58 @@ export default function FeaturedMenu() {
                         />
                       </div>
 
+                      {/* Content */}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                          <h4 className="line-clamp-1 text-sm font-semibold text-white transition group-hover:text-[#F97316]">
+                          <h4 className="line-clamp-1 text-sm font-semibold text-foreground transition group-hover:text-primary">
                             {pizza.name}
                           </h4>
-                          <span className="shrink-0 text-sm font-bold text-[#F97316]">
+                          <span className="shrink-0 text-sm font-bold text-primary">
                             ${pizza.price}
                           </span>
                         </div>
 
-                        <p className="mt-0.5 line-clamp-1 text-[11px] text-stone-500">
+                        <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-primary/70">
+                          {pizza.category}
+                        </p>
+
+                        <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
                           {pizza.description}
                         </p>
+
+                        {/* Vendor & Location Info */}
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-muted-foreground">
+                          <span className="flex items-center gap-0.5">
+                            <Store size={10} className="text-primary/70" />
+                            {getVendorName(pizza.vendorEmail)}
+                          </span>
+                          <span className="flex items-center gap-0.5">
+                            <MapPin size={10} className="text-primary/70" />
+                            {pizza.location || "Unknown"}
+                          </span>
+                        </div>
                       </div>
 
                       <ArrowUpRight
                         size={14}
-                        className="shrink-0 text-white/20 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#F97316]"
+                        className="shrink-0 text-foreground/20 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
                       />
                     </button>
                   );
                 })}
               </div>
 
-              {/* Bottom CTA - Made compact */}
+              {/* Bottom CTA */}
               <Link
                 href="/menu"
-                className="group mt-2.5 flex items-center justify-between rounded-lg border border-dashed border-white/10 px-3 py-2 text-left transition hover:border-[#F97316]/40 hover:bg-white/[0.02]"
+                className="group mt-2.5 flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-2 text-left transition hover:border-primary/40 hover:bg-muted/40"
               >
-                <p className="text-[11px] text-stone-400 transition group-hover:text-white">
+                <p className="text-[11px] text-muted-foreground transition group-hover:text-foreground">
                   {pizzas.length}+ more flavors available
                 </p>
                 <ArrowRight
                   size={14}
-                  className="text-[#F97316] transition-transform group-hover:translate-x-0.5"
+                  className="text-primary transition-transform group-hover:translate-x-0.5"
                 />
               </Link>
             </div>
