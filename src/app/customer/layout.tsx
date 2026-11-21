@@ -2,18 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { authClient } from "@/lib/auth-client";
+
 import {
   LayoutDashboard,
   ShoppingBag,
   Heart,
   UserRound,
   LogOut,
-  Pizza,
   Settings,
+  Home,
 } from "lucide-react";
 
 const navigation = [
@@ -77,22 +77,16 @@ export default function CustomerLayout({
     window.location.href = "/sign-in";
   };
 
+  const isActive = (href: string) => {
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   return (
     <div className="min-h-screen bg-[#0B0907] text-white">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
 
         {/* Sidebar */}
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/[0.06] bg-[#0F0C0A] p-5 lg:flex">
-
-          <Link href="/" className="mb-10 flex items-center gap-2.5 px-2">
-            <div className="rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 p-2">
-              <Pizza size={21} />
-            </div>
-
-            <span className="text-xl font-bold">
-              Pizza<span className="text-orange-500">Hub</span>
-            </span>
-          </Link>
 
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-600">
             Customer Menu
@@ -101,7 +95,7 @@ export default function CustomerLayout({
           <nav className="space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon;
-              const active = pathname === item.href;
+              const active = isActive(item.href);
 
               return (
                 <Link
@@ -146,50 +140,7 @@ export default function CustomerLayout({
 
         {/* Main Content */}
         <div className="min-w-0 flex-1 pb-20 lg:pb-0">
-
-          {/* Top Header */}
-          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.06] bg-[#0B0907]/90 px-4 py-4 backdrop-blur-xl sm:px-8">
-
-            <div>
-              <p className="text-xs uppercase tracking-wider text-gray-500">
-                Customer Panel
-              </p>
-
-              <h2 className="mt-1 text-lg font-semibold">
-                {navigation.find((item) => item.href === pathname)?.name ||
-                  "Customer"}
-              </h2>
-            </div>
-
-            <div className="flex items-center gap-3 rounded-full border border-white/[0.06] bg-white/[0.02] py-1.5 pl-1.5 pr-4">
-
-              {/* Profile Avatar */}
-              <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-orange-500 to-amber-600 text-sm font-bold">
-
-                {profileImage ? (
-                  <Image
-                    src={profileImage}
-                    alt="Profile"
-                    width={36}
-                    height={36}
-                    unoptimized
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  initial
-                )}
-
-              </div>
-
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium">{userName}</p>
-                <p className="text-[11px] text-gray-500">Customer</p>
-              </div>
-            </div>
-          </header>
-
-          {/* Every page renders here */}
-          <div className="min-h-[calc(100vh-73px)]">
+          <div className="min-h-screen">
             {children}
           </div>
         </div>
@@ -197,10 +148,25 @@ export default function CustomerLayout({
 
       {/* Mobile Bottom Navigation */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-[#0F0C0A]/95 backdrop-blur-xl lg:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-4 px-2 py-2">
+        <div className="mx-auto grid max-w-md grid-cols-5 px-1 py-2">
+
+          {/* Home */}
+          <Link
+            href="/"
+            className={`flex flex-col items-center gap-1 rounded-xl py-2 transition ${
+              pathname === "/"
+                ? "bg-orange-500/10 text-orange-400"
+                : "text-gray-500 hover:text-white"
+            }`}
+          >
+            <Home size={20} />
+            <span className="text-[10px] font-medium">Home</span>
+          </Link>
+
+          {/* Dashboard & Other Routes */}
           {navigation.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.href;
+            const active = isActive(item.href);
 
             return (
               <Link
@@ -215,13 +181,11 @@ export default function CustomerLayout({
                 <Icon size={20} />
 
                 <span className="text-[10px] font-medium">
-                  {item.name === "Dashboard"
-                    ? "Home"
-                    : item.name === "My Orders"
-                      ? "Orders"
-                      : item.name === "Favorites"
-                        ? "Favorites"
-                        : "Profile"}
+                  {item.name === "My Orders"
+                    ? "Orders"
+                    : item.name === "My Profile"
+                      ? "Profile"
+                      : item.name}
                 </span>
               </Link>
             );

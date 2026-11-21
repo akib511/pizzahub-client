@@ -11,7 +11,7 @@ import {
   ClipboardList,
   CreditCard,
   Settings,
-  Pizza,
+  Home,
   Store,
   LogOut,
 } from "lucide-react";
@@ -62,7 +62,7 @@ const mobileLinks = [
   {
     name: "Home",
     href: "/",
-    icon: Pizza,
+    icon: Home,
   },
   {
     name: "Overview",
