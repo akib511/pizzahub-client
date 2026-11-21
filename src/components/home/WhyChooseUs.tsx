@@ -1,4 +1,3 @@
-
 import {
   Leaf,
   Truck,
@@ -40,54 +39,65 @@ const features = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-[#100D0B] px-5 py-20 sm:px-8 lg:px-10">
-      <div className="mx-auto max-w-7xl">
-        {/* Section Heading */}
-        <div className="mx-auto mb-14 max-w-2xl text-center">
-          <span className="mb-4 inline-block text-sm font-semibold uppercase tracking-[0.25em] text-[#F97316]">
-            Why PizzaHub
-          </span>
-          <h2 className="font-heading text-3xl font-bold text-white sm:text-4xl md:text-5xl">
-            More Than Just
-            <span className="text-[#F97316]"> Great Pizza</span>
-          </h2>
-
-          <p className="mt-5 text-sm leading-7 text-[#A8A29E] sm:text-base">
-            We believe great pizza starts with great ingredients, expert
-            craftsmanship, and a passion for making every bite special.
+    // Section padding same as other sections
+    <section className="overflow-hidden bg-[#100D0B] py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Heading - Compact & Matching */}
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-[3px] text-[#F97316] sm:text-xs">
+              Why PizzaHub
+            </span>
+            <h2 className="mt-2 font-[var(--font-heading)] text-2xl font-semibold text-white sm:mt-3 sm:text-3xl lg:text-4xl">
+              More Than Just <span className="text-[#F97316]">Great Pizza</span>
+            </h2>
+            <p className="mt-2 max-w-xl text-xs leading-6 text-stone-400 sm:mt-3 sm:text-sm sm:leading-7">
+              We believe great pizza starts with great ingredients, expert
+              craftsmanship, and a passion for making every bite special.
+            </p>
+          </div>
+          
+          <p className="hidden text-sm text-stone-500 sm:block">
+            The PizzaHub Promise
           </p>
         </div>
 
-        {/* Feature Cards */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Feature Cards Grid - 1 col mobile, 2 cols tablet, 4 cols desktop */}
+        <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {features.map((feature) => {
             const Icon = feature.icon;
 
             return (
               <div
                 key={feature.id}
-                className="group relative overflow-hidden rounded-2xl border border-[#302824] bg-[#1C1715] p-7 transition-all duration-300 hover:-translate-y-2 hover:border-[#F97316]/50 hover:bg-[#211A16]"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-white/[0.06] bg-[#1A1716] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[#F97316]/40 hover:bg-[#211A16] hover:shadow-xl hover:shadow-[#F97316]/5 active:scale-[0.98] sm:rounded-2xl sm:p-5"
               >
-                <div className="mb-7 flex items-center justify-between">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#F97316]/10 text-[#F97316] transition-all duration-300 group-hover:bg-[#F97316] group-hover:text-white">
-                    <Icon size={27} strokeWidth={1.8} />
+                <div>
+                  {/* Icon + Number Row */}
+                  <div className="mb-4 flex items-center justify-between sm:mb-5">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-[#F97316]/10 text-[#F97316] transition-all duration-300 group-hover:bg-[#F97316] group-hover:text-white sm:size-12 sm:rounded-xl">
+                      <Icon size={20} strokeWidth={2} className="sm:size-6" />
+                    </div>
+
+                    <span className="text-2xl font-bold text-white/5 transition-colors group-hover:text-[#F97316]/20 sm:text-3xl">
+                      0{feature.id}
+                    </span>
                   </div>
 
-                  <span className="text-3xl font-bold text-[#302824] transition-colors group-hover:text-[#F97316]/30">
-                    0{feature.id}
-                  </span>
+                  {/* Text */}
+                  <h3 className="text-[15px] font-bold text-white sm:text-base md:text-lg">
+                    {feature.title}
+                  </h3>
+
+                  <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-stone-400 sm:mt-2 sm:text-xs sm:leading-6">
+                    {feature.description}
+                  </p>
                 </div>
 
-                <h3 className="mb-3 text-xl font-bold text-white">
-                  {feature.title}
-                </h3>
-
-                <p className="text-sm leading-7 text-[#A8A29E]">
-                  {feature.description}
-                </p>
-
-                <div className="mt-6 flex items-center justify-end text-[#F97316] opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100">
-                  <ArrowUpRight size={20} />
+                {/* Arrow (Bottom Right) */}
+                <div className="mt-3 flex items-center justify-end text-[#F97316] opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100 sm:mt-4">
+                  <ArrowUpRight size={16} className="sm:size-[18px]" />
                 </div>
               </div>
             );
