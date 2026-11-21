@@ -10,49 +10,70 @@ export default function SignInPage() {
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
 
-const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  // Email Login
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  setError("");
-  setLoading(true);
+    setError("");
+    setLoading(true);
 
-  try {
-    const { data, error } = await authClient.signIn.email({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message || "Invalid email or password");
-      return;
-    }
-
-    if (data?.user) {
-      const role = data.user.role;
-
-      if (role === "admin") {
-        router.push("/admin");
-      } else if (role === "vendor") {
-        router.push("/");
-      } else {
-        router.push("/customer/dashboard");
+      if (error) {
+        setError(error.message || "Invalid email or password");
+        return;
       }
 
-      router.refresh();
+      if (data?.user) {
+        const role = data.user.role;
+
+        if (role === "admin") {
+          router.push("/admin");
+        } else if (role === "vendor") {
+          router.push("/");
+        } else {
+          router.push("/customer/dashboard");
+        }
+
+        router.refresh();
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError("Something went wrong. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
+  // Google Login
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setGoogleLoading(true);
+
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+
+      if (error) {
+        setError(error.message || "Google login failed");
+        setGoogleLoading(false);
+      }
+    } catch (err) {
+      setError("Google login failed. Please try again.");
+      setGoogleLoading(false);
+    }
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground">
@@ -82,7 +103,9 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
           {/* Google Login */}
           <button
             type="button"
-            className="mt-7 flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background py-3 text-sm transition hover:bg-muted"
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading || loading}
+            className="mt-7 flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background py-3 text-sm transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           >
             <svg viewBox="0 0 48 48" className="h-5 w-5">
               <path
@@ -102,15 +125,14 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
                 d="M43.611 20.083H42V20H24v8h11.303a12.01 12.01 0 0 1-4.084 6.57l6.19 5.238C41.018 35.83 45 30.277 45 24c0-1.341-.138-2.65-.389-3.917z"
               />
             </svg>
-            Continue with Google
+
+            {googleLoading ? "Connecting..." : "Continue with Google"}
           </button>
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
-
             <span className="text-xs text-muted-foreground">OR</span>
-
             <div className="h-px flex-1 bg-border" />
           </div>
 
@@ -181,7 +203,7 @@ const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
             {/* Submit */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full rounded-lg bg-orange-500 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Signing In..." : "Sign In"}

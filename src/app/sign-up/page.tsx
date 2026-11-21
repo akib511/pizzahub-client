@@ -19,11 +19,36 @@ export default function SignUpPage() {
   const [role, setRole] = useState<"customer" | "vendor">("customer");
 
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Google Signup
+  const handleGoogleSignUp = async () => {
+    setError("");
+    setGoogleLoading(true);
+
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+        additionalData: {
+          role,
+        },
+      });
+
+      if (error) {
+        setError(error.message || "Google signup failed");
+        setGoogleLoading(false);
+      }
+    } catch {
+      setError("Google signup failed. Please try again.");
+      setGoogleLoading(false);
+    }
+  };
+
+  // Email Signup
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setError("");
 
     if (password !== confirmPassword) {
@@ -38,7 +63,7 @@ export default function SignUpPage() {
         name,
         email,
         password,
-        role
+        role,
       });
 
       if (error) {
@@ -49,7 +74,7 @@ export default function SignUpPage() {
       if (data) {
         router.push("/sign-in");
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -59,11 +84,11 @@ export default function SignUpPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground">
       <div className="w-full max-w-md">
+
         {/* Logo */}
         <Link href="/" className="mb-8 flex justify-center">
           <div className="flex items-center gap-2">
             <Pizza size={27} className="text-orange-500" />
-
             <h1 className="text-2xl font-bold">
               Pizza<span className="text-orange-500">Hub</span>
             </h1>
@@ -72,19 +97,82 @@ export default function SignUpPage() {
 
         {/* Sign Up Card */}
         <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+
           {/* Heading */}
           <div className="text-center">
             <h2 className="text-2xl font-bold">Create Account</h2>
-
             <p className="mt-2 text-sm text-muted-foreground">
               Join PizzaHub and discover your favorite flavors.
             </p>
           </div>
 
-          {/* Google Sign Up */}
+          {/* Role Selection */}
+          <div className="mt-7">
+            <label className="mb-3 block text-sm font-medium">
+              Create account as
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+
+              {/* Customer */}
+              <button
+                type="button"
+                onClick={() => setRole("customer")}
+                className={`rounded-xl border p-4 text-center transition ${
+                  role === "customer"
+                    ? "border-orange-500 bg-orange-500/10"
+                    : "border-border bg-background"
+                }`}
+              >
+                <ShoppingBag
+                  size={24}
+                  className={`mx-auto mb-2 ${
+                    role === "customer"
+                      ? "text-orange-500"
+                      : "text-muted-foreground"
+                  }`}
+                />
+
+                <p className="text-sm font-semibold">Customer</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Order delicious pizza
+                </p>
+              </button>
+
+              {/* Vendor */}
+              <button
+                type="button"
+                onClick={() => setRole("vendor")}
+                className={`rounded-xl border p-4 text-center transition ${
+                  role === "vendor"
+                    ? "border-orange-500 bg-orange-500/10"
+                    : "border-border bg-background"
+                }`}
+              >
+                <Store
+                  size={24}
+                  className={`mx-auto mb-2 ${
+                    role === "vendor"
+                      ? "text-orange-500"
+                      : "text-muted-foreground"
+                  }`}
+                />
+
+                <p className="text-sm font-semibold">Vendor</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Sell your pizzas
+                </p>
+              </button>
+
+            </div>
+          </div>
+
+          {/* Google Signup */}
           <button
             type="button"
-            className="mt-7 flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background py-3 text-sm transition hover:bg-muted"
+            onClick={handleGoogleSignUp}
+            disabled={googleLoading || loading}
+            className="mt-6 flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background py-3 text-sm transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           >
             <svg viewBox="0 0 48 48" className="h-5 w-5">
               <path
@@ -101,84 +189,28 @@ export default function SignUpPage() {
               />
               <path
                 fill="#1976D2"
-                d="M43.611 20.083H42V20H24v8h11.303a12.01 12.01 0 0-4.084 6.57l6.19 5.238C41.018 35.83 45 30.277 45 24c0-1.341-.138-2.65-.389-3.917z"
+                d="M43.611 20.083H42V20H24v8h11.303a12.01 12.01 0 0 0-4.084 6.57l6.19 5.238C41.018 35.83 45 30.277 45 24c0-1.341-.138-2.65-.389-3.917z"
               />
             </svg>
-            Continue with Google
+
+            {googleLoading ? "Connecting to Google..." : "Continue with Google"}
           </button>
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
-
             <span className="text-xs text-muted-foreground">OR</span>
-
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          {/* Role Selection */}
-          <div>
-            <label className="mb-3 block text-sm font-medium">
-              Create account as
-            </label>
-
-            <div className="grid grid-cols-2 gap-3">
-              {/* customer */}
-              <button
-                type="button"
-                onClick={() => setRole("customer")}
-                className={`rounded-xl border p-4 text-center transition ${
-                  role === "customer"
-                    ? "border-orange-500 bg-orange-500/10"
-                    : "border-border bg-background hover:border-border"
-                }`}
-              >
-                <ShoppingBag
-                  size={24}
-                  className={`mx-auto mb-2 ${
-                    role === "customer" ? "text-orange-500" : "text-muted-foreground"
-                  }`}
-                />
-
-                <p className="text-sm font-semibold">Customer</p>
-
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Order delicious pizza
-                </p>
-              </button>
-
-              {/* Vendor */}
-              <button
-                type="button"
-                onClick={() => setRole("vendor")}
-                className={`rounded-xl border p-4 text-center transition ${
-                  role === "vendor"
-                    ? "border-orange-500 bg-orange-500/10"
-                    : "border-border bg-background hover:border-border"
-                }`}
-              >
-                <Store
-                  size={24}
-                  className={`mx-auto mb-2 ${
-                    role === "vendor" ? "text-orange-500" : "text-muted-foreground"
-                  }`}
-                />
-
-                <p className="text-sm font-semibold">Vendor</p>
-
-                <p className="mt-1 text-xs text-muted-foreground">Sell your pizzas</p>
-              </button>
-            </div>
-          </div>
-
           {/* Form */}
-          <form onSubmit={handleSignUp} className="mt-5 space-y-4">
+          <form onSubmit={handleSignUp} className="space-y-4">
+
             {/* Name */}
             <div>
               <label className="mb-2 block text-sm font-medium">
                 Full Name
               </label>
-
               <input
                 type="text"
                 placeholder="Enter your full name"
@@ -194,7 +226,6 @@ export default function SignUpPage() {
               <label className="mb-2 block text-sm font-medium">
                 Email Address
               </label>
-
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -207,7 +238,9 @@ export default function SignUpPage() {
 
             {/* Password */}
             <div>
-              <label className="mb-2 block text-sm font-medium">Password</label>
+              <label className="mb-2 block text-sm font-medium">
+                Password
+              </label>
 
               <div className="flex items-center rounded-lg border border-border bg-background px-4 focus-within:border-orange-500">
                 <input
@@ -247,7 +280,9 @@ export default function SignUpPage() {
 
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={() =>
+                    setShowConfirmPassword(!showConfirmPassword)
+                  }
                   className="text-muted-foreground transition hover:text-foreground"
                 >
                   {showConfirmPassword ? (
@@ -259,7 +294,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            {/* Selected Role Info */}
+            {/* Selected Role */}
             <p className="text-xs text-muted-foreground">
               Registering as:{" "}
               <span className="font-medium text-orange-500">
@@ -277,11 +312,12 @@ export default function SignUpPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full rounded-lg bg-orange-500 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
+
           </form>
 
           {/* Sign In */}
@@ -303,6 +339,7 @@ export default function SignUpPage() {
         >
           ← Back to Home
         </Link>
+
       </div>
     </main>
   );
