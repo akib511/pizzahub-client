@@ -1,14 +1,8 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 type Category = {
   name: string;
@@ -17,6 +11,16 @@ type Category = {
   items: string;
   value: string;
 };
+
+interface Pizza {
+  _id: string;
+  name: string;
+  category: string;
+  image: string;
+  available: boolean;
+  status: string;
+  createdAt?: string;
+}
 
 const CATEGORIES: Category[] = [
   {
@@ -69,42 +73,83 @@ const CATEGORIES: Category[] = [
   },
 ];
 
-function CategoryCard({ category }: { category: Category }) {
+const normalizeCategory = (category: string) => {
+  return category.toLowerCase().trim();
+};
+
+const matchesCategory = (pizzaCategory: string, value: string) => {
+  const category = normalizeCategory(pizzaCategory);
+
+  if (value === "Classic Pizzas") {
+    return category === "classic pizzas" || category === "classic";
+  }
+
+  if (value === "Vegetarian Pizzas") {
+    return category === "vegetarian pizzas" || category === "vegetarian";
+  }
+
+  if (value === "Specialty / Gourmet Pizzas") {
+    return (
+      category === "specialty / gourmet pizzas" ||
+      category === "specialty" ||
+      category === "gourmet"
+    );
+  }
+
+  if (value === "Beverages & Desserts") {
+    return category.includes("beverage") || category.includes("dessert");
+  }
+
+  return category === normalizeCategory(value);
+};
+
+function CategoryCard({
+  category,
+  image,
+}: {
+  category: Category;
+  image: string;
+}) {
   return (
     <Link
       href={`/menu?category=${encodeURIComponent(category.value)}`}
-      className="group block h-full"
+      className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] focus-visible:ring-offset-2 focus-visible:ring-offset-[#100D0B]"
     >
-      <div className="relative overflow-hidden rounded-2xl border border-[#302824] bg-[#1C1715] transition-all duration-300 hover:-translate-y-1 hover:border-[#F97316]/50">
-        <div className="relative h-56 overflow-hidden sm:h-60">
-          <Image
-            src={category.image}
+      <div className="relative h-full overflow-hidden rounded-xl border border-white/[0.06] bg-[#1A1716] transition-all duration-300 hover:-translate-y-1 hover:border-[#F97316]/40 hover:shadow-2xl hover:shadow-[#F97316]/10 active:scale-[0.98] sm:rounded-2xl">
+        
+        {/* Image Section */}
+        <div className="relative h-48 overflow-hidden sm:h-48">
+          <img
+            src={image}
             alt={category.name}
-            fill
-            sizes="(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 28vw"
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
           />
+          
+          {/* Gradient Overlay - Deeper on mobile for readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1716] via-black/30 to-transparent sm:via-black/20" />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-
-          <span className="absolute bottom-5 left-5 rounded-full border border-white/20 bg-black/30 px-4 py-2 text-xs font-medium text-white backdrop-blur-md">
+          {/* Floating Pill Tag */}
+          <span className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-[10px] font-medium tracking-wide text-white/90 backdrop-blur-md sm:px-3 sm:text-[11px]">
             {category.items}
           </span>
         </div>
 
-        <div className="flex items-center justify-between gap-3 p-5">
-          <div>
-            <h3 className="text-lg font-semibold text-white transition-colors group-hover:text-[#F97316]">
+        {/* Content Section */}
+        <div className="flex items-center justify-between gap-3 p-3.5 sm:p-4">
+          <div className="min-w-0">
+            <h3 className="truncate text-[15px] font-semibold text-white transition-colors group-hover:text-[#F97316] sm:text-base">
               {category.name}
             </h3>
-
-            <p className="mt-2 text-sm leading-6 text-[#A8A29E]">
+            <p className="mt-1 line-clamp-2 text-[11px] leading-[1.4] text-stone-400 sm:text-xs sm:leading-5">
               {category.description}
             </p>
           </div>
 
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#F97316]/40 text-[#F97316] transition-all duration-300 group-hover:bg-[#F97316] group-hover:text-white">
-            <span className="text-xl">→</span>
+          {/* Arrow Icon - Cleaner on mobile */}
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#F97316]/20 bg-[#F97316]/5 text-[#F97316] transition-all duration-300 group-hover:bg-[#F97316] group-hover:text-white sm:size-9">
+            <ArrowUpRight size={16} strokeWidth={2.5} className="sm:hidden" />
+            <ArrowRight size={15} className="hidden sm:block" />
           </div>
         </div>
       </div>
@@ -114,64 +159,106 @@ function CategoryCard({ category }: { category: Category }) {
 
 function SectionHeading() {
   return (
-    <div className="mb-12 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+    <div className="mb-6 sm:mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
-        <span className="text-sm font-semibold uppercase tracking-[3px] text-[#F97316]">
+        <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#F97316] sm:text-xs">
+          <span className="h-1 w-1 rounded-full bg-[#F97316]"></span>
           Explore Our Categories
         </span>
-
         <h2
           id="categories-heading"
-          className="mt-4 font-[var(--font-heading)] text-3xl font-semibold text-white sm:text-4xl lg:text-5xl"
+          className="mt-2 font-[var(--font-heading)] text-2xl font-semibold text-white sm:mt-3 sm:text-3xl lg:text-4xl"
         >
-          Find Your Perfect
-          <span className="text-[#F97316]"> Flavor.</span>
+          Find Your <span className="text-[#F97316]">Flavor.</span>
         </h2>
-
-        <p className="mt-4 max-w-xl text-sm leading-7 text-[#A8A29E] sm:text-base">
+        <p className="mt-2 max-w-xl text-xs leading-5 text-stone-400 sm:mt-3 sm:text-sm sm:leading-7">
           From classic favorites to irresistible specialties, discover the
           perfect taste for every craving.
         </p>
       </div>
-
-      <p className="text-sm text-[#A8A29E]">
-        Discover something delicious
-      </p>
     </div>
   );
 }
 
 export default function PizzaCategories() {
+  const [categoryImages, setCategoryImages] = useState<Record<string, string>>(
+    {}
+  );
+
+  useEffect(() => {
+    const fetchCategoryImages = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/menu");
+        if (!response.ok) throw new Error("Failed to load category images");
+        const data: Pizza[] = await response.json();
+
+        const availablePizzas = data
+          .filter(
+            (pizza) =>
+              pizza.status?.toLowerCase() === "approved" &&
+              pizza.available === true &&
+              pizza.image
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt || 0).getTime() -
+              new Date(a.createdAt || 0).getTime()
+          );
+
+        const images: Record<string, string> = {};
+        CATEGORIES.forEach((category) => {
+          const matchingPizza = availablePizzas.find((pizza) =>
+            matchesCategory(pizza.category, category.value)
+          );
+          if (matchingPizza) {
+            images[category.value] = matchingPizza.image;
+          }
+        });
+
+        setCategoryImages(images);
+      } catch (error) {
+        console.error("Failed to load category images:", error);
+      }
+    };
+
+    fetchCategoryImages();
+  }, []);
+
   return (
     <section
       aria-labelledby="categories-heading"
-      className="overflow-hidden bg-[#100D0B] px-5 py-20 sm:px-8 lg:py-24"
+      className="overflow-hidden bg-[#100D0B] py-12 sm:py-16 lg:py-20"
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading />
 
-        {/* Carousel with outside navigation */}
-        <div className="mx-auto max-w-6xl px-14 sm:px-14">
-          <Carousel
-            opts={{ align: "start", loop: true }}
-            className="relative"
-          >
-            <CarouselContent className="-ml-3">
-              {CATEGORIES.map((category) => (
-                <CarouselItem
-                  key={category.name}
-                  className="basis-full pl-3 sm:basis-1/2 lg:basis-1/3"
-                >
-                  <CategoryCard category={category} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-
-            <CarouselPrevious className="absolute -left-10 top-1/2 z-20 h-9 w-9 -translate-y-1/2 border-[#F97316]/60 bg-[#1C1715] text-white shadow-lg hover:bg-[#F97316] hover:text-white sm:-left-14 sm:h-11 sm:w-11" />
-
-            <CarouselNext className="absolute -right-10 top-1/2 z-20 h-9 w-9 -translate-y-1/2 border-[#F97316]/60 bg-[#1C1715] text-white shadow-lg hover:bg-[#F97316] hover:text-white sm:-right-14 sm:h-11 sm:w-11" />
-          </Carousel>
+        {/* 
+          GRID LAYOUT: 
+          Mobile: Horizontal Scroll (Snap) -> 1.2 cards visible (indicates more content)
+          Tablet: 2 cols
+          Desktop: 3 cols (2 rows for 6 items)
+        */}
+        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
+          {CATEGORIES.map((category) => (
+            <div 
+              key={category.name} 
+              className="w-[85vw] max-w-[320px] shrink-0 snap-center sm:w-auto sm:max-w-none sm:shrink"
+            >
+              <CategoryCard
+                category={category}
+                image={categoryImages[category.value] || category.image}
+              />
+            </div>
+          ))}
         </div>
+
+        {/* Swipe Hint for Mobile only */}
+        <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-stone-500 sm:hidden">
+          <span className="h-px w-8 bg-stone-700"></span>
+          Swipe to explore
+          <span className="h-px w-8 bg-stone-700"></span>
+        </div>
+        
       </div>
     </section>
   );

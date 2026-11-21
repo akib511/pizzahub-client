@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import Image from "next/image";
 import Link from "next/link";
@@ -61,7 +62,9 @@ const getCategory = (category: string) => {
   return category;
 };
 
-export default function MenuSection() {
+function MenuContent() {
+  const searchParams = useSearchParams();
+
   const [activeCategory, setActiveCategory] = useState("All Pizzas");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("featured");
@@ -77,14 +80,32 @@ export default function MenuSection() {
   const { data: session } = authClient.useSession();
   const email = session?.user?.email;
 
+  // Category from URL
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category");
+
+    if (categoryFromUrl) {
+      setActiveCategory(getCategory(categoryFromUrl));
+    } else {
+      setActiveCategory("All Pizzas");
+    }
+  }, [searchParams]);
+
+  // Fetch Menu
   useEffect(() => {
     const fetchPizzas = async () => {
       try {
         setLoading(true);
         setError("");
+
         const response = await fetch("http://localhost:5000/menu");
-        if (!response.ok) throw new Error("Failed to load menu items");
+
+        if (!response.ok) {
+          throw new Error("Failed to load menu items");
+        }
+
         const data: Pizza[] = await response.json();
+
         setPizzas(
           data.filter(
             (item) =>
@@ -93,45 +114,62 @@ export default function MenuSection() {
           ),
         );
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
+        setError(
+          err instanceof Error ? err.message : "Something went wrong",
+        );
       } finally {
         setLoading(false);
       }
     };
+
     fetchPizzas();
   }, []);
 
+  // Fetch Favorites
   useEffect(() => {
     if (!email) {
       setFavoriteIds([]);
       return;
     }
+
     const fetchFavorites = async () => {
       try {
         const response = await fetch(
           `http://localhost:5000/customer/favorites/${encodeURIComponent(email)}`,
         );
-        if (!response.ok) throw new Error("Failed to fetch favorites");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch favorites");
+        }
+
         const data: Pizza[] = await response.json();
+
         setFavoriteIds(data.map((item) => item._id));
       } catch (error) {
         console.error("Failed to fetch favorites:", error);
       }
     };
+
     fetchFavorites();
   }, [email]);
 
+  // Filter and Sort
   const filteredPizzas = useMemo(() => {
     const q = search.trim().toLowerCase();
+
     return pizzas
       .filter((pizza) => {
         const category = getCategory(pizza.category);
+
         const matchesCategory =
-          activeCategory === "All Pizzas" || category === activeCategory;
+          activeCategory === "All Pizzas" ||
+          category === activeCategory;
+
         const matchesSearch =
           pizza.name.toLowerCase().includes(q) ||
           pizza.description.toLowerCase().includes(q) ||
           category.toLowerCase().includes(q);
+
         return matchesCategory && matchesSearch;
       })
       .sort((a, b) => {
@@ -139,24 +177,36 @@ export default function MenuSection() {
         if (sort === "price-desc") return b.price - a.price;
         if (sort === "name-asc") return a.name.localeCompare(b.name);
         if (sort === "name-desc") return b.name.localeCompare(a.name);
+
         return 0;
       });
   }, [pizzas, activeCategory, search, sort]);
 
+  // Toggle Favorite
   const toggleFavorite = async (itemId: string) => {
     if (!email) {
       alert("Please login to add favorites");
       return;
     }
+
     if (favoriteLoading.includes(itemId)) return;
+
     const isFavorite = favoriteIds.includes(itemId);
+
     try {
       setFavoriteLoading((prev) => [...prev, itemId]);
+
       const response = await fetch(
         `http://localhost:5000/customer/favorites/${encodeURIComponent(email)}/${itemId}`,
-        { method: isFavorite ? "DELETE" : "POST" },
+        {
+          method: isFavorite ? "DELETE" : "POST",
+        },
       );
-      if (!response.ok) throw new Error("Failed to update favorite");
+
+      if (!response.ok) {
+        throw new Error("Failed to update favorite");
+      }
+
       if (isFavorite) {
         setFavoriteIds((prev) => prev.filter((id) => id !== itemId));
       } else {
@@ -165,10 +215,13 @@ export default function MenuSection() {
     } catch (error) {
       console.error("Favorite update failed:", error);
     } finally {
-      setFavoriteLoading((prev) => prev.filter((id) => id !== itemId));
+      setFavoriteLoading((prev) =>
+        prev.filter((id) => id !== itemId),
+      );
     }
   };
 
+  // Clear Filters
   const clearFilters = () => {
     setSearch("");
     setActiveCategory("All Pizzas");
@@ -177,11 +230,13 @@ export default function MenuSection() {
   };
 
   const activeFilterCount =
-    (activeCategory !== "All Pizzas" ? 1 : 0) + (sort !== "featured" ? 1 : 0);
+    (activeCategory !== "All Pizzas" ? 1 : 0) +
+    (sort !== "featured" ? 1 : 0);
 
   return (
     <section className="min-h-screen overflow-hidden bg-[#0F0D0C] px-3 py-9 text-[#F5F3EF] min-[420px]:px-4 sm:px-6 sm:py-14 md:px-8 lg:py-20">
       <div className="mx-auto max-w-7xl">
+
         {/* Heading */}
         <div className="flex flex-col gap-4 sm:gap-5 md:flex-row md:items-end md:justify-between">
           <div>
@@ -205,6 +260,7 @@ export default function MenuSection() {
           </div>
         </div>
 
+        {/* Search */}
         <div className="mt-7 flex items-center gap-2 sm:mt-10 lg:block">
           <div className="flex h-12 flex-1 items-center gap-3 rounded-xl border border-[#2E2925] bg-[#1A1716] px-4 transition-colors focus-within:border-[#F97316] sm:h-12 sm:max-w-md sm:rounded-lg">
             <Search size={18} className="shrink-0 text-[#F97316]" />
@@ -235,6 +291,7 @@ export default function MenuSection() {
             className="relative flex size-12 shrink-0 items-center justify-center rounded-xl border border-[#2E2925] bg-[#1A1716] text-[#F5F3EF] transition hover:border-[#F97316]/50 active:scale-95 lg:hidden"
           >
             <SlidersHorizontal size={18} />
+
             {activeFilterCount > 0 && (
               <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-[#F97316] text-[10px] font-bold text-[#0F0D0C]">
                 {activeFilterCount}
@@ -245,6 +302,8 @@ export default function MenuSection() {
 
         {/* Main Content */}
         <div className="mt-7 grid min-w-0 gap-6 sm:mt-10 sm:gap-8 lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-10">
+
+          {/* Desktop Sidebar */}
           <aside className="hidden min-w-0 lg:sticky lg:top-6 lg:block lg:self-start">
             <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-[#78716C]">
               Something for everyone
@@ -253,6 +312,7 @@ export default function MenuSection() {
             <div className="flex flex-col gap-1">
               {categories.map(({ name, icon: Icon }) => {
                 const active = activeCategory === name;
+
                 const count =
                   name === "All Pizzas"
                     ? pizzas.length
@@ -273,6 +333,7 @@ export default function MenuSection() {
                   >
                     <Icon size={17} className="shrink-0" />
                     <span className="flex-1 truncate">{name}</span>
+
                     <span className="text-[11px] opacity-70">
                       {String(count).padStart(2, "0")}
                     </span>
@@ -283,7 +344,9 @@ export default function MenuSection() {
 
             <div className="mt-8 border-t border-[#2E2925] px-3 pt-6">
               <ChefHat size={26} className="text-[#F97316]" />
+
               <h4 className="mt-3 font-medium">Made with love.</h4>
+
               <p className="mt-2 text-xs leading-6 text-[#A8A29E]">
                 Every pizza is prepared fresh using carefully selected
                 ingredients.
@@ -291,8 +354,10 @@ export default function MenuSection() {
             </div>
           </aside>
 
+          {/* Menu Content */}
           <div className="min-w-0">
-            {/* Desktop toolbar (unchanged) */}
+
+            {/* Desktop Toolbar */}
             <div className="mb-5 hidden flex-wrap items-center justify-between gap-3 lg:flex">
               <p className="text-xs text-[#A8A29E]" aria-live="polite">
                 Showing{" "}
@@ -304,7 +369,9 @@ export default function MenuSection() {
 
               <label className="flex shrink-0 items-center gap-2 text-xs text-[#A8A29E]">
                 <ArrowDownUp size={14} className="shrink-0" />
+
                 <span>Sort by</span>
+
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
@@ -320,7 +387,7 @@ export default function MenuSection() {
               </label>
             </div>
 
-            {/* Mobile result count */}
+            {/* Mobile Result Count */}
             <p
               className="mb-3 text-xs text-[#A8A29E] lg:hidden"
               aria-live="polite"
@@ -341,6 +408,7 @@ export default function MenuSection() {
                     className="overflow-hidden rounded-xl border border-[#2E2925] bg-[#1A1716]"
                   >
                     <div className="aspect-[1.4] animate-pulse bg-white/[0.05]" />
+
                     <div className="space-y-3 p-4">
                       <div className="h-3 w-20 animate-pulse rounded bg-white/[0.07]" />
                       <div className="h-5 w-3/4 animate-pulse rounded bg-white/[0.07]" />
@@ -358,7 +426,10 @@ export default function MenuSection() {
                 <p className="text-sm font-medium text-red-400">
                   Unable to load menu
                 </p>
-                <p className="mt-2 text-xs text-[#A8A29E]">{error}</p>
+
+                <p className="mt-2 text-xs text-[#A8A29E]">
+                  {error}
+                </p>
               </div>
             )}
 
@@ -368,9 +439,9 @@ export default function MenuSection() {
                 <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:gap-5 xl:grid-cols-3">
                   {filteredPizzas.map((pizza) => {
                     const isFavorite = favoriteIds.includes(pizza._id);
-                    const isFavoriteLoading = favoriteLoading.includes(
-                      pizza._id,
-                    );
+
+                    const isFavoriteLoading =
+                      favoriteLoading.includes(pizza._id);
 
                     return (
                       <div
@@ -422,13 +493,12 @@ export default function MenuSection() {
                           </button>
                         </div>
 
-                        {/* Content — mobile layout uses one-row price + name */}
+                        {/* Content */}
                         <div className="flex flex-1 flex-col px-4 pb-0 pt-4">
                           <p className="text-[10px] font-semibold uppercase tracking-wider text-[#F97316] sm:text-[10px]">
                             {getCategory(pizza.category)}
                           </p>
 
-                          {/* Mobile: price badge + name always one row */}
                           <div className="mt-1.5 flex items-start justify-between gap-2">
                             <h3 className="min-w-0 flex-1 truncate text-[15px] font-semibold leading-snug sm:text-lg sm:font-medium">
                               {pizza.name}
@@ -443,13 +513,14 @@ export default function MenuSection() {
                             {pizza.description}
                           </p>
 
-                          {/* Footer — mt-auto keeps it pinned */}
-                          <div className="mt-auto flex items-center justify-between border-t border-[#2E2925] pt-3 mt-3 sm:mt-4">
+                          {/* Footer */}
+                          <div className="mt-auto mt-3 flex items-center justify-between border-t border-[#2E2925] pt-3 sm:mt-4">
                             <Link
                               href={`/menu/${pizza._id}`}
                               className="flex min-h-10 items-center gap-1 text-[13px] font-medium text-[#F5F3EF] transition-colors hover:text-[#F97316] sm:min-h-9 sm:text-xs"
                             >
                               View details
+
                               <ArrowUpRight
                                 size={15}
                                 className="transition-transform group-hover:translate-x-0.5 sm:size-[14px]"
@@ -499,6 +570,7 @@ export default function MenuSection() {
         </div>
       </div>
 
+      {/* Mobile Filters */}
       {showMobileFilters && (
         <div
           className="fixed inset-0 z-50 lg:hidden"
@@ -513,11 +585,11 @@ export default function MenuSection() {
 
           {/* Sheet */}
           <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-[#2E2925] bg-[#151210] px-5 pb-6 pt-4">
-            {/* Drag handle */}
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20" />
 
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">Filters</h3>
+
               <button
                 onClick={() => setShowMobileFilters(false)}
                 aria-label="Close filters"
@@ -532,9 +604,11 @@ export default function MenuSection() {
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#78716C]">
                 Category
               </p>
+
               <div className="grid grid-cols-2 gap-2">
                 {categories.map(({ name, icon: Icon }) => {
                   const active = activeCategory === name;
+
                   return (
                     <button
                       key={name}
@@ -559,9 +633,11 @@ export default function MenuSection() {
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#78716C]">
                 Sort by
               </p>
+
               <div className="flex flex-col gap-2">
                 {sortOptions.map((option) => {
                   const active = sort === option.value;
+
                   return (
                     <button
                       key={option.value}
@@ -574,6 +650,7 @@ export default function MenuSection() {
                       }`}
                     >
                       <span>{option.label}</span>
+
                       {active && (
                         <span className="size-2 rounded-full bg-[#F97316]" />
                       )}
@@ -591,6 +668,7 @@ export default function MenuSection() {
               >
                 Reset
               </button>
+
               <button
                 onClick={() => setShowMobileFilters(false)}
                 className="h-12 flex-[1.5] rounded-xl bg-[#F97316] text-sm font-semibold text-[#0F0D0C] transition hover:bg-[#ea6a0f] active:scale-[0.98]"
@@ -602,5 +680,19 @@ export default function MenuSection() {
         </div>
       )}
     </section>
+  );
+}
+
+export default function MenuPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#0F0D0C] text-[#F97316]">
+          Loading menu...
+        </div>
+      }
+    >
+      <MenuContent />
+    </Suspense>
   );
 }
