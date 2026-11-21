@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import {
@@ -48,6 +48,8 @@ export default function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
 
+  const navbarRef = useRef<HTMLElement>(null);
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -80,6 +82,39 @@ export default function Navbar() {
 
   const profileImage = userInfo?.image || userInfo?.profileImage;
 
+  // Close All Menus
+  const closeMenus = () => {
+    setIsOpen(false);
+    setProfileOpen(false);
+    setNotificationOpen(false);
+  };
+
+  // Close Dropdown When Clicking Outside
+  useEffect(() => {
+    const handleOutsideClick = (event: PointerEvent) => {
+      if (
+        navbarRef.current &&
+        !navbarRef.current.contains(event.target as Node)
+      ) {
+        closeMenus();
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeMenus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   // Fetch Admin Notifications
   useEffect(() => {
     if (role !== "admin" || !user?.email) {
@@ -91,7 +126,7 @@ export default function Navbar() {
     const fetchNotifications = async () => {
       try {
         const response = await fetch(
-          `${API_URL}/admin/notifications/${encodeURIComponent(user.email)}`,
+          `${API_URL}/admin/notifications/${encodeURIComponent(user.email)}`
         );
 
         if (!response.ok) {
@@ -114,13 +149,6 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, [role, user?.email]);
 
-  // Close Menus
-  const closeMenus = () => {
-    setIsOpen(false);
-    setProfileOpen(false);
-    setNotificationOpen(false);
-  };
-
   // Logout
   const handleLogout = async () => {
     try {
@@ -142,7 +170,7 @@ export default function Navbar() {
     if (!user?.email) return;
 
     const selectedNotification = notifications.find(
-      (notification) => notification._id === notificationId,
+      (notification) => notification._id === notificationId
     );
 
     if (!selectedNotification || selectedNotification.isRead) return;
@@ -150,9 +178,7 @@ export default function Navbar() {
     try {
       const response = await fetch(
         `${API_URL}/admin/notifications/${notificationId}/read/${encodeURIComponent(user.email)}`,
-        {
-          method: "PATCH",
-        },
+        { method: "PATCH" }
       );
 
       if (!response.ok) {
@@ -163,8 +189,8 @@ export default function Navbar() {
         prev.map((notification) =>
           notification._id === notificationId
             ? { ...notification, isRead: true }
-            : notification,
-        ),
+            : notification
+        )
       );
 
       setUnreadCount((prev) => Math.max(0, prev - 1));
@@ -178,7 +204,7 @@ export default function Navbar() {
     if (!user?.email) return;
 
     const selectedNotification = notifications.find(
-      (notification) => notification._id === notificationId,
+      (notification) => notification._id === notificationId
     );
 
     if (!selectedNotification || !selectedNotification.isRead) return;
@@ -186,9 +212,7 @@ export default function Navbar() {
     try {
       const response = await fetch(
         `${API_URL}/admin/notifications/${notificationId}/unread/${encodeURIComponent(user.email)}`,
-        {
-          method: "PATCH",
-        },
+        { method: "PATCH" }
       );
 
       if (!response.ok) {
@@ -199,8 +223,8 @@ export default function Navbar() {
         prev.map((notification) =>
           notification._id === notificationId
             ? { ...notification, isRead: false }
-            : notification,
-        ),
+            : notification
+        )
       );
 
       setUnreadCount((prev) => prev + 1);
@@ -214,7 +238,7 @@ export default function Navbar() {
     if (!user?.email) return;
 
     const selectedNotification = notifications.find(
-      (notification) => notification._id === notificationId,
+      (notification) => notification._id === notificationId
     );
 
     if (!selectedNotification) return;
@@ -222,9 +246,7 @@ export default function Navbar() {
     try {
       const response = await fetch(
         `${API_URL}/admin/notifications/${notificationId}/${encodeURIComponent(user.email)}`,
-        {
-          method: "DELETE",
-        },
+        { method: "DELETE" }
       );
 
       if (!response.ok) {
@@ -232,7 +254,7 @@ export default function Navbar() {
       }
 
       setNotifications((prev) =>
-        prev.filter((notification) => notification._id !== notificationId),
+        prev.filter((notification) => notification._id !== notificationId)
       );
 
       if (!selectedNotification.isRead) {
@@ -243,12 +265,13 @@ export default function Navbar() {
     }
   };
 
-  // Notification Dropdown Content
+  // Notification Dropdown
   const notificationContent = () => (
     <div className="absolute right-0 top-14 z-[100] w-[min(90vw,390px)] overflow-hidden rounded-2xl border border-white/10 bg-[#1B1511] shadow-[0_20px_70px_rgba(0,0,0,0.6)]">
 
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.02] px-5 py-4">
+
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
             <Bell size={19} />
@@ -268,6 +291,7 @@ export default function Navbar() {
         <span className="rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-400">
           {unreadCount} Unread
         </span>
+
       </div>
 
       {/* Notification List */}
@@ -275,6 +299,7 @@ export default function Navbar() {
 
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-5 py-12 text-center">
+
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5 text-stone-500">
               <Bell size={27} />
             </div>
@@ -286,23 +311,19 @@ export default function Navbar() {
             <p className="mt-2 max-w-[220px] text-xs leading-5 text-stone-500">
               You don't have any notifications right now.
             </p>
+
           </div>
         ) : (
           notifications.map((notification) => (
             <div
               key={notification._id}
-              onClick={() =>
-                markNotificationAsRead(notification._id)
-              }
+              onClick={() => markNotificationAsRead(notification._id)}
               className={`group relative border-b border-white/[0.06] px-5 py-4 transition duration-200 hover:bg-white/[0.04] ${
-                !notification.isRead
-                  ? "bg-orange-500/[0.045]"
-                  : ""
+                !notification.isRead ? "bg-orange-500/[0.045]" : ""
               }`}
             >
               <div className="flex items-start gap-3">
 
-                {/* Icon */}
                 <div
                   className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                     !notification.isRead
@@ -319,7 +340,6 @@ export default function Navbar() {
                   )}
                 </div>
 
-                {/* Content */}
                 <div className="min-w-0 flex-1">
 
                   <div className="flex items-start justify-between gap-2">
@@ -340,9 +360,7 @@ export default function Navbar() {
 
                     <span className="flex items-center gap-1.5 text-[10px] text-stone-500">
                       <Clock size={12} />
-                      {new Date(
-                        notification.createdAt,
-                      ).toLocaleString()}
+                      {new Date(notification.createdAt).toLocaleString()}
                     </span>
 
                     <div className="flex items-center gap-3">
@@ -352,28 +370,20 @@ export default function Navbar() {
                           event.stopPropagation();
 
                           if (notification.isRead) {
-                            markNotificationAsUnread(
-                              notification._id,
-                            );
+                            markNotificationAsUnread(notification._id);
                           } else {
-                            markNotificationAsRead(
-                              notification._id,
-                            );
+                            markNotificationAsRead(notification._id);
                           }
                         }}
                         className="flex items-center gap-1 text-[11px] font-medium text-orange-400 transition hover:text-orange-300"
                       >
                         <Check size={13} />
-
-                        {notification.isRead
-                          ? "Unread"
-                          : "Read"}
+                        {notification.isRead ? "Unread" : "Read"}
                       </button>
 
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
-
                           deleteNotification(notification._id);
                         }}
                         className="flex items-center gap-1 text-[11px] font-medium text-red-400 transition hover:text-red-300"
@@ -389,6 +399,7 @@ export default function Navbar() {
             </div>
           ))
         )}
+
       </div>
 
       {/* Footer */}
@@ -399,15 +410,17 @@ export default function Navbar() {
           </p>
         </div>
       )}
+
     </div>
   );
 
-  // Notification Bell Button
+  // Notification Button
   const notificationButton = (
     <button
       onClick={() => {
         setNotificationOpen(!notificationOpen);
         setProfileOpen(false);
+        setIsOpen(false);
       }}
       className={`relative flex h-10 w-10 items-center justify-center rounded-xl border transition duration-200 ${
         notificationOpen
@@ -428,7 +441,10 @@ export default function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#100D0B]/95 backdrop-blur-xl">
+    <header
+      ref={navbarRef}
+      className="sticky top-0 z-50 border-b border-white/10 bg-[#100D0B]/95 backdrop-blur-xl"
+    >
 
       <nav className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
 
@@ -455,6 +471,7 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 md:flex">
+
           {navLinks.map((link) => (
             <Link
               key={link.name}
@@ -481,6 +498,7 @@ export default function Navbar() {
               Dashboard
             </Link>
           )}
+
         </div>
 
         {/* Desktop Actions */}
@@ -490,7 +508,6 @@ export default function Navbar() {
           {!isPending && role === "admin" && (
             <div className="relative">
               {notificationButton}
-
               {notificationOpen && notificationContent()}
             </div>
           )}
@@ -593,18 +610,19 @@ export default function Navbar() {
 
                 </div>
               )}
+
             </div>
           )}
+
         </div>
 
-        {/* Mobile Actions: Bell + Hamburger */}
+        {/* Mobile Actions */}
         <div className="flex items-center gap-3 md:hidden">
 
-          {/* Mobile Notification Bell - Outside Hamburger */}
+          {/* Mobile Notification */}
           {!isPending && role === "admin" && (
             <div className="relative">
               {notificationButton}
-
               {notificationOpen && notificationContent()}
             </div>
           )}
@@ -613,9 +631,14 @@ export default function Navbar() {
           <button
             onClick={() => {
               setIsOpen(!isOpen);
+              setProfileOpen(false);
               setNotificationOpen(false);
             }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-white transition hover:bg-white/5"
+            className={`flex h-10 w-10 items-center justify-center rounded-xl border transition ${
+              isOpen
+                ? "border-orange-500/30 bg-orange-500/10 text-orange-400"
+                : "border-white/10 text-white hover:bg-white/5"
+            }`}
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
           >
@@ -623,98 +646,133 @@ export default function Navbar() {
           </button>
 
         </div>
+
       </nav>
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="border-t border-white/10 bg-[#100D0B] px-5 py-6 md:hidden">
+        <div className="animate-in slide-in-from-top-2 duration-200 border-t border-white/10 bg-[#100D0B] px-4 py-5 md:hidden">
 
-          <div className="flex flex-col gap-5">
+          <div className="mx-auto max-w-7xl space-y-5">
 
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={closeMenus}
-                className={`text-sm font-medium transition hover:text-orange-400 ${
-                  isActive(link.href)
-                    ? "text-orange-400"
-                    : "text-stone-300"
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-
+            {/* User Profile Card */}
             {!isPending && user && (
-              <>
+              <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/10 to-transparent p-4">
+
+                <div className="flex items-center gap-3">
+
+                  {profileImage ? (
+                    <Image
+                      src={profileImage}
+                      alt="Profile"
+                      width={48}
+                      height={48}
+                      unoptimized
+                      className="h-12 w-12 rounded-full border-2 border-orange-500/30 object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500 text-black">
+                      <User size={23} />
+                    </div>
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-white">
+                      {user.name}
+                    </p>
+
+                    <p className="truncate text-xs text-stone-400">
+                      {user.email}
+                    </p>
+
+                    <span className="mt-1 inline-block rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-semibold capitalize text-orange-400">
+                      {role || "Customer"}
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+            {/* Navigation Links */}
+            <div className="space-y-1">
+
+              <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[2px] text-stone-500">
+                Navigation
+              </p>
+
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={closeMenus}
+                  className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-semibold transition ${
+                    isActive(link.href)
+                      ? "bg-orange-500/10 text-orange-400"
+                      : "text-stone-300 hover:bg-white/5 hover:text-orange-400"
+                  }`}
+                >
+                  {link.name}
+
+                  {isActive(link.href) && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                  )}
+                </Link>
+              ))}
+
+              {!isPending && user && (
                 <Link
                   href={dashboardPath}
                   onClick={closeMenus}
-                  className="flex items-center gap-2 text-sm font-medium text-stone-300 transition hover:text-orange-400"
+                  className={`flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold transition ${
+                    pathname.startsWith(dashboardPath)
+                      ? "bg-orange-500/10 text-orange-400"
+                      : "text-stone-300 hover:bg-white/5 hover:text-orange-400"
+                  }`}
                 >
                   <LayoutDashboard size={18} />
                   Dashboard
                 </Link>
+              )}
 
-                <div className="border-t border-white/10 pt-5">
+            </div>
 
-                  <div className="mb-4 flex items-center gap-3">
+            {/* Account Settings */}
+            {!isPending && user && (
+              <div className="border-t border-white/10 pt-4">
 
-                    {profileImage ? (
-                      <Image
-                        src={profileImage}
-                        alt="Profile"
-                        width={42}
-                        height={42}
-                        unoptimized
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-black">
-                        <User size={20} />
-                      </div>
-                    )}
+                <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[2px] text-stone-500">
+                  Account
+                </p>
 
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-white">
-                        {user.name}
-                      </p>
+                <Link
+                  href={profilePath}
+                  onClick={closeMenus}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-stone-300 transition hover:bg-white/5 hover:text-orange-400"
+                >
+                  <Settings size={18} />
+                  Profile Settings
+                </Link>
 
-                      <p className="truncate text-xs text-stone-500">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
+                <button
+                  onClick={handleLogout}
+                  className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
+                >
+                  <LogOut size={18} />
+                  Logout
+                </button>
 
-                  <Link
-                    href={profilePath}
-                    onClick={closeMenus}
-                    className="mb-4 flex items-center gap-2 text-sm text-stone-300 transition hover:text-orange-400"
-                  >
-                    <Settings size={18} />
-                    Profile Settings
-                  </Link>
-
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 text-sm font-semibold text-red-400"
-                  >
-                    <LogOut size={18} />
-                    Logout
-                  </button>
-
-                </div>
-              </>
+              </div>
             )}
 
+            {/* Authentication */}
             {!isPending && !user && (
-              <div className="flex flex-col gap-4 border-t border-white/10 pt-5">
+              <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-5">
 
                 <Link
                   href="/sign-in"
                   onClick={closeMenus}
-                  className="text-sm font-semibold text-stone-300"
+                  className="flex items-center justify-center rounded-xl border border-white/10 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
                 >
                   Sign In
                 </Link>
@@ -722,7 +780,7 @@ export default function Navbar() {
                 <Link
                   href="/sign-up"
                   onClick={closeMenus}
-                  className="flex items-center justify-center rounded-full bg-orange-500 px-6 py-3 text-sm font-bold text-black transition hover:bg-orange-400"
+                  className="flex items-center justify-center rounded-xl bg-orange-500 py-3 text-sm font-bold text-black transition hover:bg-orange-400"
                 >
                   Sign Up
                 </Link>
