@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Toaster } from "sonner";
@@ -52,11 +53,7 @@ const sidebarLinks = [
   },
 ];
 
-export default function VendorLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function VendorLayout({ children }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -71,23 +68,6 @@ export default function VendorLayout({
 
   return (
     <div className="min-h-screen bg-[#0B0907] text-white">
-      {/* Mobile Header */}
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#302824] bg-[#100D0B] px-4 lg:hidden">
-        <Link href="/" className="flex items-center gap-2">
-          <Pizza className="text-orange-500" size={25} />
-          <span className="text-xl font-bold">
-            Pizza<span className="text-orange-500">Hub</span>
-          </span>
-        </Link>
-
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="rounded-lg border border-[#302824] p-2"
-        >
-          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </header>
-
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside
@@ -163,7 +143,7 @@ export default function VendorLayout({
             })}
           </nav>
 
-          {/* Bottom Section */}
+          {/* Sign Out */}
           <div className="border-t border-[#302824] p-4">
             <button
               onClick={handleSignOut}
@@ -185,30 +165,13 @@ export default function VendorLayout({
 
         {/* Main Content */}
         <main className="min-w-0 flex-1">
-          {/* Desktop Header */}
-          <header className="hidden h-20 items-center justify-between border-b border-[#302824] bg-[#100D0B] px-8 lg:flex">
-            <div>
-              <h2 className="text-lg font-semibold">
-                Vendor Dashboard
-              </h2>
-              <p className="text-xs text-[#78716C]">
-                Manage your restaurant and orders
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/15 text-orange-500">
-                <Store size={20} />
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold">{vendorName}</p>
-                <p className="text-xs text-[#78716C]">
-                  Restaurant Partner
-                </p>
-              </div>
-            </div>
-          </header>
+          {/* Mobile Sidebar Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="fixed bottom-5 right-5 z-30 rounded-full bg-orange-500 p-3 text-white shadow-lg shadow-orange-500/20 lg:hidden"
+          >
+            <Menu size={23} />
+          </button>
 
           {/* Page Content */}
           <div className="mx-auto w-full max-w-[1600px] p-4 sm:p-6 lg:p-8">
@@ -216,6 +179,7 @@ export default function VendorLayout({
           </div>
         </main>
       </div>
+
       <Toaster position="top-right" richColors />
     </div>
   );
