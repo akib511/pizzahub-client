@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -59,7 +59,7 @@ if (!email) return;
 const fetchFavorites = async () => {
   try {
     const response = await apiFetch(
-      `http://localhost:5000/customer/favorites/${encodeURIComponent(email)}`
+      `${API_URL}/customer/favorites/${encodeURIComponent(email)}`
     );
 
     if (!response.ok) {
@@ -90,7 +90,7 @@ setDeleting(true);
 
 try {
   const response = await apiFetch(
-    `http://localhost:5000/customer/favorites/${encodeURIComponent(email)}/${itemId}`,
+    `${API_URL}/customer/favorites/${encodeURIComponent(email)}/${itemId}`,
     {
       method: "DELETE",
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { fadeUp, viewportOnce } from "@/lib/motion";
 import {
   Search,
   Pizza,
@@ -45,7 +46,13 @@ export default function HowItWorks() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-12 sm:flex-row sm:items-end">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          className="mb-8 flex flex-col justify-between gap-4 sm:mb-12 sm:flex-row sm:items-end"
+        >
           <div>
             <span className="text-[10px] font-bold uppercase tracking-[3px] text-primary sm:text-xs">
               Simple & Easy
@@ -58,13 +65,20 @@ export default function HowItWorks() {
               Ordering delicious food has never been easier.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Steps Layout */}
         <div className="relative mt-10 sm:mt-0">
           
           {/* Desktop Connecting Line */}
-          <div className="absolute left-[10%] right-[10%] top-10 hidden h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent lg:block" />
+          <motion.div
+            className="absolute left-[10%] right-[10%] top-10 hidden h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent lg:block"
+            initial={{ opacity: 0, scaleX: 0 }}
+            whileInView={{ opacity: 1, scaleX: 1 }}
+            viewport={viewportOnce}
+            transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
+            style={{ transformOrigin: "left" }}
+          />
 
           <div className="grid gap-10 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4 lg:gap-6">
             {steps.map((step, index) => {

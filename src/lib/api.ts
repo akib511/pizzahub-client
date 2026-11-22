@@ -2,7 +2,7 @@
 
 import { authClient } from "@/lib/auth-client";
 
-const API_URL =
+export const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Deduplicate token requests when a page fires several API calls at once.
@@ -55,5 +55,7 @@ export async function apiFetch(
     }
   }
 
-  return fetch(input, { ...init, headers });
+  // Authenticated responses are user- and role-specific, so bypass the browser
+  // HTTP cache instead of risking stale dashboards or stale user lists.
+  return fetch(input, { ...init, cache: "no-store", headers });
 }

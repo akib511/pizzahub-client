@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -88,7 +88,7 @@ export default function VendorMenuPage() {
         setLoadingItems(true);
         setError("");
 
-        const response = await apiFetch("http://localhost:5000/menu");
+        const response = await apiFetch(`${API_URL}/menu`);
 
         if (!response.ok) {
           throw new Error("Failed to load menu items");
@@ -161,7 +161,7 @@ export default function VendorMenuPage() {
       setTogglingId(id);
 
       const response = await apiFetch(
-        `http://localhost:5000/menu/${id}/availability`,
+        `${API_URL}/menu/${id}/availability`,
         {
           method: "PATCH",
           headers: {
@@ -234,7 +234,7 @@ export default function VendorMenuPage() {
       setDeleting(true);
 
       const response = await apiFetch(
-        `http://localhost:5000/menu/${showDeleteId}`,
+        `${API_URL}/menu/${showDeleteId}`,
         {
           method: "DELETE",
         },

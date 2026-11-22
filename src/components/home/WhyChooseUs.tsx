@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { fadeUp, staggerContainer, viewportOnce } from "@/lib/motion";
 import {
   Leaf,
   Truck,
@@ -42,9 +46,14 @@ export default function WhyChooseUs() {
     // Section padding same as other sections
     <section className="overflow-hidden bg-background py-12 sm:py-16 lg:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
         {/* Section Heading - Compact & Matching */}
-        <div className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          className="mb-8 flex flex-col justify-between gap-4 sm:mb-10 sm:flex-row sm:items-end"
+        >
           <div>
             <span className="text-[10px] font-bold uppercase tracking-[3px] text-primary sm:text-xs">
               Why PizzaHub
@@ -57,20 +66,28 @@ export default function WhyChooseUs() {
               craftsmanship, and a passion for making every bite special.
             </p>
           </div>
-          
+
           <p className="hidden text-sm text-muted-foreground sm:block">
             The PizzaHub Promise
           </p>
-        </div>
+        </motion.div>
 
         {/* Feature Cards Grid - 1 col mobile, 2 cols tablet, 4 cols desktop */}
-        <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:gap-4 lg:grid-cols-4"
+        >
           {features.map((feature) => {
             const Icon = feature.icon;
 
             return (
-              <div
+              <motion.div
                 key={feature.id}
+                variants={fadeUp}
+                whileHover={{ y: -4 }}
                 className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:bg-card hover:shadow-xl hover:shadow-primary/5 active:scale-[0.98] sm:rounded-2xl sm:p-5"
               >
                 <div>
@@ -99,10 +116,10 @@ export default function WhyChooseUs() {
                 <div className="mt-3 flex items-center justify-end text-primary opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100 sm:mt-4">
                   <ArrowUpRight size={16} className="sm:size-[18px]" />
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

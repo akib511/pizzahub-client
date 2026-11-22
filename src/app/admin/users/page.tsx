@@ -1,8 +1,10 @@
 "use client";
 
 import { apiFetch } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 import {
   Search,
@@ -32,16 +34,29 @@ type User = {
   orders: number;
 };
 
+type UserRole = "customer" | "vendor" | "admin";
+
+const ROLES: UserRole[] = ["customer", "vendor", "admin"];
+
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function AdminUsersPage() {
+  const { data: session } = authClient.useSession();
+
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [roleTarget, setRoleTarget] = useState<User | null>(null);
+  const [pendingRole, setPendingRole] = useState<UserRole>("customer");
+  const [roleUpdating, setRoleUpdating] = useState(false);
+  const [roleError, setRoleError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const currentUserId = session?.user?.id;
+  const currentUserEmail = session?.user?.email;
 
   // Fetch users from backend
   useEffect(() => {
@@ -137,6 +152,107 @@ export default function AdminUsersPage() {
       day: "2-digit",
       year: "numeric",
     });
+  };
+
+  const isCurrentUser = (user: User) => {
+    return Boolean(
+      (currentUserId && String(user._id) === String(currentUserId)) ||
+        (currentUserEmail &&
+          user.email.toLowerCase() === currentUserEmail.toLowerCase()),
+    );
+  };
+
+  const normalizeRole = (role?: string): UserRole => {
+    const normalized = (role || "").toLowerCase();
+
+    return ROLES.includes(normalized as UserRole)
+      ? (normalized as UserRole)
+      : "customer";
+  };
+
+  const openUserDetails = (user: User) => {
+    setSelectedUser(user);
+    setPendingRole(normalizeRole(user.role));
+    setRoleError("");
+  };
+
+  const openRoleChange = (user: User, role: UserRole) => {
+    if (isCurrentUser(user)) {
+      toast.error("You cannot change your own role.");
+      return;
+    }
+
+    if (role === normalizeRole(user.role)) {
+      toast.error("Select a different role to continue.");
+      return;
+    }
+
+    setRoleTarget(user);
+    setPendingRole(role);
+    setRoleError("");
+  };
+
+  const updateUserRole = async () => {
+    if (!roleTarget || roleUpdating) return;
+
+    if (isCurrentUser(roleTarget)) {
+      setRoleError("You cannot change your own role.");
+      return;
+    }
+
+    const targetId = roleTarget._id;
+
+    setRoleUpdating(true);
+    setRoleError("");
+
+    try {
+      const response = await apiFetch(
+        `${API_URL}/admin/users/${encodeURIComponent(targetId)}/role`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ role: pendingRole }),
+        },
+      );
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(payload?.message || "Failed to update user role");
+      }
+
+      const updatedUser: User = {
+        ...roleTarget,
+        ...(payload?.user || {}),
+        role: payload?.user?.role || pendingRole,
+        orders: roleTarget.orders,
+      };
+
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user._id === targetId ? updatedUser : user,
+        ),
+      );
+
+      setSelectedUser((currentUser) =>
+        currentUser?._id === targetId ? updatedUser : currentUser,
+      );
+
+      setRoleTarget(null);
+      toast.success(payload?.message || "User role updated successfully");
+    } catch (roleUpdateError) {
+      const message =
+        roleUpdateError instanceof Error
+          ? roleUpdateError.message
+          : "Unable to update user role. Please try again.";
+
+      setRoleError(message);
+      toast.error(message);
+    } finally {
+      setRoleUpdating(false);
+    }
   };
 
   return (
@@ -353,7 +469,7 @@ export default function AdminUsersPage() {
                       <td className="px-4 py-4">
                         <div className="flex justify-end">
                           <button
-                            onClick={() => setSelectedUser(user)}
+                            onClick={() => openUserDetails(user)}
                             className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
                           >
                             <MoreHorizontal size={17} />
@@ -527,6 +643,71 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
+              {/* Role Management */}
+              <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={17} className="text-orange-400" />
+
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Role Management
+                    </p>
+
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Promote or change this account’s access level.
+                    </p>
+                  </div>
+                </div>
+
+                {isCurrentUser(selectedUser) ? (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    You cannot change your own role.
+                  </p>
+                ) : (
+                  <div className="mt-4 space-y-3">
+                    <label
+                      htmlFor="user-role-select"
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      New role
+                    </label>
+
+                    <select
+                      id="user-role-select"
+                      value={pendingRole}
+                      onChange={(event) =>
+                        setPendingRole(normalizeRole(event.target.value))
+                      }
+                      disabled={roleUpdating}
+                      className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-orange-500/50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {ROLES.map((role) => (
+                        <option key={role} value={role} className="bg-card">
+                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      onClick={() => openRoleChange(selectedUser, pendingRole)}
+                      disabled={
+                        roleUpdating ||
+                        pendingRole === normalizeRole(selectedUser.role)
+                      }
+                      className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Review Role Change
+                    </button>
+
+                    {pendingRole === normalizeRole(selectedUser.role) && (
+                      <p className="text-center text-[11px] text-muted-foreground">
+                        Select a different role to continue.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {selectedUser.phone && (
                 <div className="rounded-xl border border-border bg-muted/40 p-3">
                   <p className="text-xs text-muted-foreground">Phone Number</p>
@@ -536,6 +717,94 @@ export default function AdminUsersPage() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Role Change Confirmation */}
+      {roleTarget && (
+        <div
+          onClick={() => {
+            if (!roleUpdating) setRoleTarget(null);
+          }}
+          className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="my-auto w-full max-w-sm overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+          >
+            <div className="border-b border-border p-5">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/15">
+                <ShieldCheck size={21} className="text-orange-400" />
+              </div>
+
+              <h3 className="mt-4 text-lg font-bold text-foreground">
+                Confirm role change
+              </h3>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                Are you sure you want to change{" "}
+                <span className="font-medium text-foreground">
+                  {getUserName(roleTarget)}
+                </span>
+                ’s role?
+              </p>
+            </div>
+
+            <div className="space-y-4 p-5">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-3">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">
+                    CURRENT ROLE
+                  </p>
+
+                  <div className="mt-2">
+                    <RoleBadge role={roleTarget.role} />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-muted-foreground">
+                    NEW ROLE
+                  </p>
+
+                  <div className="mt-2">
+                    <RoleBadge role={pendingRole} />
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs leading-5 text-muted-foreground">
+                This immediately changes what this user is allowed to access.
+              </p>
+
+              {roleError && (
+                <p className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
+                  {roleError}
+                </p>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setRoleTarget(null)}
+                  disabled={roleUpdating}
+                  className="min-h-11 flex-1 rounded-xl border border-border px-4 text-sm font-semibold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={updateUserRole}
+                  disabled={roleUpdating}
+                  className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {roleUpdating && (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  )}
+                  {roleUpdating ? "Updating..." : "Change Role"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

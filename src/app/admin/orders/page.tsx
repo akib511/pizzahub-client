@@ -43,7 +43,8 @@ interface Order {
   updatedAt?: string;
 }
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const statusStyles: Record<OrderStatus, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",

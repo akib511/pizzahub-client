@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -94,7 +94,7 @@ export default function VendorProfilePage() {
     const fetchProfile = async () => {
       try {
         const response = await apiFetch(
-          `http://localhost:5000/vendor/profile/${encodeURIComponent(email)}`
+          `${API_URL}/vendor/profile/${encodeURIComponent(email)}`
         );
 
         const data = await response.json();
@@ -186,7 +186,7 @@ export default function VendorProfilePage() {
       }
 
       const response = await apiFetch(
-        `http://localhost:5000/vendor/profile/${encodeURIComponent(session.user.email)}`,
+        `${API_URL}/vendor/profile/${encodeURIComponent(session.user.email)}`,
         {
           method: "PATCH",
           headers: {

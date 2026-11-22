@@ -12,14 +12,50 @@ import { jwt } from "better-auth/plugins";
 const client = new MongoClient(process.env.MONGODB_URI!);
 const db = client.db("PizzaHub");
 
+let authDbReadyPromise: Promise<void> | undefined;
+
+export async function ensureAuthMongoReady() {
+  if (!authDbReadyPromise) {
+    authDbReadyPromise = client
+      .connect()
+      .then(() => undefined)
+      .catch((error) => {
+        authDbReadyPromise = undefined;
+        throw error;
+      });
+
+    // Avoid an unhandled rejection if the first request arrives after failure.
+    authDbReadyPromise.catch(() => {});
+  }
+
+  return authDbReadyPromise;
+}
 
 export async function getUserSession() {
+  await ensureAuthMongoReady();
+
   return await auth.api.getSession({
     headers: await headers(),
   });
 }
 
 export const auth = betterAuth({
+
+trustedOrigins: [
+  "https://pizzahub-client-ten.vercel.app",
+  "https://pizzahub-client-4ulnuvui5-akib15.vercel.app",
+  ],
+
+  // Signed cookie cache keeps session checks stateless in serverless runtimes.
+  // The proxy verifies this same cookie for route guards.
+  session: {
+    cookieCache: {
+      enabled: true,
+      strategy: "compact",
+      maxAge: 60 * 5,
+    },
+  },
+
   emailAndPassword: {
     enabled: true,
   },
@@ -67,6 +103,8 @@ export const auth = betterAuth({
  
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      await ensureAuthMongoReady();
+
       // Email Signup
       if (ctx.path === "/sign-up/email") {
         const role = ctx.body?.role;

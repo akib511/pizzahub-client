@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
@@ -163,7 +163,7 @@ export default function EditMenuDialog({
       };
 
       const response = await apiFetch(
-        `http://localhost:5000/menu/${item.id}`,
+        `${API_URL}/menu/${item.id}`,
         {
           method: "PATCH",
           headers: {

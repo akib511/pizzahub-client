@@ -6,16 +6,19 @@ import {
   Crown,
   Package,
   Sparkles,
+  X,
+  ShieldCheck,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 export default function VendorSubscriptionPage() {
   const { data: session, isPending } = authClient.useSession();
 
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+
+  const vendorEmail = session?.user?.email;
 
   const freeFeatures = [
     "Up to 3 active menu items",
@@ -32,43 +35,109 @@ export default function VendorSubscriptionPage() {
     "Advanced business analytics",
   ];
 
-  const vendorEmail = session?.user?.email;
-  const isPremium = session?.user?.subscriptionPlan === "premium";
-
+  // Get the latest subscription status
   useEffect(() => {
-    if (!toast) return;
+    let isMounted = true;
 
-    const timer = setTimeout(() => {
-      setToast(null);
-    }, 3000);
+    const checkSubscription = async () => {
+      try {
+        const { data } = await authClient.getSession({
+          query: {
+            disableCookieCache: true,
+          },
+        });
 
-    return () => clearTimeout(timer);
-  }, [toast]);
+        if (isMounted) {
+          setIsPremium(
+            data?.user?.subscriptionPlan === "premium"
+          );
+        }
+      } catch (error) {
+        console.error("Subscription check failed:", error);
 
-  const handleUpgrade = (event: React.FormEvent<HTMLFormElement>) => {
+        if (isMounted) {
+          setIsPremium(
+            session?.user?.subscriptionPlan === "premium"
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsChecking(false);
+        }
+      }
+    };
+
+    if (!isPending && session?.user) {
+      checkSubscription();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [session, isPending]);
+
+  const handleUpgrade = (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     if (isPremium) {
       event.preventDefault();
-
-      setToast({
-        message: "You have already purchased Premium. No need to pay again!",
-        type: "error",
-      });
+      setShowDialog(true);
     }
   };
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 pb-8">
 
-      {/* Toast */}
-      {toast && (
+      {/* Already Premium Dialog */}
+      {showDialog && (
         <div
-          className={`fixed right-4 top-5 z-50 max-w-sm rounded-lg border px-4 py-3 text-sm font-medium shadow-xl ${
-            toast.type === "success"
-              ? "border-green-500/30 bg-green-500/10 text-green-400"
-              : "border-red-500/30 bg-red-500/10 text-red-400"
-          }`}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          onClick={() => setShowDialog(false)}
         >
-          {toast.message}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="premium-dialog-title"
+            className="relative w-full max-w-sm rounded-2xl border border-orange-500/20 bg-card p-6 text-center shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowDialog(false)}
+              className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              aria-label="Close dialog"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
+              <Crown size={32} className="text-orange-400" />
+            </div>
+
+            <h2
+              id="premium-dialog-title"
+              className="mt-4 text-xl font-bold text-foreground"
+            >
+              You&apos;re Already Premium!
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              You&apos;ve already completed your Premium payment.
+              There&apos;s no need to pay again. Enjoy all your
+              Premium features!
+            </p>
+
+            <div className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-green-500/10 px-3 py-2.5 text-sm font-medium text-green-400">
+              <ShieldCheck size={17} />
+              Payment Successfully Completed
+            </div>
+
+            <button
+              onClick={() => setShowDialog(false)}
+              className="mt-5 w-full rounded-lg bg-orange-500 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+            >
+              Got it
+            </button>
+          </div>
         </div>
       )}
 
@@ -151,8 +220,7 @@ export default function VendorSubscriptionPage() {
             </span>
 
             <span className="text-sm text-muted-foreground">
-              {" "}
-              / forever
+              {" "} / forever
             </span>
           </div>
 
@@ -164,10 +232,7 @@ export default function VendorSubscriptionPage() {
 
           <div className="space-y-3">
             {freeFeatures.map((feature) => (
-              <div
-                key={feature}
-                className="flex items-center gap-2.5"
-              >
+              <div key={feature} className="flex items-center gap-2.5">
                 <Check size={15} className="text-green-400" />
 
                 <span className="text-sm text-foreground">
@@ -205,8 +270,7 @@ export default function VendorSubscriptionPage() {
             </span>
 
             <span className="text-sm text-muted-foreground">
-              {" "}
-              / one-time
+              {" "} / one-time
             </span>
           </div>
 
@@ -218,10 +282,7 @@ export default function VendorSubscriptionPage() {
 
           <div className="space-y-3">
             {premiumFeatures.map((feature) => (
-              <div
-                key={feature}
-                className="flex items-center gap-2.5"
-              >
+              <div key={feature} className="flex items-center gap-2.5">
                 <Check size={15} className="text-orange-400" />
 
                 <span className="text-sm text-foreground">
@@ -239,13 +300,17 @@ export default function VendorSubscriptionPage() {
           >
             <button
               type="submit"
-              disabled={isPending || !vendorEmail}
+              disabled={
+                isPending ||
+                isChecking ||
+                !vendorEmail
+              }
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Sparkles size={15} />
 
-              {isPending
-                ? "Loading..."
+              {isPending || isChecking
+                ? "Checking Plan..."
                 : isPremium
                   ? "Already Premium"
                   : "Upgrade to Premium"}

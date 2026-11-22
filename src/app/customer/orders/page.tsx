@@ -1,7 +1,7 @@
 
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { toast } from "sonner";
 import Link from "next/link";
@@ -87,7 +87,7 @@ const [loading, setLoading] = useState(true);
 
     try {
       const response = await apiFetch(
-        `http://localhost:5000/orders/customer/${session.user.email}`
+        `${API_URL}/orders/customer/${session.user.email}`
       );
 
       if (!response.ok) {
@@ -158,7 +158,7 @@ const cancelOrder = async () => {
 
   try {
     const response = await apiFetch(
-      `http://localhost:5000/orders/${selectedOrder}/cancel`,
+      `${API_URL}/orders/${selectedOrder}/cancel`,
       {
         method: "PATCH",
         headers: {

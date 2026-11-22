@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
@@ -101,14 +101,14 @@ export default function VendorOverviewPage() {
 
         const [menuResponse, orderResponse, profileResponse] =
           await Promise.all([
-            apiFetch("http://localhost:5000/menu"),
+            apiFetch(`${API_URL}/menu`),
 
             apiFetch(
-              `http://localhost:5000/orders/vendor/${encodeURIComponent(vendorEmail)}`,
+              `${API_URL}/orders/vendor/${encodeURIComponent(vendorEmail)}`,
             ),
 
             apiFetch(
-              `http://localhost:5000/vendor/profile/${encodeURIComponent(vendorEmail)}`,
+              `${API_URL}/vendor/profile/${encodeURIComponent(vendorEmail)}`,
             ),
           ]);
 

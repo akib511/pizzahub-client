@@ -1,6 +1,8 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { AnimatePresence, motion } from "framer-motion";
+import { API_URL, apiFetch } from "@/lib/api";
+import { fadeUp, staggerContainer, viewportOnce } from "@/lib/motion";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -38,7 +40,7 @@ export default function FeaturedMenu() {
       try {
         setLoading(true);
         setError("");
-        const response = await apiFetch("http://localhost:5000/menu");
+        const response = await apiFetch(`${API_URL}/menu`);
         if (!response.ok) throw new Error("Failed to load menu items");
         const data: Pizza[] = await response.json();
 
@@ -86,7 +88,13 @@ export default function FeaturedMenu() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         {/* HEADER */}
-        <div className="mb-5 flex items-end justify-between gap-3 sm:mb-6">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          className="mb-5 flex items-end justify-between gap-3 sm:mb-6"
+        >
           <div className="min-w-0">
             <div className="mb-1.5 flex items-center gap-2">
               <span className="inline-flex size-1.5 rounded-full bg-primary" />
@@ -109,40 +117,71 @@ export default function FeaturedMenu() {
               className="transition-transform group-hover:translate-x-0.5"
             />
           </Link>
-        </div>
+        </motion.div>
 
         {/* LOADING & ERROR STATES */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-12">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="flex flex-col items-center justify-center py-12"
+          >
             <LoaderCircle size={24} className="animate-spin text-primary" />
             <p className="mt-2 text-xs text-muted-foreground">Loading menu...</p>
-          </div>
+          </motion.div>
         )}
 
         {!loading && error && (
-          <p className="py-8 text-center text-xs text-red-400">{error}</p>
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="py-8 text-center text-xs text-red-400"
+          >
+            {error}
+          </motion.p>
         )}
 
         {!loading && !error && pizzas.length === 0 && (
-          <p className="py-8 text-center text-xs text-muted-foreground">
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="py-8 text-center text-xs text-muted-foreground"
+          >
             No featured pizzas available right now.
-          </p>
+          </motion.p>
         )}
 
         {/* SPLIT LAYOUT */}
         {!loading && !error && pizzas.length > 0 && activePizza && (
-          <div className="grid gap-4 lg:grid-cols-12 lg:gap-6">
-            
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="grid gap-4 lg:grid-cols-12 lg:gap-6"
+          >
             {/* LEFT: HERO CARD (Featured) */}
-            <div className="lg:col-span-7">
+            <motion.div variants={fadeUp} className="lg:col-span-7">
               <div className="group relative overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="relative aspect-[16/10] sm:aspect-[16/9]">
-                  <img
-                    key={activePizza._id}
-                    src={activePizza.image}
-                    alt={activePizza.name}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={activePizza._id}
+                      src={activePizza.image}
+                      alt={activePizza.name}
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      initial={{ opacity: 0, scale: 1.04 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.02 }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                    />
+                  </AnimatePresence>
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
 
@@ -195,17 +234,19 @@ export default function FeaturedMenu() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* RIGHT: LIST CARDS */}
-            <div className="lg:col-span-5">
-              <div className="space-y-2">
+            <motion.div variants={fadeUp} className="lg:col-span-5">
+              <motion.div variants={staggerContainer} className="space-y-2">
                 {pizzas.map((pizza, index) => {
                   if (index === activeIndex) return null;
 
                   return (
-                    <button
+                    <motion.button
                       key={pizza._id}
+                      variants={fadeUp}
+                      whileHover={{ y: -3 }}
                       onClick={() => setActiveIndex(index)}
                       className="group flex w-full items-center gap-3 rounded-xl border border-border bg-muted/40 p-2 text-left transition-all hover:border-primary/40 hover:bg-muted active:scale-[0.99] sm:p-2.5"
                     >
@@ -255,10 +296,10 @@ export default function FeaturedMenu() {
                         size={14}
                         className="shrink-0 text-foreground/20 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary"
                       />
-                    </button>
+                    </motion.button>
                   );
                 })}
-              </div>
+              </motion.div>
 
               {/* Bottom CTA */}
               <Link
@@ -273,8 +314,8 @@ export default function FeaturedMenu() {
                   className="text-primary transition-transform group-hover:translate-x-0.5"
                 />
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </section>

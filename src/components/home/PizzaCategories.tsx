@@ -1,6 +1,8 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { motion } from "framer-motion";
+import { API_URL, apiFetch } from "@/lib/api";
+import { fadeUp, staggerContainer, viewportOnce } from "@/lib/motion";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -160,7 +162,13 @@ function CategoryCard({
 
 function SectionHeading() {
   return (
-    <div className="mb-6 sm:mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <motion.div
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={viewportOnce}
+      className="mb-6 flex flex-col justify-between gap-4 sm:mb-8 sm:flex-row sm:items-end"
+    >
       <div>
         <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[3px] text-primary sm:text-xs">
           <span className="h-1 w-1 rounded-full bg-primary"></span>
@@ -177,7 +185,7 @@ function SectionHeading() {
           perfect taste for every craving.
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -189,7 +197,7 @@ export default function PizzaCategories() {
   useEffect(() => {
     const fetchCategoryImages = async () => {
       try {
-        const response = await apiFetch("http://localhost:5000/menu");
+        const response = await apiFetch(`${API_URL}/menu`);
         if (!response.ok) throw new Error("Failed to load category images");
         const data: Pizza[] = await response.json();
 
@@ -239,26 +247,39 @@ export default function PizzaCategories() {
           Tablet: 2 cols
           Desktop: 3 cols (2 rows for 6 items)
         */}
-        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3"
+        >
           {CATEGORIES.map((category) => (
-            <div 
-              key={category.name} 
+            <motion.div
+              key={category.name}
+              variants={fadeUp}
               className="w-[85vw] max-w-[320px] shrink-0 snap-center sm:w-auto sm:max-w-none sm:shrink"
             >
               <CategoryCard
                 category={category}
                 image={categoryImages[category.value] || category.image}
               />
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Swipe Hint for Mobile only */}
-        <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-muted-foreground sm:hidden">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          className="mt-2 flex items-center justify-center gap-2 text-[10px] text-muted-foreground sm:hidden"
+        >
           <span className="h-px w-8 bg-stone-700"></span>
           Swipe to explore
           <span className="h-px w-8 bg-stone-700"></span>
-        </div>
+        </motion.div>
         
       </div>
     </section>

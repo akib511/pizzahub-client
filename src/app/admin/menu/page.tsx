@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { useState, useEffect } from "react";
 import {
@@ -98,7 +98,7 @@ export default function AdminMenuPage() {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const response = await apiFetch("http://localhost:5000/menu");
+        const response = await apiFetch(`${API_URL}/menu`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch menu items");
@@ -177,7 +177,7 @@ export default function AdminMenuPage() {
   ) => {
     try {
       const response = await apiFetch(
-        `http://localhost:5000/admin/menu/${id}/status`,
+        `${API_URL}/admin/menu/${id}/status`,
         {
           method: "PATCH",
           headers: {

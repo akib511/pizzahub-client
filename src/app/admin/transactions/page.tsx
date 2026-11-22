@@ -1,7 +1,7 @@
 
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import {
@@ -57,7 +57,7 @@ export default function AdminTransactionsPage() {
         setError("");
 
         const response = await apiFetch(
-          "http://localhost:5000/admin/transactions",
+          `${API_URL}/admin/transactions`,
         );
 
         if (!response.ok) {

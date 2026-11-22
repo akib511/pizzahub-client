@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
-import { auth } from "@/lib/auth";
+import { auth, ensureAuthMongoReady } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
     // Get logged-in user session
+    await ensureAuthMongoReady();
+
     const headersList = await headers();
 
     const sessionData = await auth.api.getSession({

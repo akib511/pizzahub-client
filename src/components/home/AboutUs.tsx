@@ -1,18 +1,24 @@
+"use client";
+
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { fadeUp, slideInLeft, staggerContainer, viewportOnce } from "@/lib/motion";
 
 export default function AboutUs() {
   return (
     <section className="overflow-hidden bg-background py-12 sm:py-16 lg:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          
           {/* Image Side */}
-          <div className="relative mx-auto w-full max-w-[520px]">
-            
-            
+          <motion.div
+            variants={slideInLeft}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="relative mx-auto w-full max-w-[520px]"
+          >
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl sm:aspect-[5/4] lg:aspect-[4/3]">
               <Image
                 src="https://images.unsplash.com/photo-1579751626657-72bc17010498?w=900&q=90"
@@ -23,51 +29,82 @@ export default function AboutUs() {
               />
             </div>
 
-            <div className="absolute -bottom-5 right-2 rounded-xl border border-border bg-card px-4 py-3 shadow-xl sm:-bottom-6 sm:right-6 sm:rounded-2xl sm:px-6 sm:py-5">
+            <motion.div
+              className="absolute -bottom-5 right-2 rounded-xl border border-border bg-card px-4 py-3 shadow-xl sm:-bottom-6 sm:right-6 sm:rounded-2xl sm:px-6 sm:py-5"
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={viewportOnce}
+              transition={{ duration: 0.55, delay: 0.35, ease: "easeOut" }}
+            >
               <h3 className="text-2xl font-bold text-primary sm:text-3xl">
                 100%
               </h3>
               <p className="mt-0.5 text-[10px] font-medium text-muted-foreground sm:mt-1 sm:text-xs">
                 Fresh Ingredients
               </p>
-            </div>
+            </motion.div>
 
             {/* Decorative Border - Small mobile friendly */}
             <div className="absolute -left-2 -top-2 size-16 rounded-tl-2xl border-l-2 border-t-2 border-primary sm:-left-4 sm:-top-4 sm:size-24 sm:rounded-tl-3xl" />
-          </div>
+          </motion.div>
 
           {/* Content Side */}
-          <div className="pt-4 lg:pt-0">
-            <span className="text-[10px] font-bold uppercase tracking-[3px] text-primary sm:text-xs">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            className="pt-4 lg:pt-0"
+          >
+            <motion.span
+              variants={fadeUp}
+              className="text-[10px] font-bold uppercase tracking-[3px] text-primary sm:text-xs"
+            >
               About PizzaHub
-            </span>
+            </motion.span>
 
-            <h2 className="mt-2 font-[var(--font-heading)] text-2xl font-semibold leading-tight text-foreground sm:mt-3 sm:text-3xl lg:text-4xl">
+            <motion.h2
+              variants={fadeUp}
+              className="mt-2 font-[var(--font-heading)] text-2xl font-semibold leading-tight text-foreground sm:mt-3 sm:text-3xl lg:text-4xl"
+            >
               We Make Every
               <span className="block text-primary">
                 Slice Special.
               </span>
-            </h2>
+            </motion.h2>
 
-            <p className="mt-3 text-xs leading-6 text-muted-foreground sm:mt-5 sm:text-sm sm:leading-7">
+            <motion.p
+              variants={fadeUp}
+              className="mt-3 text-xs leading-6 text-muted-foreground sm:mt-5 sm:text-sm sm:leading-7"
+            >
               At PizzaHub, we believe pizza is more than just food. It is about
               bringing people together, sharing happiness, and creating
               unforgettable moments with every bite.
-            </p>
+            </motion.p>
 
-            <p className="mt-2 text-xs leading-6 text-muted-foreground sm:mt-3 sm:text-sm sm:leading-7">
+            <motion.p
+              variants={fadeUp}
+              className="mt-2 text-xs leading-6 text-muted-foreground sm:mt-3 sm:text-sm sm:leading-7"
+            >
               From carefully selected ingredients to our freshly prepared
               dough, every pizza is made with passion, quality, and love.
-            </p>
+            </motion.p>
 
             {/* Features */}
-            <div className="mt-5 space-y-2.5 sm:mt-7 sm:space-y-4">
+            <motion.div
+              variants={staggerContainer}
+              className="mt-5 space-y-2.5 sm:mt-7 sm:space-y-4"
+            >
               {[
                 "Fresh and premium ingredients",
                 "Carefully crafted pizza recipes",
                 "Quality you can taste in every bite",
               ].map((item) => (
-                <div key={item} className="flex items-center gap-2.5 sm:gap-3">
+                <motion.div
+                  key={item}
+                  variants={fadeUp}
+                  className="flex items-center gap-2.5 sm:gap-3"
+                >
                   <CheckCircle2
                     size={16}
                     className="shrink-0 text-primary sm:size-5"
@@ -75,9 +112,9 @@ export default function AboutUs() {
                   <span className="text-[13px] font-medium text-foreground/90 sm:text-sm">
                     {item}
                   </span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             {/* Button */}
             <Link
@@ -87,7 +124,7 @@ export default function AboutUs() {
               Discover Our Story
               <ArrowRight size={15} className="sm:size-[18px]" />
             </Link>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

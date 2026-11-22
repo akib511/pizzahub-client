@@ -1,21 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getCookieCache, getSessionCookie } from "better-auth/cookies";
 
 export async function proxy(request: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
-
   const pathname = request.nextUrl.pathname;
 
+  // Proxy runs in its own serverless runtime. Calling auth.api.getSession()
+  // here would create a second MongoClient that Vercel closes between
+  // invocations, causing MongoTopologyClosedError -> 500 on every dashboard.
+  // Better Auth's signed session cookie is verifiable without any database.
+  const cachedSession = await getCookieCache(request.headers, {
+    strategy: "compact",
+  }).catch(() => null);
+
+  const role =
+    typeof cachedSession?.user?.role === "string"
+      ? cachedSession.user.role.toLowerCase()
+      : undefined;
+
+  const hasSessionCookie = Boolean(getSessionCookie(request.headers));
+
   // Not logged in
-  if (!session) {
-    return NextResponse.redirect(
-      new URL("/sign-in", request.url)
-    );
+  if (!cachedSession && !hasSessionCookie) {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
-  const role = session.user.role;
+  // The cookie cache is short-lived. If it expired but a session token is
+  // still present, let the request through and let the client resolve it.
+  if (!cachedSession || !role) {
+    return NextResponse.next();
+  }
 
   // Admin routes
   if (pathname.startsWith("/admin") && role !== "admin") {
@@ -33,7 +46,6 @@ export async function proxy(request: NextRequest) {
   }
 
   // Stripe payment result pages: vendors only
-  // (Admins, customers and guests are sent to their own dashboard / sign-in)
   if (pathname === "/success" || pathname === "/cancel") {
     if (role !== "vendor") {
       const destination =

@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
@@ -155,7 +155,7 @@ export default function AddMenuPage() {
 
     try {
       const imageUrl = await uploadImage(imageFile);
-      const response = await apiFetch("http://localhost:5000/menu", {
+      const response = await apiFetch(`${API_URL}/menu`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

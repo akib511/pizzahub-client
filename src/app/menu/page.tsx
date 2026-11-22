@@ -1,6 +1,6 @@
 "use client";
 
-import { apiFetch } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 
 import { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -113,7 +113,7 @@ function MenuContent() {
         setLoading(true);
         setError("");
 
-        const response = await apiFetch("http://localhost:5000/menu");
+        const response = await apiFetch(`${API_URL}/menu`);
 
         if (!response.ok) {
           throw new Error("Failed to load menu items");
@@ -151,7 +151,7 @@ function MenuContent() {
 }
       try {
         const response = await apiFetch(
-          `http://localhost:5000/customer/favorites/${encodeURIComponent(email)}`,
+          `${API_URL}/customer/favorites/${encodeURIComponent(email)}`,
         );
 
         if (!response.ok) {
@@ -213,7 +213,7 @@ function MenuContent() {
       setFavoriteLoading((prev) => [...prev, itemId]);
 
       const response = await apiFetch(
-        `http://localhost:5000/customer/favorites/${encodeURIComponent(email)}/${itemId}`,
+        `${API_URL}/customer/favorites/${encodeURIComponent(email)}/${itemId}`,
         {
           method: isFavorite ? "DELETE" : "POST",
         },
