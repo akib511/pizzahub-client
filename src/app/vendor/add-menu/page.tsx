@@ -1,7 +1,8 @@
+
 "use client";
 
 import { API_URL, apiFetch } from "@/lib/api";
-
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import {
@@ -14,12 +15,10 @@ import {
   CheckCircle2,
   Loader2,
   MapPin,
-  Crown,
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
-
 
 interface ImgBBResponse {
   success: boolean;
@@ -30,12 +29,13 @@ interface ImgBBResponse {
 }
 
 export default function AddMenuPage() {
-
   const { data: session } = authClient.useSession();
 
   // Demo subscription data
   const subscriptionPlan: string = "free";
   const activeMenuItems = 2;
+
+  const router = useRouter();
 
   const isPremium = subscriptionPlan === "premium";
   const activeItemLimit = 3;
@@ -83,34 +83,35 @@ export default function AddMenuPage() {
     setImageFile(null);
   };
 
-
+  // Upload image to ImgBB
   const uploadImage = async (file: File): Promise<string> => {
-  const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
-  if (!apiKey) {
-    throw new Error("ImgBB API key is missing.");
-  }
-
-  const formData = new FormData();
-  formData.append("image", file);
-
-  const response = await apiFetch(
-    `https://api.imgbb.com/1/upload?key=${apiKey}`,
-    {
-      method: "POST",
-      body: formData,
+    if (!apiKey) {
+      throw new Error("ImgBB API key is missing.");
     }
-  );
 
-  const data: ImgBBResponse = await response.json();
+    const formData = new FormData();
+    formData.append("image", file);
 
-  if (!response.ok || !data.success) {
-    throw new Error("Image upload failed.");
-  }
+    const response = await apiFetch(
+      `https://api.imgbb.com/1/upload?key=${apiKey}`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
 
-  return data.data.url;
-};
+    const data: ImgBBResponse = await response.json();
 
+    if (!response.ok || !data.success) {
+      throw new Error("Image upload failed.");
+    }
+
+    return data.data.url;
+  };
+
+  // Submit menu item
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -155,6 +156,7 @@ export default function AddMenuPage() {
 
     try {
       const imageUrl = await uploadImage(imageFile);
+
       const response = await apiFetch(`${API_URL}/menu`, {
         method: "POST",
         headers: {
@@ -169,7 +171,7 @@ export default function AddMenuPage() {
           location,
           preparationTime: Number(preparationTime),
           available,
-         image: imageUrl,
+          image: imageUrl,
           status: "pending",
         }),
       });
@@ -177,21 +179,15 @@ export default function AddMenuPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message);
+        throw new Error(data.message || "Menu item submission failed.");
       }
 
       setSuccess(true);
 
-      setName("");
-      setDescription("");
-      setCategory("");
-      setPrice("");
-      setLocation("");
-      setPreparationTime("");
-      setAvailable(true);
-      setImage("");
-      setImageFile(null);
-    } catch (err) { 
+      setTimeout(() => {
+        router.push("/vendor/menu");
+      }, 1500);
+    } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong"
       );
@@ -221,7 +217,20 @@ export default function AddMenuPage() {
         </p>
       </div>
 
-  
+      {/* Success Toast */}
+      {success && (
+        <div className="fixed right-4 top-5 z-50 flex items-center gap-3 rounded-xl border border-green-500/30 bg-card px-5 py-4 text-sm text-green-400 shadow-xl animate-in slide-in-from-top-3">
+          <CheckCircle2 size={20} className="shrink-0" />
+
+          <div>
+            <p className="font-semibold">Successfully Submitted!</p>
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              Your menu item is submitted for admin approval.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Limit Warning */}
       {limitReached && (
@@ -236,14 +245,6 @@ export default function AddMenuPage() {
               existing item or upgrade to Premium.
             </p>
           </div>
-        </div>
-      )}
-
-      {/* Success Message */}
-      {success && (
-        <div className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400">
-          <CheckCircle2 size={20} />
-          Menu item submitted successfully! Status: Pending Approval.
         </div>
       )}
 

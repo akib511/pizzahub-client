@@ -315,7 +315,7 @@ export default function CustomerDashboard() {
                   <div className="shrink-0 text-right">
 
                     <p className="text-xs font-semibold text-foreground sm:text-sm">
-                      ৳{order.totalPrice}
+                      ${order.totalPrice}
                     </p>
 
                     <span className="mt-1 inline-block rounded-full bg-orange-500/10 px-2 py-1 text-[10px] capitalize text-orange-400 sm:px-2.5 sm:text-xs">

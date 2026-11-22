@@ -38,11 +38,11 @@ export default function SignInPage() {
         const role = data.user.role;
 
         if (role === "admin") {
-          router.push("/admin");
+          router.push("/");
         } else if (role === "vendor") {
           router.push("/");
         } else {
-          router.push("/customer/dashboard");
+          router.push("/");
         }
 
         router.refresh();
