@@ -112,26 +112,6 @@ Install dependencies:
 npm install
 ```
 
-Create a `.env.local` file in the frontend root directory and configure the required environment variables.
-
-```env
-BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=
-NEXT_PUBLIC_BETTER_AUTH_URL=
-
-MONGODB_URI=
-
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-NEXT_PUBLIC_IMGBB_API_KEY=
-
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-STRIPE_SECRET_KEY=
-
-NEXT_PUBLIC_API_URL=
-```
-
 Start the frontend development server:
 
 ```bash
@@ -158,17 +138,6 @@ Install dependencies:
 npm install
 ```
 
-Create a `.env` file in the backend root directory.
-
-```env
-MONGODB_URI=
-BETTER_AUTH_URL=
-
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-
-CLIENT_URL=
-```
 
 Start the backend server using the available development script:
 
