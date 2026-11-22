@@ -1,36 +1,240 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍕 PizzaHub — Pizza Ordering & Delivery Platform
 
-## Getting Started
+PizzaHub is a modern full-stack pizza ordering and delivery platform where customers can explore pizzas, place orders, and track their purchases. Vendors can manage their restaurants and menu items, while administrators have complete control over users, menu approvals, and platform activities.
 
-First, run the development server:
+The platform includes secure authentication, role-based authorization, Stripe payment integration, and a responsive user interface.
+
+## 🌐 Live Website
+
+**Live Demo:** https://pizzahub-client-ten.vercel.app
+
+## ✨ Key Features
+
+### 👤 Customer
+- Browse all available pizza items.
+- Search, filter, and sort menu items.
+- View detailed information about each pizza.
+- Add pizzas to favorites.
+- Place orders securely.
+- Complete payments using Stripe.
+- Track order status.
+- Cancel pending orders.
+- Manage personal account information.
+
+### 🏪 Vendor
+- Create and manage restaurant profiles.
+- Add new pizza items with images.
+- Update and delete menu items.
+- Manage menu item availability.
+- Submit menu items for admin approval.
+- Accept or reject customer orders.
+- Manage restaurant orders.
+- Upgrade to a Premium subscription.
+- Enjoy unlimited menu items with Premium access.
+
+### 🛡️ Admin
+- View and manage registered users.
+- Update user roles.
+- Manage customer and vendor accounts.
+- Review and approve or reject menu items.
+- Manage platform menu items.
+- Monitor transactions.
+- Control platform activities.
+
+### ⚡ Additional Features
+- Secure authentication with Better Auth.
+- Google OAuth login.
+- JWT-based API authentication.
+- Role-based access control.
+- Stripe payment integration.
+- Image upload using ImgBB.
+- Responsive design for mobile, tablet, and desktop.
+- Modern animations and interactive UI.
+- Premium vendor subscription system.
+
+## 🛠️ Technology Stack
+
+### Frontend
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Framer Motion
+- Lucide React
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- Better Auth
+- JWT
+
+### Authentication & Payment
+- Better Auth
+- Google OAuth
+- Stripe
+
+### Other Tools
+- ImgBB
+- Vercel
+- Git & GitHub
+
+## 📦 Installation & Setup
+
+Follow these steps to run PizzaHub locally.
+
+### 1. Clone the Repositories
+
+Clone the frontend and backend repositories separately.
+
+**Frontend:**
+```bash
+git clone YOUR_CLIENT_REPOSITORY_URL
+```
+
+**Backend:**
+```bash
+git clone YOUR_SERVER_REPOSITORY_URL
+```
+
+### 2. Frontend Setup
+
+Navigate to the frontend directory:
+
+```bash
+cd pizzahub-client
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create a `.env.local` file in the frontend root directory and configure the required environment variables.
+
+```env
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=
+NEXT_PUBLIC_BETTER_AUTH_URL=
+
+MONGODB_URI=
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+NEXT_PUBLIC_IMGBB_API_KEY=
+
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+
+NEXT_PUBLIC_API_URL=
+```
+
+Start the frontend development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Frontend will run at:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Backend Setup
 
-## Learn More
+Navigate to the backend directory:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cd pizzahub-server
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Install dependencies:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install
+```
 
-## Deploy on Vercel
+Create a `.env` file in the backend root directory.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+MONGODB_URI=
+BETTER_AUTH_URL=
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+CLIENT_URL=
+```
+
+Start the backend server using the available development script:
+
+```bash
+npm run dev
+```
+
+If your backend does not have a `dev` script, use its configured start command.
+
+Backend will run at:
+
+```text
+http://localhost:5000
+```
+
+> **Note:** Environment variable names must match the actual names used in the frontend and backend source code. Never commit `.env` or `.env.local` files to GitHub.
+
+## 🔐 Security
+
+- Authentication is handled using Better Auth.
+- Protected API routes require valid JWT authentication.
+- Role-based authorization protects Customer, Vendor, and Admin routes.
+- Vendors can manage only their own restaurant items.
+- Admin-only operations are protected by backend authorization.
+- Stripe payments are processed through secure server-side integration.
+
+## 📁 Project Structure
+
+```text
+PizzaHub/
+│
+├── pizzahub-client/
+│   ├── public/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── lib/
+│   │   └── ...
+│   ├── package.json
+│   └── ...
+│
+├── pizzahub-server/
+│   ├── index.js
+│   ├── package.json
+│   └── ...
+│
+└── README.md
+```
+
+## 🔗 Project Links
+
+- **Live Website:** https://pizzahub-client-ten.vercel.app
+- **Frontend Repository:** YOUR_CLIENT_REPOSITORY_URL
+- **Backend Repository:** YOUR_SERVER_REPOSITORY_URL
+
+## 👨‍💻 Author
+
+**Shahariar Hossen Akib**
+
+Full Stack Developer
+
+- GitHub: https://github.com/akib511
+- LinkedIn: https://linkedin.com/in/shahariar-hossen-akib
+
+---
+
+<p align="center">
+  Made with ❤️ by Shahariar Hossen Akib
+</p>
