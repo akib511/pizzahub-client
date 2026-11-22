@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -75,7 +77,7 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch(`${API_URL}/admin/orders`);
+        const response = await apiFetch(`${API_URL}/admin/orders`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch orders");

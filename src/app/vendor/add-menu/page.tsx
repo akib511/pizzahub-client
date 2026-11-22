@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import {
@@ -92,7 +94,7 @@ export default function AddMenuPage() {
   const formData = new FormData();
   formData.append("image", file);
 
-  const response = await fetch(
+  const response = await apiFetch(
     `https://api.imgbb.com/1/upload?key=${apiKey}`,
     {
       method: "POST",
@@ -153,7 +155,7 @@ export default function AddMenuPage() {
 
     try {
       const imageUrl = await uploadImage(imageFile);
-      const response = await fetch("http://localhost:5000/menu", {
+      const response = await apiFetch("http://localhost:5000/menu", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -219,49 +221,7 @@ export default function AddMenuPage() {
         </p>
       </div>
 
-      {/* Subscription Status */}
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-primary/10 p-3 text-primary">
-              <Crown size={22} />
-            </div>
-
-            <div>
-              <h3 className="font-semibold">
-                {isPremium ? "Premium Plan" : "Free Plan"}
-              </h3>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                {isPremium
-                  ? "You can add unlimited menu items."
-                  : `${activeMenuItems} of ${activeItemLimit} active menu items used.`}
-              </p>
-
-              {!isPremium && (
-                <div className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-border">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{
-                      width: `${(activeMenuItems / activeItemLimit) * 100}%`,
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {!isPremium && (
-            <Link
-              href="/vendor/subscription"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold transition hover:bg-primary"
-            >
-              <Crown size={16} />
-              Upgrade to Premium
-            </Link>
-          )}
-        </div>
-      </div>
+  
 
       {/* Limit Warning */}
       {limitReached && (

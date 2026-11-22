@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { headers } from "next/headers";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import {
@@ -6,9 +7,17 @@ import {
   createAuthMiddleware,
   getOAuthState,
 } from "better-auth/api";
+import { jwt } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.MONGODB_URI!);
 const db = client.db("PizzaHub");
+
+
+export async function getUserSession() {
+  return await auth.api.getSession({
+    headers: await headers(),
+  });
+}
 
 export const auth = betterAuth({
   emailAndPassword: {
@@ -46,6 +55,7 @@ export const auth = betterAuth({
         defaultValue: "free",
         input: false,
       },
+
       subscriptionExpiresAt: {
         type: "date",
         required: false,
@@ -130,4 +140,6 @@ databaseHooks: {
 },
 
   database: mongodbAdapter(db, { client }),
+
+  plugins: [jwt()],
 });

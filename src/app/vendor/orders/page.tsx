@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -58,7 +60,7 @@ export default function VendorOrdersPage() {
       try {
         setLoading(true);
 
-        const response = await fetch(
+        const response = await apiFetch(
           `http://localhost:5000/orders/vendor/${encodeURIComponent(
             session.user.email
           )}`
@@ -164,7 +166,7 @@ export default function VendorOrdersPage() {
     try {
       setUpdating(true);
 
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/orders/${orderId}/status`,
         {
           method: "PATCH",

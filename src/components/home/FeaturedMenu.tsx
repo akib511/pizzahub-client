@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -36,7 +38,7 @@ export default function FeaturedMenu() {
       try {
         setLoading(true);
         setError("");
-        const response = await fetch("http://localhost:5000/menu");
+        const response = await apiFetch("http://localhost:5000/menu");
         if (!response.ok) throw new Error("Failed to load menu items");
         const data: Pizza[] = await response.json();
 

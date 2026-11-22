@@ -1,6 +1,8 @@
 
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import {
   Search,
@@ -54,7 +56,7 @@ export default function AdminTransactionsPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
+        const response = await apiFetch(
           "http://localhost:5000/admin/transactions",
         );
 

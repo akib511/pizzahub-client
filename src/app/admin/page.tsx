@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import {
   Users,
@@ -93,7 +95,7 @@ export default function AdminDashboardPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_URL}/admin/dashboard`);
+        const response = await apiFetch(`${API_URL}/admin/dashboard`);
 
         if (!response.ok) {
           throw new Error("Failed to load dashboard data.");

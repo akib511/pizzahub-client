@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
@@ -96,7 +98,7 @@ export default function CustomerDashboard() {
 
     const fetchOrders = async () => {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `http://localhost:5000/orders/customer/${encodeURIComponent(email)}`
         );
 

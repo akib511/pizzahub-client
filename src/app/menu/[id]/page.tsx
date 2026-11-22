@@ -1,6 +1,8 @@
 
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import React, { useState, use, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -67,7 +69,7 @@ export default function PizzaDetailsPage({ params }: PageProps) {
   useEffect(() => {
     const fetchPizza = async () => {
       try {
-        const response = await fetch("http://localhost:5000/menu");
+        const response = await apiFetch("http://localhost:5000/menu");
 
         if (!response.ok) {
           throw new Error("Failed to fetch menu");
@@ -169,7 +171,7 @@ export default function PizzaDetailsPage({ params }: PageProps) {
     setOrderLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/orders", {
+      const response = await apiFetch("http://localhost:5000/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

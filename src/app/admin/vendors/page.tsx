@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import {
   Search,
@@ -53,7 +55,7 @@ export default function AdminVendorsPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_URL}/admin/vendors`);
+        const response = await apiFetch(`${API_URL}/admin/vendors`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch vendors");

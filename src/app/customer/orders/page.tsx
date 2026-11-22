@@ -1,6 +1,8 @@
 
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { toast } from "sonner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -84,7 +86,7 @@ const [loading, setLoading] = useState(true);
     }
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/orders/customer/${session.user.email}`
       );
 
@@ -155,7 +157,7 @@ const cancelOrder = async () => {
   if (!selectedOrder || !session?.user?.email) return;
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `http://localhost:5000/orders/${selectedOrder}/cancel`,
       {
         method: "PATCH",

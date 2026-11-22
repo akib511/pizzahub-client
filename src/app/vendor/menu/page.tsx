@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditMenuDialog, { type MenuItem } from "./components/EditMenuDialog";
@@ -86,7 +88,7 @@ export default function VendorMenuPage() {
         setLoadingItems(true);
         setError("");
 
-        const response = await fetch("http://localhost:5000/menu");
+        const response = await apiFetch("http://localhost:5000/menu");
 
         if (!response.ok) {
           throw new Error("Failed to load menu items");
@@ -158,7 +160,7 @@ export default function VendorMenuPage() {
     try {
       setTogglingId(id);
 
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/menu/${id}/availability`,
         {
           method: "PATCH",
@@ -231,7 +233,7 @@ export default function VendorMenuPage() {
     try {
       setDeleting(true);
 
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/menu/${showDeleteId}`,
         {
           method: "DELETE",

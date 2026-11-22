@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -130,7 +132,7 @@ export default function Navbar() {
 
     const fetchNotifications = async () => {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `${API_URL}/admin/notifications/${encodeURIComponent(user.email)}`
         );
 
@@ -181,7 +183,7 @@ export default function Navbar() {
     if (!selectedNotification || selectedNotification.isRead) return;
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_URL}/admin/notifications/${notificationId}/read/${encodeURIComponent(user.email)}`,
         { method: "PATCH" }
       );
@@ -215,7 +217,7 @@ export default function Navbar() {
     if (!selectedNotification || !selectedNotification.isRead) return;
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_URL}/admin/notifications/${notificationId}/unread/${encodeURIComponent(user.email)}`,
         { method: "PATCH" }
       );
@@ -249,7 +251,7 @@ export default function Navbar() {
     if (!selectedNotification) return;
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `${API_URL}/admin/notifications/${notificationId}/${encodeURIComponent(user.email)}`,
         { method: "DELETE" }
       );
@@ -418,6 +420,11 @@ export default function Navbar() {
 
     </div>
   );
+
+  // Navbar is hidden on the Stripe payment result pages only
+  if (pathname === "/success" || pathname === "/cancel") {
+    return null;
+  }
 
   // Notification Button
   const notificationButton = (

@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
@@ -66,7 +68,7 @@ export default function VendorProfilePage() {
     const formData = new FormData();
     formData.append("image", file);
 
-    const response = await fetch(
+    const response = await apiFetch(
       `https://api.imgbb.com/1/upload?key=${apiKey}`,
       {
         method: "POST",
@@ -91,7 +93,7 @@ export default function VendorProfilePage() {
 
     const fetchProfile = async () => {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `http://localhost:5000/vendor/profile/${encodeURIComponent(email)}`
         );
 
@@ -183,7 +185,7 @@ export default function VendorProfilePage() {
         restaurantLogoUrl = await uploadImage(pendingRestaurantLogo);
       }
 
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/vendor/profile/${encodeURIComponent(session.user.email)}`,
         {
           method: "PATCH",

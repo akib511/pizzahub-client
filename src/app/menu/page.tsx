@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -111,7 +113,7 @@ function MenuContent() {
         setLoading(true);
         setError("");
 
-        const response = await fetch("http://localhost:5000/menu");
+        const response = await apiFetch("http://localhost:5000/menu");
 
         if (!response.ok) {
           throw new Error("Failed to load menu items");
@@ -143,8 +145,12 @@ function MenuContent() {
     if (!email) return;
 
     const fetchFavorites = async () => {
+      if (session?.user?.role !== "customer") {
+  setFavoriteIds([]);
+  return;
+}
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `http://localhost:5000/customer/favorites/${encodeURIComponent(email)}`,
         );
 
@@ -206,7 +212,7 @@ function MenuContent() {
     try {
       setFavoriteLoading((prev) => [...prev, itemId]);
 
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/customer/favorites/${encodeURIComponent(email)}/${itemId}`,
         {
           method: isFavorite ? "DELETE" : "POST",
@@ -475,32 +481,33 @@ function MenuContent() {
                           </Link>
 
                           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-                          <button
-                            onClick={() => toggleFavorite(pizza._id)}
-                            disabled={isFavoriteLoading}
-                            aria-label={
-                              isFavorite
-                                ? `Remove ${pizza.name} from favorites`
-                                : `Add ${pizza.name} to favorites`
-                            }
-                            aria-pressed={isFavorite}
-                            title={
-                              isFavorite
-                                ? "Remove from favorites"
-                                : "Add to favorites"
-                            }
-                            className="absolute right-2.5 top-2.5 z-10 flex size-11 items-center justify-center rounded-full bg-black/60 text-white shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/80 active:scale-95 disabled:cursor-wait disabled:opacity-60 sm:right-3 sm:top-3 sm:size-9"
-                          >
-                            <Heart
-                              size={19}
-                              className={
-                                isFavorite
-                                  ? "fill-red-500 text-red-500"
-                                  : "text-foreground"
-                              }
-                            />
-                          </button>
+{session?.user?.role === "customer" && (
+  <button
+    onClick={() => toggleFavorite(pizza._id)}
+    disabled={isFavoriteLoading}
+    aria-label={
+      isFavorite
+        ? `Remove ${pizza.name} from favorites`
+        : `Add ${pizza.name} to favorites`
+    }
+    aria-pressed={isFavorite}
+    title={
+      isFavorite
+        ? "Remove from favorites"
+        : "Add to favorites"
+    }
+    className="absolute right-2.5 top-2.5 z-10 flex size-11 items-center justify-center rounded-full bg-black/60 text-white shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/80 active:scale-95 disabled:cursor-wait disabled:opacity-60 sm:right-3 sm:top-3 sm:size-9"
+  >
+    <Heart
+      size={19}
+      className={
+        isFavorite
+          ? "fill-red-500 text-red-500"
+          : "text-foreground"
+      }
+    />
+  </button>
+)}
                         </div>
 
                         {/* Content */}

@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { auth } from "@/lib/auth";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     // Get logged-in user session
     const headersList = await headers();
@@ -38,7 +38,7 @@ export async function POST() {
   );
 }
 
-    const origin = headersList.get("origin");
+    const origin = headersList.get("origin") || request.nextUrl.origin;
 
     if (!origin) {
       return NextResponse.json(
@@ -67,7 +67,7 @@ export async function POST() {
 
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
 
-      cancel_url: `${origin}/cancel`,
+      cancel_url: `${origin}/cancel?session_id={CHECKOUT_SESSION_ID}`,
     });
 
     return NextResponse.redirect(checkoutSession.url!, 303);

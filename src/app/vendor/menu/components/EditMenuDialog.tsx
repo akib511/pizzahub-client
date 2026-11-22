@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
   X,
@@ -95,7 +97,7 @@ export default function EditMenuDialog({
     const formData = new FormData();
     formData.append("image", file);
 
-    const response = await fetch(
+    const response = await apiFetch(
       `https://api.imgbb.com/1/upload?key=${apiKey}`,
       {
         method: "POST",
@@ -160,7 +162,7 @@ export default function EditMenuDialog({
         image: imageUrl,
       };
 
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/menu/${item.id}`,
         {
           method: "PATCH",

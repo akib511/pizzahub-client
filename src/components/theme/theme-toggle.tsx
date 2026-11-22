@@ -2,15 +2,23 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+// Constant snapshots keep the first client render identical to the server
+// render. After hydration React swaps to the client snapshot, so the real
+// theme can be read without an effect or a setState call.
+const subscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export default function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    subscribe,
+    getClientSnapshot,
+    getServerSnapshot
+  );
 
   const isDark = mounted ? resolvedTheme === "dark" : true;
 
@@ -18,7 +26,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      disabled={!mounted}
+      disabled={!mounted || !resolvedTheme}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary/70 text-foreground transition-all duration-300 hover:border-primary/40 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-70"

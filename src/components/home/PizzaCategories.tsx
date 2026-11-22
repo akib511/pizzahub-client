@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
@@ -187,7 +189,7 @@ export default function PizzaCategories() {
   useEffect(() => {
     const fetchCategoryImages = async () => {
       try {
-        const response = await fetch("http://localhost:5000/menu");
+        const response = await apiFetch("http://localhost:5000/menu");
         if (!response.ok) throw new Error("Failed to load category images");
         const data: Pizza[] = await response.json();
 

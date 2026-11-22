@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
@@ -89,7 +91,7 @@ export default function AdminProfilePage() {
   useEffect(() => {
     const loadPlatformStats = async () => {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           "http://localhost:5000/admin/platform-stats",
         );
 
@@ -129,7 +131,7 @@ export default function AdminProfilePage() {
 
     const loadPreferences = async () => {
       try {
-        const response = await fetch(
+        const response = await apiFetch(
           `http://localhost:5000/admin/preferences/${encodeURIComponent(email)}`,
         );
 
@@ -243,7 +245,7 @@ export default function AdminProfilePage() {
     try {
       setSavingPreference(true);
 
-      const response = await fetch(
+      const response = await apiFetch(
         `http://localhost:5000/admin/preferences/${encodeURIComponent(email)}`,
         {
           method: "PATCH",
